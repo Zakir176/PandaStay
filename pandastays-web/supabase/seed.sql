@@ -1,9 +1,50 @@
 -- ==============================================================================
 -- PandaStays Seed Data — Clean Slate Rebuild
--- Spec: Docs/pandastays-full-rebuild-brief.md (Section 3)
+-- Spec: Docs/pandastays-full-rebuild-brief.md (Section 3) & RLS Fix Brief
 -- Seeds: Mukuba House (Lusaka) with Rooms, Bed-Spaces, Tenants, Tenancies,
 -- Payments, Maintenance Reports (with manual priority), and Reminder Logs
 -- ==============================================================================
+
+-- 0. Seed Demo Auth Users (if not exists) so foreign key constraints on landlords/tenants succeed
+INSERT INTO auth.users (
+    instance_id,
+    id,
+    aud,
+    role,
+    email,
+    encrypted_password,
+    email_confirmed_at,
+    raw_app_meta_data,
+    raw_user_meta_data,
+    created_at,
+    updated_at
+) VALUES 
+(
+    '00000000-0000-4000-8000-000000000000',
+    '11111111-0000-4000-8000-000000000001',
+    'authenticated',
+    'authenticated',
+    'landlord@mukubahouse.zm',
+    crypt('PandaStays2026!', gen_salt('bf')),
+    NOW(),
+    '{"provider":"email","providers":["email"]}',
+    '{"name":"Mwamba Kaunda","role":"landlord","phone":"+260 97 7123456"}',
+    NOW(),
+    NOW()
+),
+(
+    '00000000-0000-4000-8000-000000000000',
+    '99999999-0000-4000-8000-000000000001',
+    'authenticated',
+    'authenticated',
+    'john.phiri@unza.zm',
+    crypt('PandaStays2026!', gen_salt('bf')),
+    NOW(),
+    '{"provider":"email","providers":["email"]}',
+    '{"name":"John Phiri","role":"tenant","phone":"+260 97 1122334"}',
+    NOW(),
+    NOW()
+) ON CONFLICT (id) DO NOTHING;
 
 -- 1. Landlord
 INSERT INTO landlords (id, name, email, phone, lenco_subaccount_id, whatsapp_reminder_days_before)
@@ -52,14 +93,14 @@ VALUES
 ON CONFLICT (id) DO NOTHING;
 
 -- 5. Tenants
-INSERT INTO tenants (id, name, email, phone, id_number, emergency_contact_name, emergency_contact_phone)
+INSERT INTO tenants (id, auth_user_id, name, email, phone, id_number, emergency_contact_name, emergency_contact_phone)
 VALUES 
-    ('55555555-0000-4000-8000-000000000001', 'John Phiri', 'john.phiri@unza.zm', '+260 97 1122334', '392819/11/1', 'Mr. Patrick Phiri (Father)', '+260 97 7889900'),
-    ('55555555-0000-4000-8000-000000000002', 'Mary Banda', 'mary.banda@unza.zm', '+260 96 2233445', '410291/11/1', 'Mrs. Grace Banda (Mother)', '+260 96 6778899'),
-    ('55555555-0000-4000-8000-000000000003', 'David Mulenga', 'david.m@cbu.ac.zm', '+260 95 3344556', '502918/11/1', 'Peter Mulenga (Uncle)', '+260 95 5667788'),
-    ('55555555-0000-4000-8000-000000000004', 'Sarah Chilufya', 'sarah.c@unza.zm', '+260 97 4455667', '481920/11/1', 'Agnes Chilufya (Mother)', '+260 97 4455112'),
-    ('55555555-0000-4000-8000-000000000005', 'Emmanuel Ngoma', 'engoma@apex.zm', '+260 96 5566778', '610294/11/1', 'Kelvin Ngoma (Brother)', '+260 96 3322110'),
-    ('55555555-0000-4000-8000-000000000006', 'Chileshe Mubanga', 'chileshe.mubanga@unza.zm', '+260 97 6677889', '294810/11/1', 'Dr. J. Mubanga (Guardian)', '+260 97 9988776')
+    ('55555555-0000-4000-8000-000000000001', '99999999-0000-4000-8000-000000000001', 'John Phiri', 'john.phiri@unza.zm', '+260 97 1122334', '392819/11/1', 'Mr. Patrick Phiri (Father)', '+260 97 7889900'),
+    ('55555555-0000-4000-8000-000000000002', NULL, 'Mary Banda', 'mary.banda@unza.zm', '+260 96 2233445', '410291/11/1', 'Mrs. Grace Banda (Mother)', '+260 96 6778899'),
+    ('55555555-0000-4000-8000-000000000003', NULL, 'David Mulenga', 'david.m@cbu.ac.zm', '+260 95 3344556', '502918/11/1', 'Peter Mulenga (Uncle)', '+260 95 5667788'),
+    ('55555555-0000-4000-8000-000000000004', NULL, 'Sarah Chilufya', 'sarah.c@unza.zm', '+260 97 4455667', '481920/11/1', 'Agnes Chilufya (Mother)', '+260 97 4455112'),
+    ('55555555-0000-4000-8000-000000000005', NULL, 'Emmanuel Ngoma', 'engoma@apex.zm', '+260 96 5566778', '610294/11/1', 'Kelvin Ngoma (Brother)', '+260 96 3322110'),
+    ('55555555-0000-4000-8000-000000000006', NULL, 'Chileshe Mubanga', 'chileshe.mubanga@unza.zm', '+260 97 6677889', '294810/11/1', 'Dr. J. Mubanga (Guardian)', '+260 97 9988776')
 ON CONFLICT (id) DO NOTHING;
 
 -- 6. Tenancies
