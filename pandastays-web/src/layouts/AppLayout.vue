@@ -1,9 +1,19 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import RecordPaymentModal from '../components/RecordPaymentModal.vue'
+import AuthModal from '../components/AuthModal.vue'
+import { useAuth, initAuth } from '../lib/auth'
+
+const { userProfile, currentRole, signOut } = useAuth()
+
+onMounted(() => {
+  initAuth()
+})
 
 const isMobileMenuOpen = ref(false)
 const isPaymentModalOpen = ref(false)
+const isAuthModalOpen = ref(false)
+const isProfileDropdownOpen = ref(false)
 
 const toggleMobileMenu = () => {
   isMobileMenuOpen.value = !isMobileMenuOpen.value
@@ -21,13 +31,25 @@ const closePaymentModal = () => {
   isPaymentModalOpen.value = false
 }
 
+const openAuthModal = () => {
+  isProfileDropdownOpen.value = false
+  isAuthModalOpen.value = true
+}
+
+const handleSignOut = async () => {
+  isProfileDropdownOpen.value = false
+  await signOut()
+}
+
 const navItems = [
   { name: 'Dashboard', path: '/app', icon: 'dashboard' },
-  { name: 'Financial Ledger', path: '/app/financials', icon: 'payments' },
+  { name: 'Rooms & Beds', path: '/app/rooms', icon: 'single_bed' },
+  { name: 'Tenant Profiles', path: '/app/tenants', icon: 'groups' },
+  { name: 'Financial Ledger', path: '/app/financials', icon: 'receipt_long' },
   { name: 'Maintenance & Repairs', path: '/app/maintenance', icon: 'handyman' },
   { name: 'Semester & Leases', path: '/app/leases', icon: 'event_repeat' },
-  { name: 'Security Deposits', path: '/app/deposits', icon: 'account_balance_wallet' },
-  { name: 'Tenant Profiles', path: '/app/tenants', icon: 'groups' }
+  { name: 'Security Deposits', path: '/app/deposits', icon: 'shield' },
+  { name: 'Settings & Reminders', path: '/app/settings', icon: 'tune' }
 ]
 </script>
 
@@ -37,6 +59,13 @@ const navItems = [
     <RecordPaymentModal 
       :is-open="isPaymentModalOpen" 
       @close="closePaymentModal" 
+    />
+
+    <!-- Supabase Auth Modal Component -->
+    <AuthModal
+      :is-open="isAuthModalOpen"
+      :initial-role="currentRole || 'landlord'"
+      @close="isAuthModalOpen = false"
     />
 
     <!-- Mobile Backdrop Overlay -->
@@ -81,14 +110,22 @@ const navItems = [
       </nav>
 
       <div class="mt-auto flex flex-col gap-2 border-t border-outline-variant pt-4">
-        <a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high transition-colors rounded-lg" href="#">
-          <span class="material-symbols-outlined">settings</span>
-          <span class="font-body-md text-body-md font-medium">Settings</span>
-        </a>
-        <a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high transition-colors rounded-lg" href="#">
-          <span class="material-symbols-outlined">help</span>
-          <span class="font-body-md text-body-md font-medium">Support</span>
-        </a>
+        <router-link 
+          to="/tenant/portal"
+          @click="closeMobileMenu"
+          class="flex items-center gap-3 px-4 py-2.5 bg-primary/10 text-primary hover:bg-primary/20 transition-colors rounded-md text-xs font-semibold"
+        >
+          <span class="material-symbols-outlined text-[18px]">person_pin</span>
+          <span>Tenant Portal Demo</span>
+        </router-link>
+        <router-link 
+          to="/tenant/checkout"
+          @click="closeMobileMenu"
+          class="flex items-center gap-3 px-4 py-2.5 text-on-surface-variant hover:bg-surface-container-high transition-colors rounded-md text-xs"
+        >
+          <span class="material-symbols-outlined text-[18px]">point_of_sale</span>
+          <span>Pay Rent Checkout</span>
+        </router-link>
       </div>
     </aside>
 
@@ -120,12 +157,62 @@ const navItems = [
             <button class="text-on-surface-variant hover:text-primary transition-colors active:scale-95 duration-75 w-8 h-8 flex items-center justify-center">
               <span class="material-symbols-outlined">help</span>
             </button>
-            <div class="w-8 h-8 rounded-full bg-surface-variant overflow-hidden ml-2 cursor-pointer border border-outline-variant">
-              <img 
-                alt="Landlord Profile" 
-                class="w-full h-full object-cover" 
-                src="https://lh3.googleusercontent.com/aida-public/AB6AXuCEy6YVypc-v9f5s-ukQ0XdJBxYKdUrCEqe6ZF5bMB0QUXeHVou8O3VDsG1QpDutyI08E0eNYABm1iPrdBLQGZI74c1oEDhuy8HYv-X-qszL4dLXPUMSYNzOMlilbfebSAsxx9uJ2M4M7UPHVuuBAm-Row9XKJP8nwxZmQ0UcYtMKe4bvIaE__ltNi4MLDKIn_hzIFmupocIujpFo8SjhEIoZH732ouktDg3TU04cL9mJbyc9AtVlHy"
+            <!-- User Profile Avatar & Dropdown -->
+            <div class="relative ml-2">
+              <button 
+                @click="isProfileDropdownOpen = !isProfileDropdownOpen"
+                class="flex items-center gap-2 p-1 rounded-sm hover:bg-surface-container-low transition-colors border border-outline-variant"
               >
+                <div class="w-8 h-8 rounded-[3px] bg-primary text-on-primary font-bold text-xs flex items-center justify-center">
+                  {{ userProfile.name?.split(' ').map(n=>n[0]).join('').substring(0, 2) || 'MK' }}
+                </div>
+                <div class="hidden lg:flex flex-col text-left">
+                  <span class="text-xs font-semibold text-on-surface leading-tight">{{ userProfile.name }}</span>
+                  <span class="text-[10px] text-primary capitalize font-medium leading-none">{{ currentRole }}</span>
+                </div>
+                <span class="material-symbols-outlined text-[16px] text-on-surface-variant">expand_more</span>
+              </button>
+
+              <!-- Profile Dropdown Menu -->
+              <div 
+                v-if="isProfileDropdownOpen"
+                class="absolute right-0 mt-2 w-56 card-tight p-2 bg-surface-container-lowest shadow-xl border border-outline z-50 space-y-1 text-xs"
+              >
+                <div class="p-2 border-b border-outline-variant/60">
+                  <p class="font-bold text-on-surface truncate">{{ userProfile.name }}</p>
+                  <p class="font-data-mono text-[11px] text-on-surface-variant truncate">{{ userProfile.email }}</p>
+                  <span class="badge-pill bg-primary-container text-primary text-[9px] mt-1 inline-flex uppercase tracking-wider font-bold">
+                    {{ currentRole }} Portal
+                  </span>
+                </div>
+
+                <button 
+                  @click="openAuthModal"
+                  class="w-full flex items-center gap-2 px-3 py-2 rounded-[3px] text-left text-on-surface hover:bg-surface-container-low transition-colors"
+                >
+                  <span class="material-symbols-outlined text-[16px] text-primary">switch_account</span>
+                  <span>Switch Account / Sign In</span>
+                </button>
+
+                <router-link
+                  to="/app/settings"
+                  @click="isProfileDropdownOpen = false"
+                  class="w-full flex items-center gap-2 px-3 py-2 rounded-[3px] text-left text-on-surface hover:bg-surface-container-low transition-colors"
+                >
+                  <span class="material-symbols-outlined text-[16px] text-on-surface-variant">settings</span>
+                  <span>Settings & Reminders</span>
+                </router-link>
+
+                <div class="border-t border-outline-variant/60 pt-1">
+                  <button 
+                    @click="handleSignOut"
+                    class="w-full flex items-center gap-2 px-3 py-2 rounded-[3px] text-left text-error hover:bg-error-container/40 transition-colors"
+                  >
+                    <span class="material-symbols-outlined text-[16px]">logout</span>
+                    <span>Sign Out</span>
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
