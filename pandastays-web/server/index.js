@@ -165,6 +165,113 @@ app.post('/api/webhooks/lenco', async (req, res) => {
   }
 })
 
+/**
+ * POST /api/payments/record
+ * Server-side payment recording using service role key (bypasses RLS)
+ * Spec: Docs/pandastays-full-rebuild-brief.md & RLS Security Fix Brief
+ */
+app.post('/api/payments/record', async (req, res) => {
+  try {
+    const {
+      tenancy_id,
+      tenant_name,
+      bed_label,
+      amount,
+      method = 'momo_mtn',
+      method_label = 'MTN MoMo',
+      gateway_reference,
+      status = 'success'
+    } = req.body
+
+    let resolvedTenancyId = tenancy_id
+    if (!resolvedTenancyId) {
+      // Find active tenancy
+      const { data: tenancy } = await supabase
+        .from('tenancies')
+        .select('id')
+        .eq('status', 'active')
+        .limit(1)
+        .single()
+      resolvedTenancyId = tenancy?.id || '66666666-0000-4000-8000-000000000001'
+    }
+
+    // Determine count of payments for receipt number
+    const { count } = await supabase
+      .from('payments')
+      .select('*', { count: 'exact', head: true })
+
+    const receiptNumber = `REC-2026-${String((count || 0) + 1).padStart(3, '0')}`
+    const refNum = gateway_reference || `LNC-INIT-${Date.now().toString().slice(-6)}`
+
+    const { data: dbPayment, error: insertError } = await supabase
+      .from('payments')
+      .insert({
+        tenancy_id: resolvedTenancyId,
+        amount: Number(amount),
+        paid_at: new Date().toISOString(),
+        method: method,
+        gateway_reference: refNum,
+        status: status,
+        receipt_number: receiptNumber
+      })
+      .select()
+      .single()
+
+    if (insertError) {
+      console.error('Server payments insert error:', insertError)
+      return res.status(500).json({ success: false, error: insertError.message })
+    }
+
+    return res.status(200).json({
+      success: true,
+      payment: {
+        id: dbPayment.id,
+        tenant_name: tenant_name || 'Tenant',
+        bed_label: bed_label || 'Bed Space',
+        amount: Number(dbPayment.amount),
+        paid_at: dbPayment.paid_at?.substring(0, 16).replace('T', ' ') || '',
+        method: dbPayment.method,
+        method_label: method_label,
+        gateway_reference: dbPayment.gateway_reference,
+        status: dbPayment.status,
+        receipt_number: dbPayment.receipt_number
+      }
+    })
+  } catch (error) {
+    console.error('Error recording payment on server:', error)
+    return res.status(500).json({ success: false, error: error.message })
+  }
+})
+
+/**
+ * POST /api/tenants/link-auth
+ * Links a newly registered tenant auth user to their landlord-created tenant profile
+ */
+app.post('/api/tenants/link-auth', async (req, res) => {
+  try {
+    const { email, auth_user_id } = req.body
+    if (!email || !auth_user_id) {
+      return res.status(400).json({ success: false, error: 'Missing email or auth_user_id' })
+    }
+
+    const { data, error } = await supabase
+      .from('tenants')
+      .update({ auth_user_id })
+      .ilike('email', email)
+      .select()
+
+    if (error) {
+      console.error('Error linking tenant auth:', error)
+      return res.status(500).json({ success: false, error: error.message })
+    }
+
+    return res.status(200).json({ success: true, updated: data })
+  } catch (error) {
+    console.error('Error in link-auth endpoint:', error)
+    return res.status(500).json({ success: false, error: error.message })
+  }
+})
+
 app.listen(PORT, () => {
   console.log(`PandaStays Lenco Payment Service running on port ${PORT}`)
 })
