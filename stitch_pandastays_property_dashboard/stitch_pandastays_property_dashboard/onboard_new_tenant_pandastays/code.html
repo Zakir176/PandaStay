@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+
+<html class="h-full" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>PandaStays - Onboarding Form</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-tint": "#006c49",
+                        "surface": "#f8f9ff",
+                        "tertiary-fixed-dim": "#ffb95f",
+                        "on-secondary": "#ffffff",
+                        "tertiary-fixed": "#ffddb8",
+                        "inverse-on-surface": "#eaf1ff",
+                        "on-secondary-fixed": "#111c2d",
+                        "error": "#ba1a1a",
+                        "primary-fixed": "#6ffbbe",
+                        "surface-container-high": "#dce9ff",
+                        "on-secondary-fixed-variant": "#3c475a",
+                        "surface-variant": "#d3e4fe",
+                        "primary-container": "#10b981",
+                        "error-container": "#ffdad6",
+                        "background": "#f8f9ff",
+                        "secondary-fixed-dim": "#bcc7de",
+                        "outline": "#6c7a71",
+                        "surface-container-highest": "#d3e4fe",
+                        "on-primary-container": "#00422b",
+                        "on-background": "#0b1c30",
+                        "on-primary-fixed-variant": "#005236",
+                        "secondary-fixed": "#d8e3fb",
+                        "on-surface": "#0b1c30",
+                        "inverse-primary": "#4edea3",
+                        "on-tertiary-fixed-variant": "#653e00",
+                        "on-primary": "#ffffff",
+                        "surface-container-low": "#eff4ff",
+                        "on-tertiary-fixed": "#2a1700",
+                        "primary": "#006c49",
+                        "on-error-container": "#93000a",
+                        "surface-bright": "#f8f9ff",
+                        "outline-variant": "#bbcabf",
+                        "on-tertiary-container": "#523200",
+                        "secondary-container": "#d5e0f8",
+                        "on-error": "#ffffff",
+                        "on-surface-variant": "#3c4a42",
+                        "secondary": "#545f73",
+                        "on-secondary-container": "#586377",
+                        "on-tertiary": "#ffffff",
+                        "tertiary-container": "#e29100",
+                        "on-primary-fixed": "#002113",
+                        "surface-container": "#e5eeff",
+                        "tertiary": "#855300",
+                        "surface-dim": "#cbdbf5",
+                        "surface-container-lowest": "#ffffff",
+                        "inverse-surface": "#213145",
+                        "primary-fixed-dim": "#4edea3"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "stack-default": "1.5rem",
+                        "page-margin-dt": "2rem",
+                        "sidebar-width": "260px",
+                        "gutter": "1rem",
+                        "container-max": "1440px",
+                        "page-margin-mb": "1rem",
+                        "stack-compact": "0.5rem"
+                    },
+                    "fontFamily": {
+                        "body-sm": ["Inter"],
+                        "title-sm": ["Inter"],
+                        "label-caps": ["Inter"],
+                        "body-md": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "data-mono": ["JetBrains Mono"]
+                    },
+                    "fontSize": {
+                        "body-sm": ["13px", { "lineHeight": "18px", "fontWeight": "400" }],
+                        "title-sm": ["18px", { "lineHeight": "24px", "fontWeight": "600" }],
+                        "label-caps": ["11px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700" }],
+                        "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "display-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "data-mono": ["13px", { "lineHeight": "16px", "fontWeight": "500" }]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .input-focus-ring:focus-within {
+            border-color: theme('colors.primary-container');
+            box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.1);
+        }
+    </style>
+</head>
+<body class="bg-background font-body-md text-body-md text-on-surface h-full w-full flex items-center justify-center relative overflow-hidden">
+<!-- Simulated Dashboard Background -->
+<div class="absolute inset-0 z-0 opacity-20 pointer-events-none" data-alt="A softly blurred, bright modern administrative dashboard showing graphs and data tables on a pristine white background. The aesthetic is clean, professional, and utilitarian, utilizing shades of emerald green and slate navy in a well-lit, contemporary light-mode office setting. The mood is highly productive and organized." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDhtlz0RRtTEkocFckOpbIPasPDsQ-N3d8kuGF6CjWhhZxG5Edm0bLDlo6dvlOD11WjainGgOprd4CLnnMCaPkJPOVyyhWSGEOE2Qju_7LBuInc_e8s-SOVy98OeHkVv9VlUDYZS8rY-KvouIvxiCy6hX0plg4TDOsYt4Z0jf8DEp6-OhrpR0g50fw1kjN_h5zKP0RulZ74Qn883h2qi4u1asP-nyotVa6wn95ahZCyhJTgFsmN-iPC')"></div>
+<!-- Modal Overlay -->
+<div class="fixed inset-0 bg-inverse-surface/40 backdrop-blur-sm z-40 flex items-center justify-center p-page-margin-mb md:p-page-margin-dt">
+<!-- Multi-step Form Modal -->
+<div class="bg-surface-container-lowest rounded-xl shadow-[0px_10px_15px_-3px_rgba(33,49,69,0.15)] border border-outline-variant w-full max-w-2xl flex flex-col max-h-full overflow-hidden z-50">
+<!-- Header -->
+<div class="px-6 py-5 border-b border-outline-variant flex justify-between items-center bg-surface sticky top-0">
+<div>
+<h2 class="font-headline-md text-headline-md text-on-surface">Onboard New Tenant</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">Complete details to allocate a room and generate invoice.</p>
+</div>
+<button class="text-on-surface-variant hover:text-on-surface transition-colors p-2 rounded-full hover:bg-surface-container">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<!-- Progress Indicator -->
+<div class="px-6 pt-5 pb-2 bg-surface-container-lowest">
+<div class="flex items-center justify-between mb-2">
+<span class="font-label-caps text-label-caps text-primary uppercase">Step 1: Personal Details</span>
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase">Step 2: Room</span>
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase">Step 3: Financials</span>
+</div>
+<div class="w-full bg-surface-container h-1 rounded-full overflow-hidden flex">
+<div class="bg-primary h-full w-1/3 rounded-full transition-all duration-300"></div>
+</div>
+</div>
+<!-- Form Content (Scrollable) -->
+<div class="p-6 overflow-y-auto flex-1">
+<!-- Step 1: Student Information -->
+<div class="space-y-stack-default block" id="step-1">
+<div class="space-y-4">
+<h3 class="font-title-sm text-title-sm text-on-surface flex items-center gap-2 border-b border-surface-container pb-2">
+<span class="material-symbols-outlined text-primary text-xl">person</span>
+                            Student Information
+                        </h3>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<div class="flex flex-col gap-1">
+<label class="font-body-sm text-body-sm text-on-surface-variant">Full Name</label>
+<div class="border border-outline bg-surface-container-lowest rounded px-3 py-2 input-focus-ring flex items-center transition-colors">
+<input class="bg-transparent w-full outline-none font-body-md text-body-md text-on-surface placeholder:text-on-surface-variant/50" placeholder="e.g. John Doe" type="text"/>
+</div>
+</div>
+<div class="flex flex-col gap-1">
+<label class="font-body-sm text-body-sm text-on-surface-variant">Phone Number</label>
+<div class="border border-outline bg-surface-container-lowest rounded px-3 py-2 input-focus-ring flex items-center transition-colors">
+<input class="bg-transparent w-full outline-none font-data-mono text-data-mono text-on-surface placeholder:text-on-surface-variant/50" placeholder="+260 97 000 0000" type="tel"/>
+</div>
+</div>
+<div class="flex flex-col gap-1 md:col-span-2">
+<label class="font-body-sm text-body-sm text-on-surface-variant">National NRC / Student ID Number</label>
+<div class="border border-outline bg-surface-container-lowest rounded px-3 py-2 input-focus-ring flex items-center transition-colors">
+<input class="bg-transparent w-full outline-none font-data-mono text-data-mono text-on-surface placeholder:text-on-surface-variant/50" placeholder="e.g. 123456/78/9" type="text"/>
+</div>
+</div>
+</div>
+</div>
+<div class="space-y-4">
+<h3 class="font-title-sm text-title-sm text-on-surface flex items-center gap-2 border-b border-surface-container pb-2">
+<span class="material-symbols-outlined text-primary text-xl">contact_emergency</span>
+                            Emergency Contact
+                        </h3>
+<div class="grid grid-cols-1 gap-4">
+<div class="flex flex-col gap-1">
+<label class="font-body-sm text-body-sm text-on-surface-variant">Emergency Phone Number</label>
+<div class="border border-outline bg-surface-container-lowest rounded px-3 py-2 input-focus-ring flex items-center transition-colors">
+<input class="bg-transparent w-full outline-none font-data-mono text-data-mono text-on-surface placeholder:text-on-surface-variant/50" placeholder="+260 96 000 0000" type="tel"/>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Note: Steps 2 and 3 would logically be hidden in a real multi-step flow, but rendering them here for the single-page design requirement, or combining them if prefered. Let's show all fields logically grouped for the design output as requested "A clean multi-step form modal". I'll stack them to show the full design in one view, as interactive hiding requires JS logic not strictly requested to be fully functional, just visually representative. -->
+<!-- Step 2: Property & Allocation -->
+<div class="space-y-stack-default mt-8 block" id="step-2">
+<div class="space-y-4">
+<h3 class="font-title-sm text-title-sm text-on-surface flex items-center gap-2 border-b border-surface-container pb-2">
+<span class="material-symbols-outlined text-primary text-xl">bed</span>
+                            Property &amp; Allocation
+                        </h3>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<div class="flex flex-col gap-1">
+<label class="font-body-sm text-body-sm text-on-surface-variant">Select Property</label>
+<div class="border border-outline bg-surface-container-lowest rounded px-3 py-2 input-focus-ring flex items-center relative transition-colors cursor-pointer">
+<select class="appearance-none bg-transparent w-full outline-none font-body-md text-body-md text-on-surface pr-8 cursor-pointer">
+<option disabled="" selected="" value="">Choose property...</option>
+<option value="alpha">Property Alpha</option>
+<option value="beta">Property Beta</option>
+</select>
+<span class="material-symbols-outlined absolute right-3 text-on-surface-variant pointer-events-none">arrow_drop_down</span>
+</div>
+</div>
+<div class="flex flex-col gap-1">
+<label class="font-body-sm text-body-sm text-on-surface-variant">Select Room &amp; Bed</label>
+<div class="border border-outline bg-surface-container-lowest rounded px-3 py-2 input-focus-ring flex items-center relative transition-colors cursor-pointer">
+<select class="appearance-none bg-transparent w-full outline-none font-body-md text-body-md text-on-surface pr-8 cursor-pointer">
+<option disabled="" selected="" value="">Available beds...</option>
+<option value="r2b">Room 2 - Bed B</option>
+<option value="r4a">Room 4 - Bed A</option>
+</select>
+<span class="material-symbols-outlined absolute right-3 text-on-surface-variant pointer-events-none">arrow_drop_down</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Step 3: Financials -->
+<div class="space-y-stack-default mt-8 block" id="step-3">
+<div class="space-y-4">
+<h3 class="font-title-sm text-title-sm text-on-surface flex items-center gap-2 border-b border-surface-container pb-2">
+<span class="material-symbols-outlined text-primary text-xl">payments</span>
+                            Financials
+                        </h3>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<div class="flex flex-col gap-1">
+<label class="font-body-sm text-body-sm text-on-surface-variant">Rent Amount per Semester (ZMW)</label>
+<div class="border border-outline bg-surface-container-lowest rounded px-3 py-2 input-focus-ring flex items-center transition-colors">
+<span class="text-on-surface-variant mr-2 font-data-mono">K</span>
+<input class="bg-transparent w-full outline-none font-data-mono text-data-mono text-on-surface placeholder:text-on-surface-variant/50" placeholder="0.00" type="number"/>
+</div>
+</div>
+<div class="flex flex-col gap-1">
+<label class="font-body-sm text-body-sm text-on-surface-variant">Lease Start Date</label>
+<div class="border border-outline bg-surface-container-lowest rounded px-3 py-2 input-focus-ring flex items-center relative transition-colors">
+<input class="bg-transparent w-full outline-none font-data-mono text-data-mono text-on-surface cursor-pointer" type="date"/>
+</div>
+</div>
+<div class="flex flex-col gap-1 md:col-span-2 mt-2">
+<label class="flex items-center gap-3 cursor-pointer p-3 border border-outline-variant rounded bg-surface hover:bg-surface-container transition-colors">
+<div class="relative flex items-center">
+<input class="peer sr-only" type="checkbox"/>
+<div class="w-10 h-5 bg-surface-variant rounded-full peer-checked:bg-primary transition-colors"></div>
+<div class="absolute left-1 top-1 w-3 h-3 bg-surface-container-lowest rounded-full transition-transform peer-checked:translate-x-5 shadow-sm"></div>
+</div>
+<div class="flex flex-col">
+<span class="font-body-md text-body-md text-on-surface font-semibold">Deposit Paid</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Check if security deposit has been received.</span>
+</div>
+</label>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Footer Actions -->
+<div class="px-6 py-4 border-t border-outline-variant bg-surface flex justify-between items-center sticky bottom-0">
+<button class="px-4 py-2 font-body-md text-body-md font-semibold text-secondary hover:text-on-surface transition-colors">
+                    Cancel
+                </button>
+<div class="flex gap-3">
+<button class="px-4 py-2 font-body-md text-body-md font-semibold text-primary border border-outline-variant hover:bg-surface-container-low transition-colors rounded">
+                        Previous
+                    </button>
+<button class="px-5 py-2 font-body-md text-body-md font-semibold bg-primary text-on-primary hover:bg-surface-tint rounded transition-all shadow-[inset_0_-2px_4px_rgba(0,0,0,0.1)] active:shadow-none active:translate-y-px">
+                        Assign Bed &amp; Generate Initial Invoice
+                    </button>
+</div>
+</div>
+</div>
+</div>
+</body></html>
