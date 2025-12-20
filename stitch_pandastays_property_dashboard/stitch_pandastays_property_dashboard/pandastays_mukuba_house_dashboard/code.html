@@ -1,0 +1,547 @@
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>PandaStays - Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "tertiary-fixed-dim": "#ffb95f",
+                      "outline": "#6c7a71",
+                      "on-primary": "#ffffff",
+                      "on-tertiary": "#ffffff",
+                      "secondary-fixed-dim": "#bcc7de",
+                      "on-primary-fixed": "#002113",
+                      "inverse-primary": "#4edea3",
+                      "secondary-fixed": "#d8e3fb",
+                      "on-secondary": "#ffffff",
+                      "on-secondary-container": "#586377",
+                      "surface-container-high": "#dce9ff",
+                      "tertiary": "#855300",
+                      "inverse-surface": "#213145",
+                      "on-secondary-fixed-variant": "#3c475a",
+                      "on-tertiary-fixed-variant": "#653e00",
+                      "on-secondary-fixed": "#111c2d",
+                      "on-primary-fixed-variant": "#005236",
+                      "on-primary-container": "#00422b",
+                      "primary": "#006c49",
+                      "surface-container-lowest": "#ffffff",
+                      "surface-container-low": "#eff4ff",
+                      "inverse-on-surface": "#eaf1ff",
+                      "outline-variant": "#bbcabf",
+                      "surface-container": "#e5eeff",
+                      "tertiary-container": "#e29100",
+                      "surface-tint": "#006c49",
+                      "primary-fixed": "#6ffbbe",
+                      "surface": "#f8f9ff",
+                      "primary-fixed-dim": "#4edea3",
+                      "surface-bright": "#f8f9ff",
+                      "on-error": "#ffffff",
+                      "surface-dim": "#cbdbf5",
+                      "on-surface": "#0b1c30",
+                      "on-tertiary-fixed": "#2a1700",
+                      "error": "#ba1a1a",
+                      "on-background": "#0b1c30",
+                      "surface-variant": "#d3e4fe",
+                      "on-surface-variant": "#3c4a42",
+                      "secondary": "#545f73",
+                      "primary-container": "#10b981",
+                      "error-container": "#ffdad6",
+                      "background": "#f8f9ff",
+                      "on-tertiary-container": "#523200",
+                      "surface-container-highest": "#d3e4fe",
+                      "on-error-container": "#93000a",
+                      "secondary-container": "#d5e0f8",
+                      "tertiary-fixed": "#ffddb8"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.125rem",
+                      "lg": "0.25rem",
+                      "xl": "0.5rem",
+                      "full": "0.75rem"
+              },
+              "spacing": {
+                      "sidebar-width": "260px",
+                      "page-margin-mb": "1rem",
+                      "page-margin-dt": "2rem",
+                      "container-max": "1440px",
+                      "gutter": "1rem",
+                      "stack-compact": "0.5rem",
+                      "stack-default": "1.5rem"
+              },
+              "fontFamily": {
+                      "headline-md": [
+                              "Inter"
+                      ],
+                      "body-sm": [
+                              "Inter"
+                      ],
+                      "label-caps": [
+                              "Inter"
+                      ],
+                      "title-sm": [
+                              "Inter"
+                      ],
+                      "data-mono": [
+                              "JetBrains Mono"
+                      ],
+                      "body-md": [
+                              "Inter"
+                      ],
+                      "display-lg": [
+                              "Inter"
+                      ]
+              },
+              "fontSize": {
+                      "headline-md": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "letterSpacing": "-0.01em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-sm": [
+                              "13px",
+                              {
+                                      "lineHeight": "18px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "label-caps": [
+                              "11px",
+                              {
+                                      "lineHeight": "16px",
+                                      "letterSpacing": "0.05em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "title-sm": [
+                              "18px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "data-mono": [
+                              "13px",
+                              {
+                                      "lineHeight": "16px",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "body-md": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "display-lg": [
+                              "32px",
+                              {
+                                      "lineHeight": "40px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+      </script>
+<style>
+        .material-symbols-outlined {
+          font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+      </style>
+</head>
+<body class="bg-surface text-on-surface font-body-md antialiased min-h-screen">
+<!-- Slide-over Background Overlay -->
+<div class="fixed inset-0 bg-inverse-surface/40 z-50 hidden opacity-0 transition-opacity duration-300" id="slide-over-backdrop"></div>
+<!-- Payment Slide-over -->
+<div class="fixed inset-y-0 right-0 w-full md:w-[400px] bg-surface-container-lowest z-50 transform translate-x-full transition-transform duration-300 shadow-[-10px_0_15px_-3px_rgba(33,49,69,0.2)] border-l border-outline-variant flex flex-col" id="payment-slide-over">
+<div class="flex items-center justify-between p-4 border-b border-outline-variant sticky top-0 bg-surface-container-lowest z-10">
+<h2 class="font-title-sm text-title-sm text-on-surface">Record Payment</h2>
+<button class="text-on-surface-variant hover:text-on-surface transition-colors" id="close-slide-over">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<div class="flex-1 overflow-y-auto p-6 flex flex-col gap-stack-default">
+<div class="flex flex-col gap-2">
+<label class="font-label-caps text-label-caps text-on-surface-variant uppercase">Tenant Name</label>
+<div class="relative">
+<select class="w-full h-10 px-3 bg-surface border border-outline-variant rounded text-on-surface font-body-sm text-body-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 appearance-none">
+<option disabled="" selected="" value="">Select tenant...</option>
+<option value="1">John Phiri - Room 101</option>
+<option value="2">Mary Banda - Room 101</option>
+<option value="3">David Mulenga - Room 102</option>
+</select>
+<span class="material-symbols-outlined absolute right-3 top-2.5 pointer-events-none text-on-surface-variant">expand_more</span>
+</div>
+</div>
+<div class="flex flex-col gap-2">
+<label class="font-label-caps text-label-caps text-on-surface-variant uppercase">Amount (ZMW)</label>
+<input class="w-full h-10 px-3 bg-surface border border-outline-variant rounded text-on-surface font-data-mono text-data-mono focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10" placeholder="0.00" type="number">
+</div>
+<div class="flex flex-col gap-3">
+<label class="font-label-caps text-label-caps text-on-surface-variant uppercase">Payment Method</label>
+<div class="flex gap-4">
+<label class="flex items-center gap-2 cursor-pointer">
+<input checked="" class="text-primary focus:ring-primary" name="payment_method" type="radio">
+<span class="font-body-sm text-body-sm text-on-surface">Mobile Money</span>
+</label>
+<label class="flex items-center gap-2 cursor-pointer">
+<input class="text-primary focus:ring-primary" name="payment_method" type="radio">
+<span class="font-body-sm text-body-sm text-on-surface">Cash</span>
+</label>
+</div>
+</div>
+<div class="flex flex-col gap-2">
+<label class="font-label-caps text-label-caps text-on-surface-variant uppercase">Reference Number</label>
+<input class="w-full h-10 px-3 bg-surface border border-outline-variant rounded text-on-surface font-data-mono text-data-mono focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10" placeholder="e.g. TXN-987654321" type="text">
+</div>
+<div class="flex items-center gap-3 mt-4">
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox" value="">
+<div class="w-9 h-5 bg-outline-variant peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary"></div>
+<span class="ml-3 font-body-sm text-body-sm text-on-surface">Generate Digital Receipt</span>
+</label>
+</div>
+</div>
+<div class="p-4 border-t border-outline-variant sticky bottom-0 bg-surface-container-lowest z-10 flex gap-3 justify-end">
+<button class="px-4 py-2 border border-outline-variant text-on-surface font-title-sm text-title-sm rounded hover:bg-surface-variant transition-colors" id="cancel-slide-over">Cancel</button>
+<button class="px-4 py-2 bg-primary text-on-primary font-title-sm text-title-sm rounded shadow-[inset_0_1px_0_rgba(255,255,255,0.2)] hover:bg-on-primary-fixed-variant transition-colors active:shadow-[inset_0_2px_4px_rgba(0,0,0,0.2)]">Submit Payment</button>
+</div>
+</div>
+<!-- SideNavBar -->
+<aside class="hidden md:flex flex-col fixed left-0 top-0 h-full w-sidebar-width bg-surface dark:bg-inverse-surface border-r border-outline-variant dark:border-outline z-30 py-6 px-4">
+<div class="flex items-center gap-3 mb-8 px-4">
+<div class="w-10 h-10 rounded bg-primary-container flex items-center justify-center text-on-primary-container">
+<span class="material-symbols-outlined">real_estate_agent</span>
+</div>
+<div>
+<h1 class="font-headline-md text-headline-md font-bold text-primary dark:text-primary-fixed-dim">PandaStays</h1>
+<p class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wide">Management Portal</p>
+</div>
+</div>
+<nav class="flex-1 flex flex-col gap-2">
+<a class="flex items-center gap-3 px-4 py-3 bg-secondary-container text-on-secondary-container rounded-lg opacity-80 duration-150" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">dashboard</span>
+<span class="font-body-md text-body-md font-medium">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined">groups</span>
+<span class="font-body-md text-body-md font-medium">Tenants</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined">bed</span>
+<span class="font-body-md text-body-md font-medium">Rooms</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high transition-colors rounded-lg" href="{{DATA:SCREEN:SCREEN_7}}">
+<span class="material-symbols-outlined">payments</span>
+<span class="font-body-md text-body-md font-medium">Payments</span>
+</a><a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high transition-colors rounded-lg" href="{{DATA:SCREEN:SCREEN_2}}"><span class="material-symbols-outlined">account_balance_wallet</span><span class="font-body-md text-body-md font-medium">Security Deposits</span></a><a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high transition-colors rounded-lg" href="{{DATA:SCREEN:SCREEN_6}}"><span class="material-symbols-outlined">handyman</span><span class="font-body-md text-body-md font-medium">Maintenance</span></a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high transition-colors rounded-lg" href="{{DATA:SCREEN:SCREEN_11}}">
+<span class="material-symbols-outlined">analytics</span>
+<span class="font-body-md text-body-md font-medium">Reports</span>
+</a>
+</nav>
+<div class="mt-auto flex flex-col gap-2 border-t border-outline-variant pt-4">
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high transition-colors rounded-lg" href="{{DATA:SCREEN:SCREEN_4}}"><span class="material-symbols-outlined">event_repeat</span><span class="font-body-md text-body-md font-medium">Lease Transitions</span></a><a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-body-md text-body-md font-medium">Settings</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined">help</span>
+<span class="font-body-md text-body-md font-medium">Support</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Wrapper -->
+<div class="flex flex-col md:ml-[260px] min-h-screen w-full md:w-[calc(100%-260px)]">
+<!-- TopNavBar -->
+<header class="flex justify-between items-center w-full px-4 md:px-page-margin-dt py-4 h-16 bg-surface dark:bg-surface-dim border-b border-outline-variant dark:border-outline docked full-width top-0 sticky z-40">
+<div class="flex items-center gap-4">
+<button class="md:hidden text-on-surface">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<div class="flex flex-col">
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase">Property</span>
+<h2 class="font-headline-md text-headline-md font-bold text-on-surface dark:text-on-surface-variant">Mukuba House</h2>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="hidden sm:flex items-center gap-2 px-4 py-2 bg-primary text-on-primary font-title-sm text-title-sm rounded shadow-[inset_0_1px_0_rgba(255,255,255,0.2)] hover:bg-on-primary-fixed-variant transition-colors active:scale-95 duration-75" id="open-slide-over">
+<span class="material-symbols-outlined text-[18px]">add</span>
+                    Record Payment
+                </button>
+<div class="flex items-center gap-2 border-l border-outline-variant pl-4">
+<button class="text-on-surface-variant hover:text-primary transition-colors active:scale-95 duration-75 w-8 h-8 flex items-center justify-center">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="text-on-surface-variant hover:text-primary transition-colors active:scale-95 duration-75 w-8 h-8 flex items-center justify-center">
+<span class="material-symbols-outlined">help</span>
+</button>
+<div class="w-8 h-8 rounded-full bg-surface-variant overflow-hidden ml-2 cursor-pointer border border-outline-variant">
+<img alt="Landlord Profile" class="w-full h-full object-cover" data-alt="A small, professional portrait photograph of an African business owner, well-lit, confident expression, neutral gray background. High resolution, corporate modern aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCEy6YVypc-v9f5s-ukQ0XdJBxYKdUrCEqe6ZF5bMB0QUXeHVou8O3VDsG1QpDutyI08E0eNYABm1iPrdBLQGZI74c1oEDhuy8HYv-X-qszL4dLXPUMSYNzOMlilbfebSAsxx9uJ2M4M7UPHVuuBAm-Row9XKJP8nwxZmQ0UcYtMKe4bvIaE__ltNi4MLDKIn_hzIFmupocIujpFo8SjhEIoZH732ouktDg3TU04cL9mJbyc9AtVlHy">
+</div>
+</div>
+</div>
+</header>
+<!-- Page Content -->
+<main class="flex-1 p-4 md:p-page-margin-dt max-w-container-max mx-auto w-full">
+<!-- Summary Cards Bento -->
+<section class="grid grid-cols-1 sm:grid-cols-3 gap-gutter mb-8">
+<!-- Occupancy -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-lg p-5 flex flex-col justify-between h-[140px]">
+<div class="flex justify-between items-start">
+<h3 class="font-label-caps text-label-caps text-on-surface-variant uppercase">Occupancy</h3>
+<span class="material-symbols-outlined text-on-surface-variant text-[20px]">meeting_room</span>
+</div>
+<div class="flex items-end gap-3 mt-auto">
+<div class="font-data-mono text-[32px] font-medium leading-none text-on-surface">18<span class="text-on-surface-variant text-[20px]">/20</span></div>
+<div class="text-body-sm font-body-sm text-on-surface-variant pb-1">Beds</div>
+</div>
+<!-- Minimal Progress Bar -->
+<div class="w-full h-1 bg-surface-variant mt-3 rounded-full overflow-hidden">
+<div class="h-full bg-primary" style="width: 90%;"></div>
+</div>
+</div>
+<!-- Rent Collected -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-lg p-5 flex flex-col justify-between h-[140px]">
+<div class="flex justify-between items-start">
+<h3 class="font-label-caps text-label-caps text-on-surface-variant uppercase">Rent Collected</h3>
+<div class="flex items-center gap-1 text-primary-container bg-primary-container/10 px-2 py-0.5 rounded">
+<span class="material-symbols-outlined text-[14px]">trending_up</span>
+<span class="font-label-caps text-[10px] uppercase font-bold">12%</span>
+</div>
+</div>
+<div class="flex items-end gap-1 mt-auto">
+<span class="font-data-mono text-body-sm text-on-surface-variant pb-1">ZMW</span>
+<div class="font-data-mono text-[32px] font-medium leading-none text-on-surface">14,400</div>
+</div>
+</div>
+<!-- Overdue Rent -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-lg p-5 flex flex-col justify-between h-[140px]">
+<div class="flex justify-between items-start">
+<h3 class="font-label-caps text-label-caps text-on-surface-variant uppercase">Overdue Rent</h3>
+<span class="material-symbols-outlined text-error text-[20px]">warning</span>
+</div>
+<div class="flex items-end gap-1 mt-auto">
+<span class="font-data-mono text-body-sm text-error pb-1">ZMW</span>
+<div class="font-data-mono text-[32px] font-medium leading-none text-error">3,200</div>
+</div>
+</div>
+</section>
+<!-- Room Grid -->
+<section>
+<div class="flex justify-between items-end mb-4">
+<h2 class="font-title-sm text-title-sm text-on-surface">Room Status</h2>
+<div class="flex gap-2">
+<button class="p-1.5 text-on-surface-variant hover:bg-surface-variant rounded transition-colors"><span class="material-symbols-outlined text-[20px]">filter_list</span></button>
+</div>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-gutter">
+<!-- Room Card 1 - Fully Paid -->
+<div class="group bg-surface-container-lowest border border-outline-variant rounded-lg p-4 flex flex-col hover:border-primary transition-colors cursor-pointer relative overflow-hidden">
+<div class="flex justify-between items-start mb-3">
+<div>
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase">Room</span>
+<h3 class="font-title-sm text-title-sm text-on-surface">101</h3>
+</div>
+<div class="bg-primary/10 text-primary px-2 py-1 rounded font-label-caps text-label-caps uppercase flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">check_circle</span>
+                                Paid
+                            </div>
+</div>
+<div class="flex items-center gap-2 mb-3">
+<span class="material-symbols-outlined text-on-surface-variant text-[16px]">single_bed</span>
+<span class="font-data-mono text-body-sm text-on-surface-variant">2/2 Beds</span>
+</div>
+<div class="flex flex-col gap-2 mt-auto pt-3 border-t border-surface-variant">
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded-full bg-surface-variant flex items-center justify-center text-on-surface font-label-caps text-[10px]">JP</div>
+<span class="font-body-sm text-body-sm text-on-surface truncate">John Phiri</span>
+</div>
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded-full bg-surface-variant flex items-center justify-center text-on-surface font-label-caps text-[10px]">MB</div>
+<span class="font-body-sm text-body-sm text-on-surface truncate">Mary Banda</span>
+</div>
+</div>
+<!-- Hover Actions -->
+<div class="absolute inset-0 bg-surface-container-lowest/90 backdrop-blur-sm flex items-center justify-center gap-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+<button class="w-10 h-10 rounded-full bg-surface border border-outline-variant text-on-surface flex items-center justify-center hover:text-primary hover:border-primary transition-colors shadow-sm">
+<span class="material-symbols-outlined">visibility</span>
+</button>
+<button class="w-10 h-10 rounded-full bg-surface border border-outline-variant text-on-surface flex items-center justify-center hover:text-primary hover:border-primary transition-colors shadow-sm">
+<span class="material-symbols-outlined">edit</span>
+</button>
+</div>
+</div>
+<!-- Room Card 2 - Partial -->
+<div class="group bg-surface-container-lowest border border-outline-variant rounded-lg p-4 flex flex-col hover:border-tertiary-container transition-colors cursor-pointer relative overflow-hidden">
+<div class="flex justify-between items-start mb-3">
+<div>
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase">Room</span>
+<h3 class="font-title-sm text-title-sm text-on-surface">102</h3>
+</div>
+<div class="bg-tertiary-container/10 text-tertiary-container px-2 py-1 rounded font-label-caps text-label-caps uppercase flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">pending</span>
+                                Partial
+                            </div>
+</div>
+<div class="flex items-center gap-2 mb-3">
+<span class="material-symbols-outlined text-on-surface-variant text-[16px]">single_bed</span>
+<span class="font-data-mono text-body-sm text-on-surface-variant">2/2 Beds</span>
+</div>
+<div class="flex flex-col gap-2 mt-auto pt-3 border-t border-surface-variant">
+<div class="flex items-center justify-between w-full">
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded-full bg-surface-variant flex items-center justify-center text-on-surface font-label-caps text-[10px]">DM</div>
+<span class="font-body-sm text-body-sm text-on-surface truncate">David Mulenga</span>
+</div>
+<span class="font-data-mono text-[10px] text-tertiary-container">-1,200</span>
+</div>
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded-full bg-surface-variant flex items-center justify-center text-on-surface font-label-caps text-[10px]">SC</div>
+<span class="font-body-sm text-body-sm text-on-surface truncate">Sarah Chilufya</span>
+</div>
+</div>
+<!-- Hover Actions -->
+<div class="absolute inset-0 bg-surface-container-lowest/90 backdrop-blur-sm flex items-center justify-center gap-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+<button class="w-10 h-10 rounded-full bg-surface border border-outline-variant text-on-surface flex items-center justify-center hover:text-primary hover:border-primary transition-colors shadow-sm">
+<span class="material-symbols-outlined">visibility</span>
+</button>
+<button class="w-10 h-10 rounded-full bg-surface border border-outline-variant text-on-surface flex items-center justify-center hover:text-primary hover:border-primary transition-colors shadow-sm">
+<span class="material-symbols-outlined">edit</span>
+</button>
+</div>
+</div>
+<!-- Room Card 3 - Overdue & Vacant Bed -->
+<div class="group bg-surface-container-lowest border border-outline-variant rounded-lg p-4 flex flex-col hover:border-error transition-colors cursor-pointer relative overflow-hidden">
+<div class="flex justify-between items-start mb-3">
+<div>
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase">Room</span>
+<h3 class="font-title-sm text-title-sm text-on-surface">103</h3>
+</div>
+<div class="bg-error/10 text-error px-2 py-1 rounded font-label-caps text-label-caps uppercase flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">error</span>
+                                Overdue
+                            </div>
+</div>
+<div class="flex items-center gap-2 mb-3">
+<span class="material-symbols-outlined text-tertiary-container text-[16px]">single_bed</span>
+<span class="font-data-mono text-body-sm text-tertiary-container">1/2 Beds</span>
+</div>
+<div class="flex flex-col gap-2 mt-auto pt-3 border-t border-surface-variant">
+<div class="flex items-center justify-between w-full">
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded-full bg-surface-variant flex items-center justify-center text-on-surface font-label-caps text-[10px]">EN</div>
+<span class="font-body-sm text-body-sm text-on-surface truncate">Emmanuel Ngoma</span>
+</div>
+<span class="font-data-mono text-[10px] text-error">-2,000</span>
+</div>
+<div class="flex items-center gap-2 text-on-surface-variant">
+<span class="material-symbols-outlined text-[16px]">add_circle</span>
+<span class="font-body-sm text-body-sm italic">Vacant</span>
+</div>
+</div>
+<!-- Hover Actions -->
+<div class="absolute inset-0 bg-surface-container-lowest/90 backdrop-blur-sm flex items-center justify-center gap-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+<button class="w-10 h-10 rounded-full bg-surface border border-outline-variant text-on-surface flex items-center justify-center hover:text-primary hover:border-primary transition-colors shadow-sm">
+<span class="material-symbols-outlined">visibility</span>
+</button>
+<button class="w-10 h-10 rounded-full bg-surface border border-outline-variant text-on-surface flex items-center justify-center hover:text-primary hover:border-primary transition-colors shadow-sm">
+<span class="material-symbols-outlined">edit</span>
+</button>
+</div>
+</div>
+<!-- Room Card 4 - Paid -->
+<div class="group bg-surface-container-lowest border border-outline-variant rounded-lg p-4 flex flex-col hover:border-primary transition-colors cursor-pointer relative overflow-hidden">
+<div class="flex justify-between items-start mb-3">
+<div>
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase">Room</span>
+<h3 class="font-title-sm text-title-sm text-on-surface">104</h3>
+</div>
+<div class="bg-primary/10 text-primary px-2 py-1 rounded font-label-caps text-label-caps uppercase flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">check_circle</span>
+                                Paid
+                            </div>
+</div>
+<div class="flex items-center gap-2 mb-3">
+<span class="material-symbols-outlined text-on-surface-variant text-[16px]">single_bed</span>
+<span class="font-data-mono text-body-sm text-on-surface-variant">2/2 Beds</span>
+</div>
+<div class="flex flex-col gap-2 mt-auto pt-3 border-t border-surface-variant">
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded-full bg-surface-variant flex items-center justify-center text-on-surface font-label-caps text-[10px]">CM</div>
+<span class="font-body-sm text-body-sm text-on-surface truncate">Chanda Mwewa</span>
+</div>
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded-full bg-surface-variant flex items-center justify-center text-on-surface font-label-caps text-[10px]">TK</div>
+<span class="font-body-sm text-body-sm text-on-surface truncate">Thabo Kalaba</span>
+</div>
+</div>
+<!-- Hover Actions -->
+<div class="absolute inset-0 bg-surface-container-lowest/90 backdrop-blur-sm flex items-center justify-center gap-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+<button class="w-10 h-10 rounded-full bg-surface border border-outline-variant text-on-surface flex items-center justify-center hover:text-primary hover:border-primary transition-colors shadow-sm">
+<span class="material-symbols-outlined">visibility</span>
+</button>
+<button class="w-10 h-10 rounded-full bg-surface border border-outline-variant text-on-surface flex items-center justify-center hover:text-primary hover:border-primary transition-colors shadow-sm">
+<span class="material-symbols-outlined">edit</span>
+</button>
+</div>
+</div>
+</div>
+</section>
+</main>
+</div>
+<!-- Mobile FAB (Visible only on small screens when side menu is hidden or as main action) -->
+<button class="md:hidden fixed bottom-6 right-6 w-14 h-14 bg-primary text-on-primary rounded-full shadow-lg flex items-center justify-center z-40 active:scale-95 transition-transform" id="mobile-fab">
+<span class="material-symbols-outlined">add</span>
+</button>
+<script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const openBtn = document.getElementById('open-slide-over');
+            const fabBtn = document.getElementById('mobile-fab');
+            const closeBtn = document.getElementById('close-slide-over');
+            const cancelBtn = document.getElementById('cancel-slide-over');
+            const slideOver = document.getElementById('payment-slide-over');
+            const backdrop = document.getElementById('slide-over-backdrop');
+
+            function openSlideOver() {
+                backdrop.classList.remove('hidden');
+                // Trigger reflow
+                void backdrop.offsetWidth;
+                backdrop.classList.remove('opacity-0');
+                slideOver.classList.remove('translate-x-full');
+            }
+
+            function closeSlideOver() {
+                backdrop.classList.add('opacity-0');
+                slideOver.classList.add('translate-x-full');
+                setTimeout(() => {
+                    backdrop.classList.add('hidden');
+                }, 300);
+            }
+
+            if(openBtn) openBtn.addEventListener('click', openSlideOver);
+            if(fabBtn) fabBtn.addEventListener('click', openSlideOver);
+            
+            if(closeBtn) closeBtn.addEventListener('click', closeSlideOver);
+            if(cancelBtn) cancelBtn.addEventListener('click', closeSlideOver);
+            if(backdrop) backdrop.addEventListener('click', closeSlideOver);
+        });
+    </script>
+
+
+</body></html>
