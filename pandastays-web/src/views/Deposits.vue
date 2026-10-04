@@ -1,110 +1,155 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
+import { useStore } from '../lib/store'
 
-const totalDepositsHeld = ref('ZMW 4,500')
-const monthlyIncrease = ref('+ZMW 1,200 this month')
+const { state } = useStore()
 
-const deposits = ref([
-  {
-    name: 'Chileshe Mubanga',
-    room: 'Room 4',
-    deposit: 'ZMW 1,200',
-    moveInDate: '15 Jan 2026',
-    status: 'Good',
-    statusClass: 'bg-primary/10 text-primary',
-    dotClass: 'bg-primary'
-  },
-  {
-    name: 'John Banda',
-    room: 'Room 1',
-    deposit: 'ZMW 1,200',
-    moveInDate: '20 Jan 2026',
-    status: 'Pending Inspection',
-    statusClass: 'bg-tertiary-container/15 text-tertiary',
-    dotClass: 'bg-tertiary-container'
-  },
-  {
-    name: 'Sarah Musonda',
-    room: 'Room 7',
-    deposit: 'ZMW 1,100',
-    moveInDate: '02 Feb 2026',
-    status: 'Good',
-    statusClass: 'bg-primary/10 text-primary',
-    dotClass: 'bg-primary'
-  }
-])
+const statusFilter = ref('All')
+const selectedDeposit = ref(null)
+const toastMessage = ref('')
+
+const totalDeposits = computed(() => {
+  return state.tenants.reduce((sum, t) => sum + (t.deposit_amount || 1250), 0)
+})
+
+const filteredTenants = computed(() => {
+  if (statusFilter.value === 'All') return state.tenants
+  return state.tenants.filter(t => t.deposit_status === statusFilter.value.toLowerCase())
+})
+
+const refundDeposit = (tenant) => {
+  tenant.deposit_status = 'refunded'
+  toastMessage.value = `Deposit refund of ZMW ${tenant.deposit_amount || 1250} logged for ${tenant.name}`
+  setTimeout(() => {
+    toastMessage.value = ''
+  }, 3500)
+}
 </script>
 
 <template>
-  <div class="flex flex-col gap-stack-default">
-    <!-- Page Header -->
-    <div class="mb-4">
-      <h1 class="font-display-lg text-display-lg text-on-background font-bold">Deposits &amp; Escrow</h1>
-      <p class="font-body-md text-body-md text-on-surface-variant mt-2">Manage tenant security deposits, damages, and refunds.</p>
+  <div class="space-y-6">
+    <!-- Live Toast -->
+    <transition enter-active-class="transition duration-200 ease-out" enter-from-class="opacity-0 -translate-y-2" enter-to-class="opacity-100 translate-y-0" leave-active-class="transition duration-150 ease-in" leave-from-class="opacity-100 translate-y-0" leave-to-class="opacity-0 -translate-y-2">
+      <div 
+        v-if="toastMessage" 
+        class="fixed top-20 right-6 z-50 flex items-center gap-3 px-4 py-3 bg-primary text-on-primary rounded-sm shadow-md text-xs font-medium"
+      >
+        <span class="material-symbols-outlined text-[18px]">verified</span>
+        <span>{{ toastMessage }}</span>
+      </div>
+    </transition>
+
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-outline-variant pb-4">
+      <div>
+        <div class="flex items-center gap-2 text-xs text-on-surface-variant mb-1 font-medium">
+          <span>{{ state.currentProperty.name }}</span>
+          <span>&bull;</span>
+          <span class="text-primary font-semibold">Security Escrow</span>
+        </div>
+        <h2 class="text-2xl font-bold text-on-surface tracking-tight">Security Deposit Escrow</h2>
+        <p class="text-xs text-on-surface-variant mt-0.5">
+          Tenant security deposits held in escrow against damages, key replacement, and move-out inspections.
+        </p>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <span class="badge-pill bg-primary-container text-primary text-xs font-data-mono">
+          Escrow Account: Active
+        </span>
+      </div>
     </div>
 
-    <!-- Bento Layout -->
-    <div class="grid grid-cols-1 md:grid-cols-12 gap-gutter">
-      <!-- Summary Card -->
-      <div class="md:col-span-4 bg-surface-container-lowest border border-outline-variant rounded-xl p-6 flex flex-col justify-center">
-        <div class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider mb-2 flex justify-between items-center">
-          Total Deposits Held
-          <span class="material-symbols-outlined text-primary text-xl">account_balance</span>
-        </div>
-        <div class="font-display-lg text-display-lg text-on-background mt-1 font-bold">{{ totalDepositsHeld }}</div>
-        <div class="flex items-center gap-1 mt-4 text-primary bg-primary/10 w-max px-2 py-1 rounded-md">
-          <span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">trending_up</span>
-          <span class="font-body-sm text-body-sm font-medium">{{ monthlyIncrease }}</span>
+    <!-- Summary Metrics (Tight 4px radius, 3px solid accent bars) -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div class="card-tight p-4 bg-surface-container-lowest card-accent-paid">
+        <p class="text-xs text-on-surface-variant font-medium">Total Escrow Funds Held</p>
+        <p class="text-2xl font-bold font-data-mono text-primary mt-1">
+          ZMW {{ totalDeposits.toLocaleString() }}
+        </p>
+        <p class="text-[11px] text-on-surface-variant mt-1">Protected in landlord escrow wallet</p>
+      </div>
+
+      <div class="card-tight p-4 bg-surface-container-lowest card-accent-partial">
+        <p class="text-xs text-on-surface-variant font-medium">Active Tenancy Deposits</p>
+        <p class="text-2xl font-bold font-data-mono text-tertiary mt-1">
+          {{ state.tenants.length }} Units
+        </p>
+        <p class="text-[11px] text-on-surface-variant mt-1">1 deposit per allocated bed-space</p>
+      </div>
+
+      <div class="card-tight p-4 bg-surface-container-lowest card-accent-neutral">
+        <p class="text-xs text-on-surface-variant font-medium">Inspection Status</p>
+        <p class="text-2xl font-bold font-data-mono text-on-surface mt-1">100% In Good Standing</p>
+        <p class="text-[11px] text-on-surface-variant mt-1">No outstanding damages recorded</p>
+      </div>
+    </div>
+
+    <!-- Escrow Ledger Table -->
+    <div class="receipt-paper rounded-sm p-5 border border-outline-variant space-y-4">
+      <div class="flex items-center justify-between border-b border-outline-variant pb-3">
+        <div>
+          <h3 class="font-bold text-sm text-on-surface font-data-mono uppercase">
+            Mukuba House — Security Deposit Escrow Register
+          </h3>
+          <p class="text-xs text-on-surface-variant">Each student pays 50% term rate deposit on move-in</p>
         </div>
       </div>
 
-      <!-- Deposits Table Container -->
-      <div class="md:col-span-12 bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden mt-2">
-        <div class="px-6 py-4 border-b border-outline-variant flex justify-between items-center bg-surface-bright">
-          <h2 class="font-title-sm text-title-sm text-on-background font-semibold">Active Deposits</h2>
-          <button class="text-primary hover:bg-primary/10 px-3 py-1.5 rounded-lg font-body-sm text-body-sm font-medium transition-colors flex items-center gap-2">
-            <span class="material-symbols-outlined text-sm">filter_list</span> Filter
-          </button>
-        </div>
-
-        <div class="overflow-x-auto">
-          <table class="w-full text-left border-collapse">
-            <thead>
-              <tr class="border-b border-outline-variant bg-surface-container-low/50">
-                <th class="px-6 py-3 font-label-caps text-label-caps text-on-surface-variant font-medium">Tenant Name</th>
-                <th class="px-6 py-3 font-label-caps text-label-caps text-on-surface-variant font-medium">Room #</th>
-                <th class="px-6 py-3 font-label-caps text-label-caps text-on-surface-variant font-medium">Initial Deposit (ZMW)</th>
-                <th class="px-6 py-3 font-label-caps text-label-caps text-on-surface-variant font-medium">Move-in Date</th>
-                <th class="px-6 py-3 font-label-caps text-label-caps text-on-surface-variant font-medium">Condition Status</th>
-                <th class="px-6 py-3 font-label-caps text-label-caps text-on-surface-variant font-medium text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-outline-variant font-body-md text-body-md">
-              <tr v-for="item in deposits" :key="item.name" class="hover:bg-surface-container-low transition-colors group">
-                <td class="px-6 py-4">
-                  <div class="font-medium text-on-background">{{ item.name }}</div>
-                </td>
-                <td class="px-6 py-4 text-on-surface-variant">{{ item.room }}</td>
-                <td class="px-6 py-4 font-data-mono text-data-mono">{{ item.deposit }}</td>
-                <td class="px-6 py-4 text-on-surface-variant text-body-sm">{{ item.moveInDate }}</td>
-                <td class="px-6 py-4">
-                  <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full font-body-sm text-body-sm font-medium" :class="item.statusClass">
-                    <span class="w-1.5 h-1.5 rounded-full" :class="item.dotClass"></span>
-                    {{ item.status }}
-                  </span>
-                </td>
-                <td class="px-6 py-4 text-right space-x-2">
-                  <button class="inline-flex items-center justify-center w-8 h-8 rounded-full border border-tertiary-container text-tertiary-container hover:bg-tertiary-container/10 transition-colors" title="Deduct Damage Fee">
-                    <span class="material-symbols-outlined text-[18px]">edit_notifications</span>
-                  </button>
-                  <button class="inline-flex items-center justify-center w-8 h-8 rounded-full border border-primary text-primary hover:bg-primary/10 transition-colors" title="Refund Full Deposit via MoMo">
-                    <span class="material-symbols-outlined text-[18px]">account_balance_wallet</span>
-                  </button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs font-data-mono">
+          <thead>
+            <tr class="border-b border-outline text-on-surface-variant uppercase text-[10px] font-bold bg-surface-container-low/70">
+              <th class="py-2.5 px-3">Tenant Name</th>
+              <th class="py-2.5 px-3">Bed Allocation</th>
+              <th class="py-2.5 px-3">NRC ID</th>
+              <th class="py-2.5 px-3 text-right">Deposit Held</th>
+              <th class="py-2.5 px-3">Escrow Status</th>
+              <th class="py-2.5 px-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-outline-variant/60">
+            <tr 
+              v-for="t in filteredTenants" 
+              :key="t.id"
+              class="hover:bg-surface-container-low/40 transition-colors"
+            >
+              <td class="py-3 px-3 font-semibold text-on-surface">
+                {{ t.name }}
+              </td>
+              <td class="py-3 px-3 text-on-surface-variant">
+                {{ t.bed_label }} (Room {{ t.room_number }})
+              </td>
+              <td class="py-3 px-3 text-on-surface-variant">
+                {{ t.id_number || '392819/11/1' }}
+              </td>
+              <td class="py-3 px-3 font-bold text-right text-on-surface">
+                ZMW {{ (t.deposit_amount || 1250).toLocaleString() }}
+              </td>
+              <td class="py-3 px-3">
+                <span 
+                  class="badge-pill text-[10px]"
+                  :class="t.deposit_status === 'refunded' ? 'bg-surface-container text-on-surface-variant' : 'bg-primary-container text-primary'"
+                >
+                  <span class="w-1.5 h-1.5 rounded-full" :class="t.deposit_status === 'refunded' ? 'bg-outline' : 'bg-primary'"></span>
+                  <span>{{ t.deposit_status === 'refunded' ? 'Refunded' : 'Held in Escrow' }}</span>
+                </span>
+              </td>
+              <td class="py-3 px-3 text-right">
+                <button 
+                  v-if="t.deposit_status !== 'refunded'"
+                  @click="refundDeposit(t)"
+                  class="px-2.5 py-1 text-xs text-primary bg-primary-container hover:bg-primary hover:text-on-primary rounded-sm transition-colors font-medium"
+                >
+                  Process Refund
+                </button>
+                <span v-else class="text-on-surface-variant text-[11px] italic">
+                  Cleared on Move-Out
+                </span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </div>
   </div>
