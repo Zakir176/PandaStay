@@ -89,6 +89,8 @@ const submitPayment = async () => {
 
     // Record payment into reactive store
     const paymentRecord = await recordPayment({
+      tenancyId: tenant?.tenancy_id,
+      tenantId: tenant?.id,
       tenantName: tenant.name,
       bedLabel: tenant.bed_label || 'Assigned Bed',
       amount: Number(paymentForm.value.amount),

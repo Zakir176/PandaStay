@@ -109,7 +109,8 @@ export const syncWithSupabase = async () => {
           room_number: bed?.label?.match(/\d+/)?.[0] || '101',
           deposit_amount: 1250,
           deposit_status: 'held',
-          status: 'active'
+          status: 'active',
+          tenancy_id: tenancy?.id
         }
       })
     }
@@ -348,23 +349,50 @@ export const useStore = () => {
     let newPayment = null
 
     try {
+      const { data: { session } } = await supabase.auth.getSession()
+
+      // Resolve tenancy_id if not directly passed in paymentData
+      let tenancyId = paymentData.tenancyId
+      if (!tenancyId && paymentData.tenantName) {
+        const matchingTenant = state.tenants.find(t => t.name === paymentData.tenantName || t.id === paymentData.tenantId)
+        tenancyId = matchingTenant?.tenancy_id
+      }
+      if (!tenancyId) {
+        const { data: tenancies } = await supabase.from('tenancies').select('id').eq('status', 'active').limit(1)
+        tenancyId = tenancies?.[0]?.id
+      }
+
+      const headers = { 'Content-Type': 'application/json' }
+      if (session?.access_token) {
+        headers.Authorization = `Bearer ${session.access_token}`
+      }
+
       const res = await fetch('http://localhost:3001/api/payments/record', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify({
-          tenancy_id: paymentData.tenancyId,
-          tenant_name: paymentData.tenantName,
-          bed_label: paymentData.bedLabel,
+          tenancy_id: tenancyId,
           amount: Number(paymentData.amount),
           method: paymentData.paymentMethod || 'momo_mtn',
           method_label: paymentData.paymentMethodLabel || 'MTN MoMo',
-          gateway_reference: refNum,
-          status: 'success'
+          gateway_reference: refNum
         })
       })
       const data = await res.json()
       if (data.success && data.payment) {
-        newPayment = data.payment
+        const returned = Array.isArray(data.payment) ? data.payment[0] : data.payment
+        newPayment = {
+          id: returned.id,
+          tenant_name: paymentData.tenantName || 'Tenant',
+          bed_label: paymentData.bedLabel || 'Bed Space',
+          amount: Number(returned.amount),
+          paid_at: returned.paid_at?.substring(0, 16).replace('T', ' ') || '',
+          method: returned.method,
+          method_label: paymentData.paymentMethodLabel || 'MTN MoMo',
+          gateway_reference: returned.gateway_reference,
+          status: returned.status || 'success',
+          receipt_number: returned.receipt_number
+        }
       }
     } catch (serverErr) {
       console.warn('Backend payment record note:', serverErr.message)

@@ -47,7 +47,7 @@ const assignTenant = async () => {
 
   isSubmitting.value = true
   try {
-    await onboardTenant({
+    const onboardResult = await onboardTenant({
       name: newTenantForm.value.name,
       phone: newTenantForm.value.phone,
       idNumber: newTenantForm.value.idNumber,
@@ -59,6 +59,8 @@ const assignTenant = async () => {
 
     // Record initial move-in payment
     await recordPayment({
+      tenancyId: onboardResult?.tenancyId,
+      tenantId: onboardResult?.tenantId,
       tenantName: newTenantForm.value.name,
       bedLabel: props.bed.label,
       amount: props.bed.rent_amount,
