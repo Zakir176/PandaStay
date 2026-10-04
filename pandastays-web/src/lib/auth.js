@@ -1,9 +1,10 @@
 import { ref, computed } from 'vue'
 import { supabase } from './supabaseClient'
+import { syncWithSupabase } from './store'
 
 // Global Auth State
 const currentUser = ref(null)
-const currentRole = ref('landlord') // Default demo role: 'landlord' or 'tenant'
+const currentRole = ref('landlord') // 'landlord' or 'tenant'
 const userProfile = ref({
   name: 'Mwamba Kaunda',
   email: 'landlord@mukubahouse.zm',
@@ -29,7 +30,6 @@ export const initAuth = async () => {
         await loadProfile(session.user)
       } else {
         currentUser.value = null
-        // fallback to default demo landlord
         if (currentRole.value === 'landlord') {
           userProfile.value = {
             name: 'Mwamba Kaunda',
@@ -39,6 +39,7 @@ export const initAuth = async () => {
           }
         }
       }
+      await syncWithSupabase()
     })
   } catch (err) {
     console.warn('Auth initialization warning:', err)
@@ -68,7 +69,7 @@ const loadProfile = async (user) => {
       const { data: tenant } = await supabase
         .from('tenants')
         .select('*')
-        .eq('id', user.id)
+        .eq('auth_user_id', user.id)
         .single()
 
       if (tenant) {
@@ -136,10 +137,10 @@ export const useAuth = () => {
       currentUser.value = user
       currentRole.value = role
 
-      // Create matching row in clean-slate database
+      // Create/link matching row in database
       if (user) {
         if (role === 'landlord') {
-          await supabase.from('landlords').insert({
+          await supabase.from('landlords').upsert({
             id: user.id,
             name: name,
             email: email,
@@ -147,22 +148,31 @@ export const useAuth = () => {
             lenco_subaccount_id: `sub_${Date.now().toString().slice(-6)}`
           })
         } else {
-          await supabase.from('tenants').insert({
-            id: user.id,
-            name: name,
-            email: email,
-            phone: phone
-          })
-
-          if (bedSpaceId) {
-            await supabase.from('tenancies').insert({
-              bed_space_id: bedSpaceId,
-              tenant_id: user.id,
-              rent_amount: 2500,
-              billing_cycle: 'monthly',
-              status: 'active'
+          // Link existing tenant profile created by landlord
+          try {
+            await fetch('http://localhost:3001/api/tenants/link-auth', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ email: email, auth_user_id: user.id })
             })
-            await supabase.from('bed_spaces').update({ status: 'occupied' }).eq('id', bedSpaceId)
+          } catch {
+            // Trigger fallback
+          }
+
+          // If no existing tenant was linked, create a new record
+          const { data: existingTenant } = await supabase
+            .from('tenants')
+            .select('*')
+            .eq('auth_user_id', user.id)
+            .limit(1)
+
+          if (!existingTenant || existingTenant.length === 0) {
+            await supabase.from('tenants').insert({
+              auth_user_id: user.id,
+              name: name,
+              email: email,
+              phone: phone || '+260 97 0000000'
+            })
           }
         }
       }

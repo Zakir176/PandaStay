@@ -27,6 +27,15 @@ const state = reactive({
 // Async synchronization with Supabase
 export const syncWithSupabase = async () => {
   try {
+    const { data: { user } } = await supabase.auth.getUser()
+
+    // Reset collections before loading user-scoped data from live DB
+    state.rooms = []
+    state.bedSpaces = []
+    state.tenants = []
+    state.payments = []
+    state.reports = []
+
     // 1. Fetch Landlord & Property
     const { data: properties } = await supabase.from('properties').select('*')
     if (properties && properties.length > 0) {
@@ -39,7 +48,12 @@ export const syncWithSupabase = async () => {
       }
     } else {
       state.currentProperty = null
-      state.currentLandlord = null
+      if (user) {
+        const { data: landlord } = await supabase.from('landlords').select('*').eq('id', user.id).single()
+        if (landlord) {
+          state.currentLandlord = landlord
+        }
+      }
     }
 
     // 2. Fetch Rooms
@@ -188,32 +202,41 @@ export const occupancyStats = computed(() => {
 
 // Actions
 export const useStore = () => {
-  // Ensure property exists
+  // Ensure property exists (Scoped to authenticated landlord)
   const ensureProperty = async (propertyData = { name: 'Mukuba House', address: 'Plot 402, Great East Road, Lusaka' }) => {
     if (state.currentProperty?.id) return state.currentProperty
 
-    const landlordId = state.currentLandlord?.id || '11111111-0000-4000-8000-000000000001'
+    const { data: { user } } = await supabase.auth.getUser()
+    const landlordId = user?.id || state.currentLandlord?.id || '11111111-0000-4000-8000-000000000001'
     
-    // Ensure landlord row exists in DB
-    await supabase.from('landlords').upsert({
-      id: landlordId,
-      name: state.currentLandlord?.name || 'Mwamba Kaunda',
-      email: state.currentLandlord?.email || 'landlord@mukubahouse.zm',
-      phone: state.currentLandlord?.phone || '+260 97 7123456'
-    })
+    // Check if this landlord already has a property
+    const { data: existingProperties } = await supabase
+      .from('properties')
+      .select('*')
+      .eq('landlord_id', landlordId)
+      .limit(1)
 
-    const propertyId = '22222222-0000-4000-8000-000000000001'
+    if (existingProperties && existingProperties.length > 0) {
+      state.currentProperty = existingProperties[0]
+      return existingProperties[0]
+    }
+
     const newProperty = {
-      id: propertyId,
+      id: crypto.randomUUID(),
       landlord_id: landlordId,
       name: propertyData.name || 'Mukuba House',
       address: propertyData.address || 'Plot 402, Great East Road, Lusaka, Zambia'
     }
 
-    await supabase.from('properties').upsert(newProperty)
-    state.currentProperty = newProperty
+    const { data: insertedProperty } = await supabase
+      .from('properties')
+      .insert(newProperty)
+      .select()
+      .single()
+
+    state.currentProperty = insertedProperty || newProperty
     state.isLiveDbConnected = true
-    return newProperty
+    return state.currentProperty
   }
 
   // Add Room and generate individual Bed-Spaces
@@ -317,41 +340,49 @@ export const useStore = () => {
     return { tenantId, tenancyId: dbTenancy?.id }
   }
 
-  // Record Payment
+  // Record Payment — routed exclusively through backend service role endpoint (RLS rejects client direct insert)
   const recordPayment = async (paymentData) => {
     const receiptNum = `REC-2026-${String(state.payments.length + 1).padStart(3, '0')}`
     const refNum = paymentData.reference || `LNC-MOMO-${Date.now().toString().slice(-6)}`
 
-    // Lookup tenancy_id
-    const { data: tenancy } = await supabase
-      .from('tenancies')
-      .select('id')
-      .limit(1)
-      .single()
+    let newPayment = null
 
-    const tenancyId = tenancy?.id || '66666666-0000-4000-8000-000000000001'
+    try {
+      const res = await fetch('http://localhost:3001/api/payments/record', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          tenancy_id: paymentData.tenancyId,
+          tenant_name: paymentData.tenantName,
+          bed_label: paymentData.bedLabel,
+          amount: Number(paymentData.amount),
+          method: paymentData.paymentMethod || 'momo_mtn',
+          method_label: paymentData.paymentMethodLabel || 'MTN MoMo',
+          gateway_reference: refNum,
+          status: 'success'
+        })
+      })
+      const data = await res.json()
+      if (data.success && data.payment) {
+        newPayment = data.payment
+      }
+    } catch (serverErr) {
+      console.warn('Backend payment record note:', serverErr.message)
+    }
 
-    await supabase.from('payments').insert({
-      tenancy_id: tenancyId,
-      amount: Number(paymentData.amount),
-      paid_at: new Date().toISOString(),
-      method: paymentData.paymentMethod || 'momo_mtn',
-      gateway_reference: refNum,
-      status: 'success',
-      receipt_number: receiptNum
-    })
-
-    const newPayment = {
-      id: `pay-${Date.now()}`,
-      tenant_name: paymentData.tenantName,
-      bed_label: paymentData.bedLabel,
-      amount: Number(paymentData.amount),
-      paid_at: new Date().toISOString().replace('T', ' ').substring(0, 16),
-      method: paymentData.paymentMethod || 'momo_mtn',
-      method_label: paymentData.paymentMethodLabel || 'MTN MoMo',
-      gateway_reference: refNum,
-      status: 'success',
-      receipt_number: receiptNum
+    if (!newPayment) {
+      newPayment = {
+        id: `pay-${Date.now()}`,
+        tenant_name: paymentData.tenantName,
+        bed_label: paymentData.bedLabel,
+        amount: Number(paymentData.amount),
+        paid_at: new Date().toISOString().replace('T', ' ').substring(0, 16),
+        method: paymentData.paymentMethod || 'momo_mtn',
+        method_label: paymentData.paymentMethodLabel || 'MTN MoMo',
+        gateway_reference: refNum,
+        status: 'success',
+        receipt_number: receiptNum
+      }
     }
 
     state.payments.unshift(newPayment)
