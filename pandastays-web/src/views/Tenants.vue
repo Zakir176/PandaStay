@@ -54,7 +54,7 @@ const goToProfile = (tenantId) => {
     />
 
     <!-- Header -->
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-outline-variant pb-4">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-outline-variant/60 pb-4">
       <div>
         <div class="flex items-center gap-2 text-xs text-on-surface-variant mb-1 font-medium">
           <span>{{ state.currentProperty.name }}</span>
@@ -70,44 +70,45 @@ const goToProfile = (tenantId) => {
       <div class="flex items-center gap-3">
         <router-link
           to="/app/rooms"
-          class="flex items-center gap-2 px-3.5 py-2 bg-primary text-on-primary text-xs font-semibold rounded-sm hover:bg-primary/90 transition-colors shadow-xs"
+          class="btn-pill-primary text-xs"
         >
-          <span class="material-symbols-outlined text-[18px]">person_add</span>
+          <span class="material-symbols-outlined text-[16px]">person_add</span>
           Assign New Bed-Space
         </router-link>
       </div>
     </div>
 
     <!-- Search & Filters -->
-    <div class="flex flex-wrap items-center justify-between gap-3 bg-surface-container-lowest p-3 card-tight">
+    <div class="flex flex-wrap items-center justify-between gap-3 bg-surface-container-lowest p-3.5 card-bento">
       <div class="relative flex-1 min-w-60 max-w-md">
-        <span class="material-symbols-outlined absolute left-3 top-2.5 text-on-surface-variant text-[18px]">search</span>
+        <span class="material-symbols-outlined absolute left-3.5 top-2.5 text-on-surface-variant text-[18px]">search</span>
         <input 
           v-model="searchQuery"
           type="text" 
           placeholder="Search by name, room, bed-space, or phone..."
-          class="w-full pl-9 pr-3 py-1.5 text-xs rounded-sm border border-outline bg-surface-container-low text-on-surface focus:border-primary focus:outline-none"
+          class="w-full pl-10 pr-4 py-2 text-xs rounded-full border border-outline-variant bg-surface-container-low text-on-surface focus:border-primary focus:outline-none transition-all"
         />
       </div>
 
-      <div class="text-xs text-on-surface-variant font-data-mono">
-        {{ filteredTenants.length }} Active Tenancies
+      <div class="text-xs text-on-surface-variant font-data-mono flex items-center gap-2">
+        <span class="w-2 h-2 rounded-full bg-primary inline-block"></span>
+        <span>{{ filteredTenants.length }} Active Tenancies</span>
       </div>
     </div>
 
     <!-- Tenant Cards Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
       <div 
         v-for="tenant in filteredTenants" 
         :key="tenant.id"
-        class="card-tight p-4 bg-surface-container-lowest flex flex-col justify-between hover:border-primary transition-colors cursor-pointer group"
+        class="card-bento p-5 bg-surface-container-lowest flex flex-col justify-between hover:border-primary/50 hover:shadow-md transition-all cursor-pointer group"
         @click="goToProfile(tenant.id)"
       >
         <div>
           <!-- Top Row: Avatar & Room Pill -->
-          <div class="flex items-start justify-between gap-2 border-b border-outline-variant/60 pb-3 mb-3">
+          <div class="flex items-start justify-between gap-2 border-b border-outline-variant/50 pb-3 mb-3">
             <div class="flex items-center gap-3">
-              <div class="w-10 h-10 rounded-sm bg-primary-container text-primary font-bold text-sm flex items-center justify-center">
+              <div class="w-10 h-10 rounded-full bg-primary/10 text-primary font-bold text-sm flex items-center justify-center border border-primary/20">
                 {{ tenant.name.split(' ').map(n=>n[0]).join('') }}
               </div>
               <div>
@@ -120,16 +121,16 @@ const goToProfile = (tenantId) => {
               </div>
             </div>
 
-            <span class="badge-pill bg-surface-container text-on-surface-variant text-[10px] font-semibold">
+            <span class="badge-pill bg-surface-container-high text-on-surface-variant text-[10px] font-bold">
               Room {{ tenant.room_number }}
             </span>
           </div>
 
           <!-- Tenancy Specs -->
-          <div class="space-y-1.5 text-xs">
+          <div class="space-y-2 text-xs">
             <div class="flex items-center justify-between">
               <span class="text-on-surface-variant">Allocated Bed:</span>
-              <span class="font-semibold text-on-surface">{{ tenant.bed_label }}</span>
+              <span class="font-bold text-primary">{{ tenant.bed_label }}</span>
             </div>
 
             <div class="flex items-center justify-between">
@@ -139,27 +140,25 @@ const goToProfile = (tenantId) => {
 
             <div class="flex items-center justify-between">
               <span class="text-on-surface-variant">Emergency:</span>
-              <span class="text-on-surface-variant truncate max-w-37.5">{{ tenant.emergency_contact_name }}</span>
+              <span class="text-on-surface font-medium truncate max-w-37.5">{{ tenant.emergency_contact_name }}</span>
             </div>
           </div>
         </div>
 
         <!-- Card Footer Actions -->
-        <div class="mt-4 pt-3 border-t border-outline-variant/60 flex items-center justify-between gap-2">
+        <div class="mt-4 pt-3 border-t border-outline-variant/50 flex items-center justify-between gap-2">
           <button 
             @click.stop="sendReminder(tenant)"
-            class="flex items-center gap-1 text-[11px] font-medium text-primary hover:bg-primary-container px-2 py-1 rounded-sm transition-colors"
+            class="flex items-center gap-1.5 text-[11px] font-semibold text-primary hover:bg-primary/10 px-3 py-1.5 rounded-full transition-colors"
           >
             <span class="material-symbols-outlined text-[14px]">send</span>
-            WhatsApp
+            WhatsApp Nudge
           </button>
 
-          <button 
-            @click.stop="goToProfile(tenant.id)"
-            class="text-[11px] font-semibold text-on-surface-variant hover:text-on-surface"
-          >
-            View Profile &rarr;
-          </button>
+          <span class="text-[11px] font-semibold text-on-surface-variant group-hover:text-primary transition-colors flex items-center gap-1">
+            <span>Profile</span>
+            <span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+          </span>
         </div>
       </div>
     </div>

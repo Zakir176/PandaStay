@@ -69,21 +69,24 @@ const submitNewReport = async () => {
     v-if="isOpen" 
     class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-inverse-surface/40 backdrop-blur-xs"
   >
-    <div class="card-tight w-full max-w-md p-6 bg-surface-container-lowest shadow-lg space-y-4">
-      <div class="flex items-center justify-between border-b border-outline-variant pb-3">
-        <h3 class="font-bold text-lg text-on-surface">Log Maintenance Report</h3>
-        <button @click="handleClose" class="text-on-surface-variant hover:text-on-surface">
-          <span class="material-symbols-outlined">close</span>
+    <div class="card-bento w-full max-w-md p-6 bg-surface-container-lowest shadow-xl space-y-4 border border-outline-variant/60">
+      <div class="flex items-center justify-between border-b border-outline-variant/60 pb-3">
+        <div>
+          <h3 class="font-bold text-lg text-on-surface">Log Maintenance Report</h3>
+          <p class="text-xs text-on-surface-variant">File a new maintenance dispatch ticket.</p>
+        </div>
+        <button @click="handleClose" class="w-8 h-8 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors">
+          <span class="material-symbols-outlined text-[18px]">close</span>
         </button>
       </div>
 
-      <div class="space-y-3">
+      <div class="space-y-3.5">
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="block text-xs font-semibold text-on-surface-variant uppercase mb-1">Room Number</label>
+            <label class="block text-[11px] font-bold text-on-surface-variant uppercase mb-1">Room Number</label>
             <select 
               v-model="newReportForm.roomNumber"
-              class="w-full h-10 px-3 bg-surface-container-low border border-outline rounded-sm text-on-surface text-sm focus:border-primary focus:outline-none"
+              class="w-full h-10 px-3 bg-surface-container-low border border-outline-variant rounded-xl text-on-surface text-sm focus:border-primary focus:outline-none transition-all"
             >
               <option v-for="rNum in availableRooms" :key="rNum" :value="rNum">
                 Room {{ rNum }}
@@ -93,10 +96,10 @@ const submitNewReport = async () => {
             </select>
           </div>
           <div>
-            <label class="block text-xs font-semibold text-on-surface-variant uppercase mb-1">Category</label>
+            <label class="block text-[11px] font-bold text-on-surface-variant uppercase mb-1">Category</label>
             <select 
               v-model="newReportForm.category"
-              class="w-full h-10 px-3 bg-surface-container-low border border-outline rounded-sm text-on-surface text-sm focus:border-primary focus:outline-none"
+              class="w-full h-10 px-3 bg-surface-container-low border border-outline-variant rounded-xl text-on-surface text-sm focus:border-primary focus:outline-none transition-all"
             >
               <option value="Plumbing">Plumbing</option>
               <option value="Electrical">Electrical</option>
@@ -108,37 +111,37 @@ const submitNewReport = async () => {
         </div>
 
         <div>
-          <label class="block text-xs font-semibold text-on-surface-variant uppercase mb-1">Tenant Name (Reporter)</label>
+          <label class="block text-[11px] font-bold text-on-surface-variant uppercase mb-1">Tenant Name (Reporter)</label>
           <input 
             v-model="newReportForm.tenantName"
             type="text" 
             placeholder="e.g. John Phiri"
-            class="w-full px-3 py-2 text-sm rounded-sm border border-outline bg-surface-container-low text-on-surface focus:border-primary focus:outline-none"
+            class="w-full px-3.5 py-2 text-sm rounded-xl border border-outline-variant bg-surface-container-low text-on-surface focus:border-primary focus:outline-none transition-all"
           />
         </div>
 
         <div>
-          <label class="block text-xs font-semibold text-on-surface-variant uppercase mb-1">Issue Description</label>
+          <label class="block text-[11px] font-bold text-on-surface-variant uppercase mb-1">Issue Description</label>
           <textarea 
             v-model="newReportForm.description"
             rows="3" 
             placeholder="Detailed explanation of the defect or issue..."
-            class="w-full px-3 py-2 text-sm rounded-sm border border-outline bg-surface-container-low text-on-surface focus:border-primary focus:outline-none"
+            class="w-full px-3.5 py-2 text-sm rounded-xl border border-outline-variant bg-surface-container-low text-on-surface focus:border-primary focus:outline-none transition-all"
           ></textarea>
         </div>
       </div>
 
-      <div class="flex items-center justify-end gap-3 pt-3 border-t border-outline-variant">
+      <div class="flex items-center justify-end gap-3 pt-3 border-t border-outline-variant/60">
         <button 
           @click="handleClose"
-          class="px-4 py-2 text-xs font-medium text-on-surface-variant hover:text-on-surface"
+          class="btn-pill-outline text-xs"
         >
           Cancel
         </button>
         <button 
           @click="submitNewReport"
           :disabled="!newReportForm.description || isSubmitting"
-          class="px-4 py-2 text-xs font-semibold bg-primary text-on-primary rounded-sm hover:bg-primary/90 disabled:opacity-50 flex items-center gap-1.5"
+          class="btn-pill-primary text-xs disabled:opacity-50 flex items-center gap-1.5"
         >
           <span v-if="isSubmitting" class="material-symbols-outlined animate-spin text-[16px]">sync</span>
           <span>{{ isSubmitting ? 'Submitting...' : 'Submit Ticket' }}</span>

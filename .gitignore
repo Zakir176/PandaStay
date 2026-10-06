@@ -30,6 +30,8 @@ pnpm-debug.log*
 *.sln
 *.sw?
 
-# OS generated files
+# Media & large binaries
+*.mp4
+Docs/*.mp4
 .DS_Store
 Thumbs.db

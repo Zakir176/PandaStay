@@ -52,13 +52,13 @@ const sendReminder = () => {
     />
 
     <!-- Header Navigation Back -->
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-outline-variant pb-4">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-outline-variant/60 pb-4">
       <div class="flex items-center gap-3">
         <router-link 
           to="/app/tenants" 
-          class="flex items-center gap-1 text-xs font-medium text-on-surface-variant hover:text-primary transition-colors"
+          class="btn-pill-outline text-xs inline-flex items-center gap-1.5 py-1 px-3"
         >
-          <span class="material-symbols-outlined text-[18px]">arrow_back</span>
+          <span class="material-symbols-outlined text-[16px]">arrow_back</span>
           <span>Back to Tenants</span>
         </router-link>
         <span class="text-outline">&bull;</span>
@@ -68,7 +68,7 @@ const sendReminder = () => {
       <div class="flex items-center gap-3">
         <button 
           @click="sendReminder"
-          class="flex items-center gap-1.5 px-3 py-2 bg-surface-container-low border border-outline-variant text-on-surface text-xs font-semibold rounded-sm hover:bg-surface-container transition-colors"
+          class="btn-pill-outline text-xs inline-flex items-center gap-1.5"
         >
           <span class="material-symbols-outlined text-[16px] text-primary">chat</span>
           Send WhatsApp Nudge
@@ -76,9 +76,9 @@ const sendReminder = () => {
 
         <button 
           @click="isPaymentModalOpen = true"
-          class="flex items-center gap-2 px-3.5 py-2 bg-primary text-on-primary text-xs font-semibold rounded-sm hover:bg-primary/90 transition-colors shadow-xs"
+          class="btn-pill-primary text-xs inline-flex items-center gap-1.5"
         >
-          <span class="material-symbols-outlined text-[18px]">add_card</span>
+          <span class="material-symbols-outlined text-[16px]">add_card</span>
           Record Payment
         </button>
       </div>
@@ -87,25 +87,25 @@ const sendReminder = () => {
     <!-- Tenant Details Grid -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
       <!-- Profile Card -->
-      <div class="card-tight p-5 bg-surface-container-lowest space-y-4">
-        <div class="flex items-center gap-4 border-b border-outline-variant/60 pb-4">
-          <div class="w-14 h-14 rounded-sm bg-primary text-on-primary font-bold text-xl flex items-center justify-center">
+      <div class="card-bento p-5 bg-surface-container-lowest space-y-5">
+        <div class="flex items-center gap-4 border-b border-outline-variant/50 pb-4">
+          <div class="w-14 h-14 rounded-full bg-primary/10 text-primary font-bold text-xl flex items-center justify-center border border-primary/20">
             {{ tenant?.name.split(' ').map(n=>n[0]).join('') }}
           </div>
           <div>
             <h3 class="font-bold text-base text-on-surface">{{ tenant?.name }}</h3>
             <p class="text-xs text-on-surface-variant font-data-mono">{{ tenant?.phone }}</p>
-            <span class="badge-pill bg-primary-container text-primary text-[10px] mt-1 inline-flex">
+            <span class="badge-pill bg-primary/15 text-primary text-[10px] mt-1.5 inline-flex font-bold">
               Active Tenancy
             </span>
           </div>
         </div>
 
-        <div class="space-y-3 text-xs">
-          <div>
-            <span class="block text-[10px] uppercase font-bold text-on-surface-variant">Allocated Bed-Space</span>
-            <span class="font-semibold text-sm text-primary">{{ tenant?.bed_label }}</span>
-            <span class="text-on-surface-variant text-[11px] block">Room {{ tenant?.room_number }} &bull; Mukuba House</span>
+        <div class="space-y-3.5 text-xs">
+          <div class="p-3 bg-surface-container-low rounded-xl">
+            <span class="block text-[10px] uppercase font-bold text-on-surface-variant mb-0.5">Allocated Bed-Space</span>
+            <span class="font-bold text-base text-primary">{{ tenant?.bed_label }}</span>
+            <span class="text-on-surface-variant text-[11px] block mt-0.5">Room {{ tenant?.room_number }} &bull; Mukuba House</span>
           </div>
 
           <div>
@@ -129,13 +129,13 @@ const sendReminder = () => {
       </div>
 
       <!-- Payment History & Ledger Paper -->
-      <div class="card-tight p-5 bg-surface-container-lowest lg:col-span-2 space-y-4">
-        <div class="flex items-center justify-between border-b border-outline-variant/60 pb-3">
+      <div class="card-bento p-5 bg-surface-container-lowest lg:col-span-2 space-y-4">
+        <div class="flex items-center justify-between border-b border-outline-variant/50 pb-3">
           <div>
             <h3 class="font-bold text-sm text-on-surface">Tenancy Payment Ledger</h3>
             <p class="text-xs text-on-surface-variant">Recorded payments and official receipts for {{ tenant?.name }}</p>
           </div>
-          <span class="badge-pill bg-surface-container text-on-surface-variant text-xs font-data-mono">
+          <span class="badge-pill bg-surface-container text-on-surface-variant text-xs font-data-mono font-semibold">
             {{ tenantPayments.length }} Receipts
           </span>
         </div>
@@ -143,7 +143,7 @@ const sendReminder = () => {
         <div v-if="tenantPayments.length > 0" class="overflow-x-auto">
           <table class="w-full text-left text-xs font-data-mono">
             <thead>
-              <tr class="border-b border-outline-variant text-[10px] uppercase font-bold text-on-surface-variant bg-surface-container-low/60">
+              <tr class="border-b border-outline-variant/60 text-[10px] uppercase font-bold text-on-surface-variant bg-surface-container-low/60">
                 <th class="py-2.5 px-3">Receipt No</th>
                 <th class="py-2.5 px-3">Date</th>
                 <th class="py-2.5 px-3">Channel</th>
@@ -153,14 +153,14 @@ const sendReminder = () => {
               </tr>
             </thead>
             <tbody class="divide-y divide-outline-variant/40">
-              <tr v-for="p in tenantPayments" :key="p.id">
+              <tr v-for="p in tenantPayments" :key="p.id" class="hover:bg-surface-container-lowest transition-colors">
                 <td class="py-2.5 px-3 font-bold text-primary">{{ p.receipt_number }}</td>
                 <td class="py-2.5 px-3 text-on-surface-variant">{{ p.paid_at }}</td>
                 <td class="py-2.5 px-3">{{ p.method_label || 'Mobile Money' }}</td>
                 <td class="py-2.5 px-3 text-[11px] text-on-surface-variant">{{ p.gateway_reference }}</td>
                 <td class="py-2.5 px-3 font-bold text-right text-on-surface">ZMW {{ Number(p.amount).toLocaleString() }}</td>
                 <td class="py-2.5 px-3 text-right">
-                  <span class="badge-pill bg-primary-container text-primary text-[10px]">Paid</span>
+                  <span class="badge-pill bg-primary/15 text-primary text-[10px] font-bold">Paid</span>
                 </td>
               </tr>
             </tbody>
