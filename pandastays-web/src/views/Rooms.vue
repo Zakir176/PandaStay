@@ -16,7 +16,7 @@ const isAddRoomModalOpen = ref(false)
 const handleSelectBed = ({ bed, room }) => {
   selectedBed.value = bed
   selectedRoom.value = room
-  if (bed.status === 'vacant') {
+  if (bed.status === 'vacant' || bed.status === 'reserved') {
     isAssignModalOpen.value = true
   }
 }
@@ -143,8 +143,12 @@ const handleSelectBed = ({ bed, room }) => {
                 </span>
               </td>
               <td class="py-3 px-3 align-middle text-xs text-on-surface">
-                <span v-if="bed.tenantName" class="font-semibold text-primary">
+                <span v-if="bed.status === 'occupied'" class="font-semibold text-primary">
                   {{ bed.tenantName }}
+                </span>
+                <span v-else-if="bed.status === 'reserved'" class="font-semibold text-tertiary flex items-center gap-1">
+                  <span class="material-symbols-outlined text-[13px]">lock_clock</span>
+                  {{ bed.tenantName || 'Holding Prospect' }}
                 </span>
                 <span v-else class="text-on-surface-muted italic">
                   None (Vacant)
@@ -156,7 +160,15 @@ const handleSelectBed = ({ bed, room }) => {
                   @click="handleSelectBed({ bed, room: { room_number: bed.label.match(/\d+/)?.[0] } })"
                   class="btn-pill-primary py-1 px-3 text-[11px]"
                 >
-                  Assign Tenant
+                  Reserve / Assign
+                </button>
+                <button 
+                  v-else-if="bed.status === 'reserved'"
+                  @click="handleSelectBed({ bed, room: { room_number: bed.label.match(/\d+/)?.[0] } })"
+                  class="btn-pill-outline py-1 px-3 text-[11px] text-tertiary border-tertiary/40 hover:bg-tertiary/10 font-medium inline-flex items-center gap-1"
+                >
+                  <span class="material-symbols-outlined text-[13px]">lock_clock</span>
+                  <span>Manage</span>
                 </button>
                 <button 
                   v-else

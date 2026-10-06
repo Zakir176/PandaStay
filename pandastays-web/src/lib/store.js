@@ -71,16 +71,26 @@ export const syncWithSupabase = async () => {
     // 3. Fetch Bed Spaces
     const { data: dbBeds } = await supabase.from('bed_spaces').select('*')
     if (dbBeds) {
-      state.bedSpaces = dbBeds.map(b => ({
-        id: b.id,
-        room_id: b.room_id,
-        label: b.label,
-        shortLabel: b.label.replace(/Bed\s*/i, '').replace(/\s*\(.*\)/, ''),
-        rent_amount: Number(b.rent_amount),
-        status: b.status,
-        tenantId: null,
-        tenantName: null
-      }))
+      let savedReservations = {}
+      try {
+        savedReservations = JSON.parse(localStorage.getItem('pandastays_reservations') || '{}')
+      } catch (e) {}
+
+      state.bedSpaces = dbBeds.map(b => {
+        const resInfo = savedReservations[b.id] || {}
+        return {
+          id: b.id,
+          room_id: b.room_id,
+          label: b.label,
+          shortLabel: b.label.replace(/Bed\s*/i, '').replace(/\s*\(.*\)/, ''),
+          rent_amount: Number(b.rent_amount),
+          status: b.status,
+          tenantId: null,
+          tenantName: b.status === 'reserved' ? (resInfo.name || 'Reserved (Deposit Pending)') : null,
+          tenantPhone: b.status === 'reserved' ? (resInfo.phone || null) : null,
+          reservationNotes: b.status === 'reserved' ? (resInfo.notes || null) : null
+        }
+      })
     }
 
     // 4. Fetch Tenants & Tenancies
@@ -338,7 +348,72 @@ export const useStore = () => {
       status: 'active'
     })
 
+    // If bed was previously reserved, clear its reservation entry
+    try {
+      const saved = JSON.parse(localStorage.getItem('pandastays_reservations') || '{}')
+      delete saved[tenantData.bedSpaceId]
+      localStorage.setItem('pandastays_reservations', JSON.stringify(saved))
+    } catch (e) {}
+
     return { tenantId, tenancyId: dbTenancy?.id }
+  }
+
+  // Reserve Bed-Space (locks bed as reserved without payment)
+  const reserveBedSpace = async ({ bedSpaceId, studentName, studentPhone, notes }) => {
+    try {
+      await supabase.from('bed_spaces').update({ status: 'reserved' }).eq('id', bedSpaceId)
+    } catch (e) {
+      console.warn('Supabase reserve note:', e.message)
+    }
+
+    const targetBed = state.bedSpaces.find(b => b.id === bedSpaceId)
+    if (targetBed) {
+      targetBed.status = 'reserved'
+      targetBed.tenantName = studentName || 'Reserved (Deposit Pending)'
+      targetBed.tenantPhone = studentPhone || ''
+      targetBed.reservationNotes = notes || ''
+      targetBed.paymentStatus = 'unpaid'
+    }
+
+    try {
+      const saved = JSON.parse(localStorage.getItem('pandastays_reservations') || '{}')
+      saved[bedSpaceId] = {
+        name: studentName || 'Reserved (Deposit Pending)',
+        phone: studentPhone || '',
+        notes: notes || '',
+        reservedAt: new Date().toISOString()
+      }
+      localStorage.setItem('pandastays_reservations', JSON.stringify(saved))
+    } catch (e) {}
+
+    return { success: true, bed: targetBed }
+  }
+
+  // Release Bed-Space back to vacant
+  const releaseBedSpace = async (bedSpaceId) => {
+    try {
+      await supabase.from('bed_spaces').update({ status: 'vacant' }).eq('id', bedSpaceId)
+    } catch (e) {
+      console.warn('Supabase release note:', e.message)
+    }
+
+    const targetBed = state.bedSpaces.find(b => b.id === bedSpaceId)
+    if (targetBed) {
+      targetBed.status = 'vacant'
+      targetBed.tenantId = null
+      targetBed.tenantName = null
+      targetBed.tenantPhone = null
+      targetBed.reservationNotes = null
+      targetBed.paymentStatus = null
+    }
+
+    try {
+      const saved = JSON.parse(localStorage.getItem('pandastays_reservations') || '{}')
+      delete saved[bedSpaceId]
+      localStorage.setItem('pandastays_reservations', JSON.stringify(saved))
+    } catch (e) {}
+
+    return { success: true }
   }
 
   // Record Payment — routed exclusively through backend service role endpoint (RLS rejects client direct insert)
@@ -501,6 +576,8 @@ export const useStore = () => {
     ensureProperty,
     addRoomWithBeds,
     onboardTenant,
+    reserveBedSpace,
+    releaseBedSpace,
     syncWithSupabase,
     recordPayment,
     addReport,

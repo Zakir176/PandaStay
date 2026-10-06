@@ -4,11 +4,15 @@ import { useRouter } from 'vue-router'
 import { useStore, roomsWithBeds, occupancyStats } from '../lib/store'
 import BedGrid from '../components/BedGrid.vue'
 import RecordPaymentModal from '../components/RecordPaymentModal.vue'
+import AssignTenantModal from '../components/AssignTenantModal.vue'
 
 const router = useRouter()
 const { state, triggerWhatsAppReminder } = useStore()
 
 const isPaymentModalOpen = ref(false)
+const selectedBed = ref(null)
+const selectedRoom = ref(null)
+const isAssignModalOpen = ref(false)
 const reminderNotification = ref(null)
 const currentTime = ref(new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' }))
 
@@ -32,8 +36,10 @@ const closePaymentModal = () => {
 }
 
 const handleSelectBed = ({ bed, room }) => {
-  if (bed.status === 'vacant') {
-    router.push('/app/rooms')
+  if (bed.status === 'vacant' || bed.status === 'reserved') {
+    selectedBed.value = bed
+    selectedRoom.value = room
+    isAssignModalOpen.value = true
   } else if (bed.tenantId) {
     router.push(`/app/tenants/${bed.tenantId}`)
   } else {
@@ -94,6 +100,14 @@ const recentPayments = computed(() => {
     <RecordPaymentModal 
       :is-open="isPaymentModalOpen" 
       @close="closePaymentModal" 
+    />
+
+    <!-- Assign / Reserve Bed Modal -->
+    <AssignTenantModal
+      :is-open="isAssignModalOpen"
+      :bed="selectedBed"
+      :room="selectedRoom"
+      @close="isAssignModalOpen = false"
     />
 
     <!-- Dashboard Property Banner -->
