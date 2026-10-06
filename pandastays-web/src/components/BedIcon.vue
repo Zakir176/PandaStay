@@ -43,6 +43,13 @@ const statusColorClass = computed(() => {
 
 const sizeDimensions = computed(() => {
   switch (props.size) {
+    case 'xs':
+      return {
+        box: 'w-8 h-12',
+        pillow: 'w-5 h-2.5',
+        text: 'text-[8px]',
+        icon: 'text-[12px]'
+      }
     case 'sm':
       return {
         box: 'w-10 h-14',
@@ -52,18 +59,18 @@ const sizeDimensions = computed(() => {
       }
     case 'lg':
       return {
-        box: 'w-20 h-28',
-        pillow: 'w-14 h-6',
+        box: 'w-16 h-24 sm:w-18 sm:h-26',
+        pillow: 'w-10 h-5',
         text: 'text-xs',
-        icon: 'text-[24px]'
+        icon: 'text-[20px]'
       }
     case 'md':
     default:
       return {
-        box: 'w-14 h-20',
-        pillow: 'w-9 h-4',
+        box: 'w-12 h-16',
+        pillow: 'w-7 h-3.5',
         text: 'text-[10px]',
-        icon: 'text-[18px]'
+        icon: 'text-[16px]'
       }
   }
 })
@@ -71,18 +78,18 @@ const sizeDimensions = computed(() => {
 
 <template>
   <div 
-    class="group relative inline-flex flex-col items-center"
+    class="group relative inline-flex flex-col items-center shrink-0"
     :class="{ 'cursor-pointer': interactive }"
     @click="interactive && emit('click', bed)"
   >
     <!-- Bed Architectural Silhouette Card (Top-Down Floorplan View) -->
     <div 
-      class="relative flex flex-col items-center justify-between p-1 rounded-lg border transition-all duration-150 select-none"
+      class="relative flex flex-col items-center justify-between p-1 rounded-lg border transition-all duration-150 select-none overflow-hidden"
       :class="[statusColorClass, sizeDimensions.box]"
     >
       <!-- Headboard Top Rail -->
       <div 
-        class="w-full h-1.5 rounded-t-sm opacity-90"
+        class="w-full h-1.5 rounded-t-sm opacity-90 shrink-0"
         :class="{
           'bg-primary': bed.status === 'occupied' && (bed.paymentStatus !== 'overdue' && bed.paymentStatus !== 'partial'),
           'bg-error': bed.status === 'occupied' && bed.paymentStatus === 'overdue',
@@ -94,7 +101,7 @@ const sizeDimensions = computed(() => {
 
       <!-- Pillow Element -->
       <div 
-        class="rounded-sm border opacity-95 transition-transform group-hover:scale-105"
+        class="rounded-sm border opacity-95 transition-transform group-hover:scale-105 shrink-0"
         :class="[
           sizeDimensions.pillow,
           bed.status === 'occupied' 
@@ -106,9 +113,9 @@ const sizeDimensions = computed(() => {
       ></div>
 
       <!-- Center Content: Initials, Icon, or Add Sign -->
-      <div class="flex-1 flex flex-col items-center justify-center my-0.5">
+      <div class="flex-1 min-h-0 flex flex-col items-center justify-center my-0.5 overflow-hidden">
         <template v-if="bed.status === 'occupied'">
-          <span class="font-bold tracking-tight uppercase" :class="sizeDimensions.text">
+          <span class="font-bold tracking-tight uppercase truncate" :class="sizeDimensions.text">
             {{ bed.tenantInitials || bed.tenantName?.split(' ').map(n=>n[0]).join('') || 'OCC' }}
           </span>
         </template>
@@ -122,7 +129,7 @@ const sizeDimensions = computed(() => {
 
       <!-- Footboard Bottom Rail -->
       <div 
-        class="w-full text-center truncate px-0.5 font-data-mono font-medium leading-none"
+        class="w-full text-center truncate px-0.5 font-data-mono font-medium leading-none shrink-0"
         :class="sizeDimensions.text"
       >
         {{ bed.shortLabel || bed.label?.replace(/Bed\s*/i, '') || 'BED' }}

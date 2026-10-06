@@ -243,6 +243,7 @@ const recentPayments = computed(() => {
         <BedGrid 
           :rooms="roomsWithBeds" 
           title="Architectural Bed-Space Floorplan" 
+          :compact="true"
           @select-bed="handleSelectBed"
         />
       </div>
