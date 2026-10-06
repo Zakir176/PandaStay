@@ -19,6 +19,7 @@ const state = reactive({
   rooms: [],
   bedSpaces: [],
   tenants: [],
+  tenancies: [],
   payments: [],
   reports: [],
   reminderLogs: []
@@ -33,6 +34,7 @@ export const syncWithSupabase = async () => {
     state.rooms = []
     state.bedSpaces = []
     state.tenants = []
+    state.tenancies = []
     state.payments = []
     state.reports = []
 
@@ -96,6 +98,7 @@ export const syncWithSupabase = async () => {
     // 4. Fetch Tenants & Tenancies
     const { data: dbTenants } = await supabase.from('tenants').select('*')
     const { data: dbTenancies } = await supabase.from('tenancies').select('*')
+    state.tenancies = dbTenancies || []
     if (dbTenants) {
       // Deduplicate tenant records by email or phone, prioritizing the record with an active tenancy or verified ID
       const deduplicatedMap = new Map()
@@ -214,8 +217,10 @@ export const occupancyStats = computed(() => {
     .filter(p => p.status === 'success')
     .reduce((sum, p) => sum + Number(p.amount), 0)
 
-  const overdueRent = state.bedSpaces
+  const overdueBedSpaces = state.bedSpaces
     .filter(b => b.paymentStatus === 'overdue' || b.paymentStatus === 'partial')
+
+  const overdueRent = overdueBedSpaces
     .reduce((sum, b) => sum + (b.balanceDue || (b.paymentStatus === 'overdue' ? Number(b.rent_amount) : 0)), 0)
 
   return {
@@ -225,8 +230,33 @@ export const occupancyStats = computed(() => {
     reservedBeds,
     percentage,
     totalRentCollected,
-    overdueRent
+    overdueRent,
+    overdueTenantCount: overdueBedSpaces.length
   }
+})
+
+export const topPriorityReport = computed(() => {
+  return state.reports.find(r => r.status !== 'resolved') || null
+})
+
+export const termProgress = computed(() => {
+  const activeTenancies = state.tenancies.filter(t => t.status === 'active' && t.start_date && t.end_date)
+
+  if (activeTenancies.length === 0) {
+    return { hasData: false, percentage: 0, daysElapsed: 0, totalDays: 0 }
+  }
+
+  const starts = activeTenancies.map(t => new Date(t.start_date).getTime())
+  const ends = activeTenancies.map(t => new Date(t.end_date).getTime())
+  const termStart = new Date(Math.min(...starts))
+  const termEnd = new Date(Math.max(...ends))
+  const now = new Date()
+
+  const totalDays = Math.max(1, Math.round((termEnd - termStart) / 86400000))
+  const daysElapsed = Math.min(totalDays, Math.max(0, Math.round((now - termStart) / 86400000)))
+  const percentage = Math.round((daysElapsed / totalDays) * 100)
+
+  return { hasData: true, percentage, daysElapsed, totalDays }
 })
 
 // Actions
@@ -511,6 +541,9 @@ export const useStore = () => {
         status: 'active'
       }).select().single()
       tenancyId = dbTenancy?.id
+      if (dbTenancy) {
+        state.tenancies.push(dbTenancy)
+      }
     } catch (tErr) {
       console.warn('Supabase tenancy insert note:', tErr.message)
     }
@@ -780,6 +813,8 @@ export const useStore = () => {
     state,
     roomsWithBeds,
     occupancyStats,
+    topPriorityReport,
+    termProgress,
     ensureProperty,
     addRoomWithBeds,
     updateRoom,
