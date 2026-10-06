@@ -77,7 +77,7 @@ const handleSelectBed = ({ bed, room }) => {
     </div>
 
     <!-- Centerpiece: Bed-Grid Architectural Floorplan in Bento Container -->
-    <div class="card-bento !overflow-visible p-5 bg-surface">
+    <div class="card-bento overflow-visible! p-5 bg-surface">
       <BedGrid 
         :rooms="roomsWithBeds" 
         title="Mukuba House — Architectural Bed-Space Layout" 
