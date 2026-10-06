@@ -1,20 +1,42 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import RecordPaymentModal from '../components/RecordPaymentModal.vue'
 import AuthModal from '../components/AuthModal.vue'
 import { useAuth, initAuth } from '../lib/auth'
 
 const { userProfile, currentRole, signOut } = useAuth()
 
-onMounted(() => {
-  initAuth()
-})
-
+const isSidebarCollapsed = ref(localStorage.getItem('pandastays_sidebar_collapsed') === 'true')
 const isMobileMenuOpen = ref(false)
 const isPaymentModalOpen = ref(false)
 const isAuthModalOpen = ref(false)
 const isProfileDropdownOpen = ref(false)
 const searchQuery = ref('')
+
+const toggleSidebarCollapse = () => {
+  isSidebarCollapsed.value = !isSidebarCollapsed.value
+  try {
+    localStorage.setItem('pandastays_sidebar_collapsed', isSidebarCollapsed.value ? 'true' : 'false')
+  } catch (e) {
+    // ignore
+  }
+}
+
+const handleKeydown = (e) => {
+  if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'b') {
+    e.preventDefault()
+    toggleSidebarCollapse()
+  }
+}
+
+onMounted(() => {
+  initAuth()
+  window.addEventListener('keydown', handleKeydown)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('keydown', handleKeydown)
+})
 
 const toggleMobileMenu = () => {
   isMobileMenuOpen.value = !isMobileMenuOpen.value
@@ -79,65 +101,135 @@ const operationsNav = [
       class="fixed inset-0 bg-hero-dark/40 z-40 md:hidden backdrop-blur-xs"
     ></div>
 
-    <!-- Left Sidebar (Clean Bento Rail ~250px) -->
+    <!-- Left Sidebar (Collapsible: ~250px expanded, ~72px collapsed) -->
     <aside 
-      class="flex flex-col fixed left-0 top-0 h-full w-[250px] bg-surface border-r border-border-card z-50 py-5 px-3.5 transition-transform duration-300 md:translate-x-0"
-      :class="isMobileMenuOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full md:translate-x-0'"
+      class="flex flex-col fixed left-0 top-0 h-full bg-surface border-r border-border-card z-50 py-5 transition-all duration-300 ease-in-out md:translate-x-0"
+      :class="[
+        isMobileMenuOpen ? 'translate-x-0 shadow-2xl w-[250px] px-3.5' : '-translate-x-full md:translate-x-0',
+        isSidebarCollapsed ? 'md:w-[72px] md:px-2.5' : 'md:w-[250px] md:px-3.5'
+      ]"
     >
-      <!-- Brand Logo Header -->
-      <div class="flex items-center justify-between mb-6 px-2">
-        <div class="flex items-center gap-2.5">
-          <div class="w-9 h-9 rounded-xl bg-primary-container flex items-center justify-center text-primary shadow-xs">
+      <!-- Brand Logo Header & Collapse Toggle -->
+      <div 
+        class="flex items-center mb-5 transition-all duration-200"
+        :class="isSidebarCollapsed ? 'md:justify-center px-1' : 'justify-between px-2'"
+      >
+        <div class="flex items-center gap-2.5 overflow-hidden">
+          <div class="w-9 h-9 min-w-[36px] rounded-xl bg-primary-container flex items-center justify-center text-primary shadow-xs">
             <span class="material-symbols-outlined text-[20px]">holiday_village</span>
           </div>
-          <div>
+          <div 
+            v-if="!isSidebarCollapsed" 
+            class="transition-opacity duration-200 whitespace-nowrap overflow-hidden"
+          >
             <h1 class="text-base font-bold text-on-surface tracking-tight leading-none">PandaStays</h1>
             <p class="text-[10px] text-on-surface-variant uppercase tracking-wider font-semibold mt-0.5">Boarding Portal</p>
           </div>
         </div>
+
+        <!-- Collapse toggle button (desktop expanded) -->
+        <button 
+          v-if="!isSidebarCollapsed"
+          @click="toggleSidebarCollapse" 
+          class="hidden md:flex items-center justify-center w-7 h-7 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-dim transition-colors"
+          title="Collapse sidebar (Ctrl+B)"
+        >
+          <span class="material-symbols-outlined text-[19px]">dock_to_left</span>
+        </button>
+
+        <!-- Close button on mobile -->
         <button @click="closeMobileMenu" class="md:hidden text-on-surface-variant hover:text-on-surface p-1">
           <span class="material-symbols-outlined text-[20px]">close</span>
         </button>
       </div>
 
+      <!-- Expand Button when collapsed (desktop icon rail) -->
+      <div v-if="isSidebarCollapsed" class="hidden md:flex justify-center mb-4">
+        <button 
+          @click="toggleSidebarCollapse" 
+          class="w-8 h-8 rounded-xl bg-surface-dim hover:bg-primary-container hover:text-primary text-on-surface-variant flex items-center justify-center transition-colors shadow-2xs"
+          title="Expand sidebar (Ctrl+B)"
+        >
+          <span class="material-symbols-outlined text-[18px]">chevron_right</span>
+        </button>
+      </div>
+
       <!-- Navigation Sections -->
-      <div class="flex-1 flex flex-col gap-5 overflow-y-auto pr-1">
+      <div class="flex-1 flex flex-col gap-4 overflow-y-auto pr-0.5">
         <!-- Section 1: Management -->
         <div>
-          <p class="text-[10px] font-bold uppercase tracking-wider text-on-surface-muted px-3 mb-1.5">Management</p>
+          <p 
+            v-if="!isSidebarCollapsed" 
+            class="text-[10px] font-bold uppercase tracking-wider text-on-surface-muted px-3 mb-1.5 transition-opacity duration-200"
+          >
+            Management
+          </p>
+          <div v-else class="hidden md:block h-px bg-border-card/60 my-1 mx-2"></div>
+
           <nav class="flex flex-col gap-1">
             <router-link 
               v-for="item in managementNav" 
               :key="item.path" 
               :to="item.path" 
               @click="closeMobileMenu"
-              class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium transition-all duration-150"
-              :class="($route.path === item.path || (item.path === '/app' && $route.path === '/app/')) 
-                ? 'bg-primary-container text-primary font-semibold shadow-xs' 
-                : 'text-on-surface-variant hover:bg-surface-dim hover:text-on-surface'"
+              :title="item.name"
+              class="group relative flex items-center rounded-xl text-xs font-medium transition-all duration-150"
+              :class="[
+                isSidebarCollapsed ? 'md:justify-center md:px-0 md:py-2.5 px-3 py-2 gap-2.5' : 'px-3 py-2 gap-2.5',
+                ($route.path === item.path || (item.path === '/app' && $route.path === '/app/')) 
+                  ? 'bg-primary-container text-primary font-semibold shadow-xs' 
+                  : 'text-on-surface-variant hover:bg-surface-dim hover:text-on-surface'
+              ]"
             >
               <span class="material-symbols-outlined text-[19px]">{{ item.icon }}</span>
-              <span>{{ item.name }}</span>
+              <span v-if="!isSidebarCollapsed" class="truncate">{{ item.name }}</span>
+
+              <!-- Floating Tooltip on Hover when Collapsed -->
+              <div 
+                v-if="isSidebarCollapsed"
+                class="hidden md:group-hover:flex absolute left-full ml-3 px-2.5 py-1.5 rounded-lg bg-surface-container-highest text-on-surface text-xs font-semibold whitespace-nowrap shadow-md z-50 pointer-events-none items-center border border-border-card"
+              >
+                {{ item.name }}
+              </div>
             </router-link>
           </nav>
         </div>
 
         <!-- Section 2: Operations -->
         <div>
-          <p class="text-[10px] font-bold uppercase tracking-wider text-on-surface-muted px-3 mb-1.5">Operations</p>
+          <p 
+            v-if="!isSidebarCollapsed" 
+            class="text-[10px] font-bold uppercase tracking-wider text-on-surface-muted px-3 mb-1.5 transition-opacity duration-200"
+          >
+            Operations
+          </p>
+          <div v-else class="hidden md:block h-px bg-border-card/60 my-1 mx-2"></div>
+
           <nav class="flex flex-col gap-1">
             <router-link 
               v-for="item in operationsNav" 
               :key="item.path" 
               :to="item.path" 
               @click="closeMobileMenu"
-              class="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium transition-all duration-150"
-              :class="($route.path === item.path) 
-                ? 'bg-primary-container text-primary font-semibold shadow-xs' 
-                : 'text-on-surface-variant hover:bg-surface-dim hover:text-on-surface'"
+              :title="item.name"
+              class="group relative flex items-center rounded-xl text-xs font-medium transition-all duration-150"
+              :class="[
+                isSidebarCollapsed ? 'md:justify-center md:px-0 md:py-2.5 px-3 py-2 gap-2.5' : 'px-3 py-2 gap-2.5',
+                ($route.path === item.path) 
+                  ? 'bg-primary-container text-primary font-semibold shadow-xs' 
+                  : 'text-on-surface-variant hover:bg-surface-dim hover:text-on-surface'
+              ]"
             >
               <span class="material-symbols-outlined text-[19px]">{{ item.icon }}</span>
-              <span>{{ item.name }}</span>
+              <span v-if="!isSidebarCollapsed" class="truncate">{{ item.name }}</span>
+
+              <!-- Floating Tooltip on Hover when Collapsed -->
+              <div 
+                v-if="isSidebarCollapsed"
+                class="hidden md:group-hover:flex absolute left-full ml-3 px-2.5 py-1.5 rounded-lg bg-surface-container-highest text-on-surface text-xs font-semibold whitespace-nowrap shadow-md z-50 pointer-events-none items-center border border-border-card"
+              >
+                {{ item.name }}
+              </div>
             </router-link>
           </nav>
         </div>
@@ -145,7 +237,8 @@ const operationsNav = [
 
       <!-- Docked Bottom Widget: Topographic Lenco MoMo Gateway -->
       <div class="mt-auto pt-3 border-t border-border-card space-y-2">
-        <div class="card-bento-hero bg-topo-dark p-3 text-white">
+        <!-- Expanded bottom widget -->
+        <div v-if="!isSidebarCollapsed" class="card-bento-hero bg-topo-dark p-3 text-white">
           <div class="flex items-center justify-between">
             <span class="text-[10px] font-bold uppercase tracking-wider text-white/70">Gateway</span>
             <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-primary-accent/20 text-primary-accent text-[9px] font-semibold">
@@ -157,36 +250,87 @@ const operationsNav = [
           <p class="text-[10px] text-white/60">MTN &bull; Airtel &bull; Zamtel Push</p>
         </div>
 
+        <!-- Collapsed bottom widget icon -->
+        <div 
+          v-else 
+          class="hidden md:flex card-bento-hero bg-topo-dark p-2 text-white flex-col items-center justify-center gap-1 rounded-xl cursor-default group relative"
+          title="Lenco MoMo Gateway: Live"
+        >
+          <span class="w-2 h-2 rounded-full bg-primary-accent animate-pulse"></span>
+          <span class="material-symbols-outlined text-[18px]">account_balance_wallet</span>
+          <!-- Tooltip -->
+          <div class="hidden group-hover:flex absolute left-full ml-3 px-2.5 py-1.5 rounded-lg bg-surface-container-highest text-on-surface text-xs font-semibold whitespace-nowrap shadow-md z-50 pointer-events-none items-center border border-border-card">
+            Lenco MoMo Gateway: Live
+          </div>
+        </div>
+
         <!-- Quick Tenant View Links -->
-        <div class="flex items-center gap-1.5">
+        <div 
+          class="flex items-center gap-1.5"
+          :class="isSidebarCollapsed ? 'md:flex-col' : 'flex-row'"
+        >
           <router-link 
             to="/tenant/portal"
             @click="closeMobileMenu"
-            class="flex-1 flex items-center justify-center gap-1 py-1.5 bg-surface-dim text-on-surface-variant hover:text-primary transition-colors rounded-lg text-[11px] font-semibold"
+            :title="'Tenant Portal View'"
+            class="flex items-center justify-center gap-1 py-1.5 bg-surface-dim text-on-surface-variant hover:text-primary transition-colors rounded-lg text-[11px] font-semibold group relative"
+            :class="isSidebarCollapsed ? 'w-full md:py-2' : 'flex-1'"
           >
-            <span class="material-symbols-outlined text-[15px]">badge</span>
-            <span>Tenant View</span>
+            <span class="material-symbols-outlined text-[16px]">badge</span>
+            <span v-if="!isSidebarCollapsed">Tenant View</span>
+            <!-- Tooltip -->
+            <div 
+              v-if="isSidebarCollapsed" 
+              class="hidden md:group-hover:flex absolute left-full ml-3 px-2.5 py-1.5 rounded-lg bg-surface-container-highest text-on-surface text-xs font-semibold whitespace-nowrap shadow-md z-50 pointer-events-none items-center border border-border-card"
+            >
+              Tenant View
+            </div>
           </router-link>
+
           <router-link 
             to="/tenant/checkout"
             @click="closeMobileMenu"
-            class="flex-1 flex items-center justify-center gap-1 py-1.5 bg-surface-dim text-on-surface-variant hover:text-primary transition-colors rounded-lg text-[11px] font-semibold"
+            :title="'Tenant Pay Rent'"
+            class="flex items-center justify-center gap-1 py-1.5 bg-surface-dim text-on-surface-variant hover:text-primary transition-colors rounded-lg text-[11px] font-semibold group relative"
+            :class="isSidebarCollapsed ? 'w-full md:py-2' : 'flex-1'"
           >
-            <span class="material-symbols-outlined text-[15px]">point_of_sale</span>
-            <span>Pay Rent</span>
+            <span class="material-symbols-outlined text-[16px]">point_of_sale</span>
+            <span v-if="!isSidebarCollapsed">Pay Rent</span>
+            <!-- Tooltip -->
+            <div 
+              v-if="isSidebarCollapsed" 
+              class="hidden md:group-hover:flex absolute left-full ml-3 px-2.5 py-1.5 rounded-lg bg-surface-container-highest text-on-surface text-xs font-semibold whitespace-nowrap shadow-md z-50 pointer-events-none items-center border border-border-card"
+            >
+              Pay Rent
+            </div>
           </router-link>
         </div>
       </div>
     </aside>
 
     <!-- Main Content Wrapper -->
-    <div class="flex flex-col md:ml-[250px] min-h-screen w-full md:w-[calc(100%-250px)]">
+    <div 
+      class="flex flex-col min-h-screen w-full transition-all duration-300 ease-in-out"
+      :class="isSidebarCollapsed ? 'md:ml-[72px] md:w-[calc(100%-72px)]' : 'md:ml-[250px] md:w-[calc(100%-250px)]'"
+    >
       <!-- TopNavBar Header (Clean White Bento Header) -->
       <header class="flex justify-between items-center w-full px-4 md:px-6 py-3 h-16 bg-surface border-b border-border-card sticky top-0 z-40">
-        <!-- Left: Mobile Trigger & Search Capsule -->
+        <!-- Left: Mobile Trigger, Desktop Collapse Toggle & Search Capsule -->
         <div class="flex items-center gap-3 flex-1 max-w-md">
+          <!-- Mobile Drawer Trigger -->
           <button @click="toggleMobileMenu" class="md:hidden text-on-surface-variant hover:text-on-surface p-1">
             <span class="material-symbols-outlined text-[22px]">menu</span>
+          </button>
+
+          <!-- Desktop Sidebar Collapse Toggle Button -->
+          <button 
+            @click="toggleSidebarCollapse" 
+            class="hidden md:flex items-center justify-center w-8 h-8 rounded-full border border-border-card bg-surface hover:bg-surface-dim text-on-surface-variant hover:text-on-surface transition-colors"
+            :title="isSidebarCollapsed ? 'Expand sidebar (Ctrl+B)' : 'Collapse sidebar (Ctrl+B)'"
+          >
+            <span class="material-symbols-outlined text-[18px]">
+              {{ isSidebarCollapsed ? 'menu_open' : 'menu' }}
+            </span>
           </button>
 
           <!-- Central Capsule Search Input -->
