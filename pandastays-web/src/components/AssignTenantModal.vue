@@ -21,8 +21,9 @@ const emit = defineEmits(['close', 'tenantAssigned', 'bedReserved', 'bedReleased
 
 const { onboardTenant, recordPayment, reserveBedSpace, releaseBedSpace } = useStore()
 
-// Tabs: 'reserve' | 'move_in' | 'reserved_details'
-const activeTab = ref('reserve')
+// Tabs: 'move_in' | 'reserve' | 'reserved_details'
+// 'move_in' is first by default
+const activeTab = ref('move_in')
 
 const reserveForm = ref({
   name: '',
@@ -53,7 +54,8 @@ watch([() => props.isOpen, () => props.bed], ([open, bed]) => {
       newTenantForm.value.name = bed.tenantName && bed.tenantName !== 'Reserved (Deposit Pending)' ? bed.tenantName : ''
       newTenantForm.value.phone = bed.tenantPhone || ''
     } else {
-      activeTab.value = 'reserve'
+      // First is Full Move-In (Paid)
+      activeTab.value = 'move_in'
       reserveForm.value = {
         name: '',
         phone: '',
@@ -74,34 +76,7 @@ const handleClose = () => {
   emit('close')
 }
 
-// 1. Handle Unpaid Reservation
-const handleReserveBed = async () => {
-  if (!reserveForm.value.name || !props.bed) return
-
-  isSubmitting.value = true
-  try {
-    await reserveBedSpace({
-      bedSpaceId: props.bed.id,
-      studentName: reserveForm.value.name,
-      studentPhone: reserveForm.value.phone,
-      notes: reserveForm.value.notes
-    })
-
-    emit('bedReserved', {
-      bed: props.bed,
-      studentName: reserveForm.value.name,
-      phone: reserveForm.value.phone
-    })
-
-    handleClose()
-  } catch (err) {
-    console.error('Failed to reserve bed:', err)
-  } finally {
-    isSubmitting.value = false
-  }
-}
-
-// 2. Handle Immediate Move-In (Onboard + Initial Payment)
+// 1. Handle Immediate Move-In (Onboard + Initial Payment)
 const assignTenant = async () => {
   if (!newTenantForm.value.name || !props.bed) return
 
@@ -137,6 +112,33 @@ const assignTenant = async () => {
     handleClose()
   } catch (err) {
     console.error('Failed to assign tenant:', err)
+  } finally {
+    isSubmitting.value = false
+  }
+}
+
+// 2. Handle Unpaid Reservation
+const handleReserveBed = async () => {
+  if (!reserveForm.value.name || !props.bed) return
+
+  isSubmitting.value = true
+  try {
+    await reserveBedSpace({
+      bedSpaceId: props.bed.id,
+      studentName: reserveForm.value.name,
+      studentPhone: reserveForm.value.phone,
+      notes: reserveForm.value.notes
+    })
+
+    emit('bedReserved', {
+      bed: props.bed,
+      studentName: reserveForm.value.name,
+      phone: reserveForm.value.phone
+    })
+
+    handleClose()
+  } catch (err) {
+    console.error('Failed to reserve bed:', err)
   } finally {
     isSubmitting.value = false
   }
@@ -192,7 +194,7 @@ const proceedToMoveIn = () => {
             </span>
           </div>
           <h3 class="font-bold text-lg text-on-surface">
-            {{ bed?.status === 'reserved' && activeTab === 'reserved_details' ? 'Manage Bed Reservation' : 'Bed Allocation & Reservation' }}
+            {{ bed?.status === 'reserved' && activeTab === 'reserved_details' ? 'Manage Bed Reservation' : 'Bed Allocation & Onboarding' }}
           </h3>
           <p class="text-xs text-on-surface-variant">
             Room {{ bed?.label?.match(/\d+/)?.[0] || '101' }} &bull; ZMW {{ Number(bed?.rent_amount || 2500).toLocaleString() }}/month
@@ -206,17 +208,9 @@ const proceedToMoveIn = () => {
         </button>
       </div>
 
-      <!-- Mode Selector Tabs (when not inspecting existing reservation, or when toggling) -->
+      <!-- Mode Selector Tabs (Full Move-In is FIRST) -->
       <div v-if="bed?.status !== 'reserved' || activeTab !== 'reserved_details'" class="flex p-1 bg-surface-dim rounded-xl border border-border-card gap-1">
-        <button
-          type="button"
-          @click="activeTab = 'reserve'"
-          class="flex-1 py-2 px-3 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-all"
-          :class="activeTab === 'reserve' ? 'bg-surface text-primary shadow-xs border border-primary/20' : 'text-on-surface-variant hover:text-on-surface'"
-        >
-          <span class="material-symbols-outlined text-[16px]">lock_clock</span>
-          <span>Reserve Bed (Unpaid Hold)</span>
-        </button>
+        <!-- 1st: Full Move-In (Paid) -->
         <button
           type="button"
           @click="activeTab = 'move_in'"
@@ -225,6 +219,16 @@ const proceedToMoveIn = () => {
         >
           <span class="material-symbols-outlined text-[16px]">check_circle</span>
           <span>Full Move-In (Paid)</span>
+        </button>
+        <!-- 2nd: Reserve Bed (Unpaid Hold) -->
+        <button
+          type="button"
+          @click="activeTab = 'reserve'"
+          class="flex-1 py-2 px-3 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-all"
+          :class="activeTab === 'reserve' ? 'bg-surface text-primary shadow-xs border border-primary/20' : 'text-on-surface-variant hover:text-on-surface'"
+        >
+          <span class="material-symbols-outlined text-[16px]">lock_clock</span>
+          <span>Reserve Bed (Unpaid Hold)</span>
         </button>
       </div>
 
@@ -305,88 +309,7 @@ const proceedToMoveIn = () => {
         </div>
       </div>
 
-      <!-- VIEW 2: ADD RESERVATION (UNPAID HOLD) -->
-      <div v-else-if="activeTab === 'reserve'" class="space-y-3.5">
-        <div class="bg-primary/5 border border-primary/20 rounded-xl p-3 text-xs text-on-surface-variant flex items-start gap-2.5">
-          <span class="material-symbols-outlined text-primary text-[18px] shrink-0 mt-0.5">lock</span>
-          <div>
-            <p class="font-bold text-on-surface">No upfront payment required</p>
-            <p class="text-[11px] mt-0.5">
-              Lock this bed space for a student while they arrange tuition or travel. The bed status will update to <span class="font-semibold text-primary">Reserved ▨</span> across the floorplan.
-            </p>
-          </div>
-        </div>
-
-        <div>
-          <label class="block text-[11px] font-bold text-on-surface-variant uppercase mb-1">
-            Student / Prospect Name <span class="text-error">*</span>
-          </label>
-          <input 
-            v-model="reserveForm.name"
-            type="text" 
-            placeholder="e.g. Sarah Mwamba"
-            class="w-full px-3.5 py-2 text-sm rounded-xl border border-outline-variant bg-surface-container-low text-on-surface focus:border-primary focus:outline-none transition-all"
-            required
-          />
-        </div>
-
-        <div>
-          <label class="block text-[11px] font-bold text-on-surface-variant uppercase mb-1">
-            Phone Number (WhatsApp)
-          </label>
-          <input 
-            v-model="reserveForm.phone"
-            type="text" 
-            placeholder="+260 97 1234567"
-            class="w-full px-3.5 py-2 text-sm rounded-xl border border-outline-variant bg-surface-container-low text-on-surface focus:border-primary focus:outline-none font-data-mono transition-all"
-          />
-        </div>
-
-        <div>
-          <label class="block text-[11px] font-bold text-on-surface-variant uppercase mb-1">
-            Notes / Holding Terms (Optional)
-          </label>
-          <textarea 
-            v-model="reserveForm.notes"
-            rows="2"
-            placeholder="e.g. Held until Friday 10:00 AM; paying via MTN MoMo upon campus arrival."
-            class="w-full px-3.5 py-2 text-sm rounded-xl border border-outline-variant bg-surface-container-low text-on-surface focus:border-primary focus:outline-none transition-all resize-none"
-          ></textarea>
-        </div>
-
-        <!-- Rent Pricing Info -->
-        <div class="p-3 rounded-xl bg-surface-dim border border-border-card flex items-center justify-between text-xs">
-          <div>
-            <p class="font-bold text-on-surface">Agreed Monthly Rent</p>
-            <p class="text-on-surface-variant text-[11px]">Payable upon check-in</p>
-          </div>
-          <p class="font-data-mono font-bold text-sm text-primary">
-            ZMW {{ Number(bed?.rent_amount || 2500).toLocaleString() }}
-          </p>
-        </div>
-
-        <div class="flex items-center justify-end gap-3 pt-3 border-t border-outline-variant/60">
-          <button 
-            type="button"
-            @click="handleClose"
-            class="btn-pill-outline text-xs"
-          >
-            Cancel
-          </button>
-          <button 
-            type="button"
-            @click="handleReserveBed"
-            :disabled="!reserveForm.name || isSubmitting"
-            class="btn-pill-primary text-xs disabled:opacity-50 flex items-center gap-1.5"
-          >
-            <span v-if="isSubmitting" class="material-symbols-outlined animate-spin text-[16px]">sync</span>
-            <span class="material-symbols-outlined text-[16px]" v-else>lock_clock</span>
-            <span>{{ isSubmitting ? 'Reserving...' : 'Confirm Reservation (Unpaid)' }}</span>
-          </button>
-        </div>
-      </div>
-
-      <!-- VIEW 3: FULL IMMEDIATE MOVE-IN (PAID) -->
+      <!-- VIEW 2: FULL IMMEDIATE MOVE-IN (PAID) - FIRST -->
       <div v-else-if="activeTab === 'move_in'" class="space-y-3.5">
         <div>
           <label class="block text-[11px] font-bold text-on-surface-variant uppercase mb-1">
@@ -471,6 +394,87 @@ const proceedToMoveIn = () => {
             <span v-if="isSubmitting" class="material-symbols-outlined animate-spin text-[16px]">sync</span>
             <span class="material-symbols-outlined text-[16px]" v-else>check_circle</span>
             <span>{{ isSubmitting ? 'Assigning...' : 'Confirm & Move-In (Paid)' }}</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- VIEW 3: ADD RESERVATION (UNPAID HOLD) - SECOND -->
+      <div v-else-if="activeTab === 'reserve'" class="space-y-3.5">
+        <div class="bg-primary/5 border border-primary/20 rounded-xl p-3 text-xs text-on-surface-variant flex items-start gap-2.5">
+          <span class="material-symbols-outlined text-primary text-[18px] shrink-0 mt-0.5">lock</span>
+          <div>
+            <p class="font-bold text-on-surface">No upfront payment required</p>
+            <p class="text-[11px] mt-0.5">
+              Lock this bed space for a student while they arrange tuition or travel. The bed status will update to <span class="font-semibold text-primary">Reserved ▨</span> across the floorplan.
+            </p>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-[11px] font-bold text-on-surface-variant uppercase mb-1">
+            Student / Prospect Name <span class="text-error">*</span>
+          </label>
+          <input 
+            v-model="reserveForm.name"
+            type="text" 
+            placeholder="e.g. Sarah Mwamba"
+            class="w-full px-3.5 py-2 text-sm rounded-xl border border-outline-variant bg-surface-container-low text-on-surface focus:border-primary focus:outline-none transition-all"
+            required
+          />
+        </div>
+
+        <div>
+          <label class="block text-[11px] font-bold text-on-surface-variant uppercase mb-1">
+            Phone Number (WhatsApp)
+          </label>
+          <input 
+            v-model="reserveForm.phone"
+            type="text" 
+            placeholder="+260 97 1234567"
+            class="w-full px-3.5 py-2 text-sm rounded-xl border border-outline-variant bg-surface-container-low text-on-surface focus:border-primary focus:outline-none font-data-mono transition-all"
+          />
+        </div>
+
+        <div>
+          <label class="block text-[11px] font-bold text-on-surface-variant uppercase mb-1">
+            Notes / Holding Terms (Optional)
+          </label>
+          <textarea 
+            v-model="reserveForm.notes"
+            rows="2"
+            placeholder="e.g. Held until Friday 10:00 AM; paying via MTN MoMo upon campus arrival."
+            class="w-full px-3.5 py-2 text-sm rounded-xl border border-outline-variant bg-surface-container-low text-on-surface focus:border-primary focus:outline-none transition-all resize-none"
+          ></textarea>
+        </div>
+
+        <!-- Rent Pricing Info -->
+        <div class="p-3 rounded-xl bg-surface-dim border border-border-card flex items-center justify-between text-xs">
+          <div>
+            <p class="font-bold text-on-surface">Agreed Monthly Rent</p>
+            <p class="text-on-surface-variant text-[11px]">Payable upon check-in</p>
+          </div>
+          <p class="font-data-mono font-bold text-sm text-primary">
+            ZMW {{ Number(bed?.rent_amount || 2500).toLocaleString() }}
+          </p>
+        </div>
+
+        <div class="flex items-center justify-end gap-3 pt-3 border-t border-outline-variant/60">
+          <button 
+            type="button"
+            @click="handleClose"
+            class="btn-pill-outline text-xs"
+          >
+            Cancel
+          </button>
+          <button 
+            type="button"
+            @click="handleReserveBed"
+            :disabled="!reserveForm.name || isSubmitting"
+            class="btn-pill-primary text-xs disabled:opacity-50 flex items-center gap-1.5"
+          >
+            <span v-if="isSubmitting" class="material-symbols-outlined animate-spin text-[16px]">sync</span>
+            <span class="material-symbols-outlined text-[16px]" v-else>lock_clock</span>
+            <span>{{ isSubmitting ? 'Reserving...' : 'Confirm Reservation (Unpaid)' }}</span>
           </button>
         </div>
       </div>
