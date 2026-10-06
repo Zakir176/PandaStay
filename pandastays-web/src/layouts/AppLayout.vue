@@ -3,6 +3,7 @@ import { ref, onMounted, onUnmounted } from 'vue'
 import RecordPaymentModal from '../components/RecordPaymentModal.vue'
 import AuthModal from '../components/AuthModal.vue'
 import { useAuth, initAuth } from '../lib/auth'
+import { currentAccent, applyTheme, ACCENT_THEMES } from '../lib/theme'
 
 const { userProfile, currentRole, signOut } = useAuth()
 
@@ -11,6 +12,7 @@ const isMobileMenuOpen = ref(false)
 const isPaymentModalOpen = ref(false)
 const isAuthModalOpen = ref(false)
 const isProfileDropdownOpen = ref(false)
+const isThemeDropdownOpen = ref(false)
 const searchQuery = ref('')
 
 const toggleSidebarCollapse = () => {
@@ -105,8 +107,8 @@ const operationsNav = [
     <aside 
       class="flex flex-col fixed left-0 top-0 h-full bg-surface border-r border-border-card z-50 py-5 transition-all duration-300 ease-in-out md:translate-x-0"
       :class="[
-        isMobileMenuOpen ? 'translate-x-0 shadow-2xl w-[250px] px-3.5' : '-translate-x-full md:translate-x-0',
-        isSidebarCollapsed ? 'md:w-[72px] md:px-2.5' : 'md:w-[250px] md:px-3.5'
+        isMobileMenuOpen ? 'translate-x-0 shadow-2xl w-sidebar-width px-3.5' : '-translate-x-full md:translate-x-0',
+        isSidebarCollapsed ? 'md:w-18 md:px-2.5' : 'md:w-sidebar-width md:px-3.5'
       ]"
     >
       <!-- Brand Logo Header & Collapse Toggle -->
@@ -115,7 +117,7 @@ const operationsNav = [
         :class="isSidebarCollapsed ? 'md:justify-center px-1' : 'justify-between px-2'"
       >
         <div class="flex items-center gap-2.5 overflow-hidden">
-          <div class="w-9 h-9 min-w-[36px] rounded-xl bg-primary-container flex items-center justify-center text-primary shadow-xs">
+          <div class="w-9 h-9 min-w-9 rounded-xl bg-primary-container flex items-center justify-center text-primary shadow-xs">
             <span class="material-symbols-outlined text-[20px]">holiday_village</span>
           </div>
           <div 
@@ -311,7 +313,7 @@ const operationsNav = [
     <!-- Main Content Wrapper -->
     <div 
       class="flex flex-col min-h-screen w-full transition-all duration-300 ease-in-out"
-      :class="isSidebarCollapsed ? 'md:ml-[72px] md:w-[calc(100%-72px)]' : 'md:ml-[250px] md:w-[calc(100%-250px)]'"
+      :class="isSidebarCollapsed ? 'md:ml-18 md:w-[calc(100%-72px)]' : 'md:ml-sidebar-width md:w-[calc(100%-250px)]'"
     >
       <!-- TopNavBar Header (Clean White Bento Header) -->
       <header class="flex justify-between items-center w-full px-4 md:px-6 py-3 h-16 bg-surface border-b border-border-card sticky top-0 z-40">
@@ -361,6 +363,75 @@ const operationsNav = [
             <span>Record Payment</span>
           </button>
 
+          <!-- Quick Palette Switcher Dropdown -->
+          <div class="relative">
+            <button 
+              @click="isThemeDropdownOpen = !isThemeDropdownOpen" 
+              class="w-9 h-9 rounded-full border border-border-card bg-surface hover:bg-surface-dim text-on-surface-variant flex items-center justify-center transition-colors"
+              :class="{ 'ring-2 ring-primary/30 border-primary text-primary': isThemeDropdownOpen }"
+              title="Change Color Theme"
+            >
+              <span class="material-symbols-outlined text-[18px]">palette</span>
+            </button>
+
+            <!-- Backdrop to close on click outside -->
+            <div 
+              v-if="isThemeDropdownOpen" 
+              @click="isThemeDropdownOpen = false" 
+              class="fixed inset-0 z-40 bg-transparent"
+            ></div>
+
+            <!-- Quick Palette Dropdown Menu -->
+            <div 
+              v-if="isThemeDropdownOpen"
+              class="absolute top-full right-0 mt-2.5 w-72 max-w-[calc(100vw-2rem)] bg-surface rounded-2xl shadow-2xl border border-border-card p-3.5 z-50 space-y-2.5 text-xs"
+            >
+              <div class="flex items-center justify-between pb-2 border-b border-border-card">
+                <div class="flex items-center gap-2">
+                  <span class="font-bold text-xs text-on-surface">Accent Color</span>
+                  <span class="badge-pill bg-primary-container text-primary text-[10px] font-bold">
+                    {{ currentAccent }}
+                  </span>
+                </div>
+                <router-link 
+                  to="/app/settings" 
+                  @click="isThemeDropdownOpen = false" 
+                  class="text-[11px] text-primary hover:underline font-semibold flex items-center gap-0.5"
+                >
+                  Custom &rarr;
+                </router-link>
+              </div>
+
+              <!-- 5x2 Swatch Grid with theme labels -->
+              <div class="grid grid-cols-5 gap-1.5 pt-1">
+                <button
+                  v-for="accent in ACCENT_THEMES"
+                  :key="accent.name"
+                  @click="applyTheme(accent.name); isThemeDropdownOpen = false"
+                  class="flex flex-col items-center gap-1 p-1 rounded-xl transition-all hover:bg-surface-dim group cursor-pointer"
+                  :class="currentAccent === accent.name ? 'bg-surface-dim/80 ring-1 ring-primary/40' : ''"
+                  :title="accent.name + ' — ' + accent.description"
+                >
+                  <span 
+                    class="w-7 h-7 rounded-full flex items-center justify-center transition-transform group-hover:scale-110 shadow-xs border border-white/20"
+                    :style="{ backgroundColor: accent.color }"
+                  >
+                    <span 
+                      v-if="currentAccent === accent.name" 
+                      class="material-symbols-outlined text-white text-[15px]"
+                    >check</span>
+                  </span>
+                  <span 
+                    class="text-[9px] font-medium text-on-surface-variant truncate max-w-full leading-tight"
+                    :class="{ 'text-primary font-bold': currentAccent === accent.name }"
+                  >
+                    {{ accent.name }}
+                  </span>
+                </button>
+              </div>
+            </div>
+          </div>
+
           <!-- Notification Bell -->
           <button class="relative w-9 h-9 rounded-full border border-border-card bg-surface hover:bg-surface-dim text-on-surface-variant flex items-center justify-center transition-colors">
             <span class="material-symbols-outlined text-[18px]">notifications</span>
@@ -372,6 +443,7 @@ const operationsNav = [
             <button 
               @click="isProfileDropdownOpen = !isProfileDropdownOpen"
               class="flex items-center gap-2 px-2 py-1.5 rounded-full border border-border-card hover:bg-surface-dim transition-colors bg-surface"
+              :class="{ 'ring-2 ring-primary/30 border-primary': isProfileDropdownOpen }"
             >
               <div class="w-7 h-7 rounded-full bg-primary text-white font-bold text-xs flex items-center justify-center shadow-xs">
                 {{ userProfile.name?.split(' ').map(n=>n[0]).join('').substring(0, 2) || 'MK' }}
@@ -383,10 +455,17 @@ const operationsNav = [
               <span class="material-symbols-outlined text-[16px] text-on-surface-muted">expand_more</span>
             </button>
 
+            <!-- Backdrop to close on click outside -->
+            <div 
+              v-if="isProfileDropdownOpen" 
+              @click="isProfileDropdownOpen = false" 
+              class="fixed inset-0 z-40 bg-transparent"
+            ></div>
+
             <!-- Profile Dropdown Menu -->
             <div 
               v-if="isProfileDropdownOpen"
-              class="absolute right-0 mt-2 w-56 card-bento p-2 shadow-xl border border-border-card z-50 space-y-1 text-xs"
+              class="absolute top-full right-0 mt-2.5 w-56 bg-surface rounded-2xl shadow-2xl border border-border-card p-2 z-50 space-y-1 text-xs"
             >
               <div class="p-2 border-b border-border-card">
                 <p class="font-bold text-on-surface truncate">{{ userProfile.name }}</p>

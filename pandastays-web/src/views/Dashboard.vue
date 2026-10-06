@@ -239,10 +239,11 @@ const recentPayments = computed(() => {
     <!-- ==================================================================== -->
     <div class="grid grid-cols-1 lg:grid-cols-4 gap-4">
       <!-- Col 1 (Span 2): Centerpiece Architectural Bed-Grid Floorplan -->
-      <div class="card-bento p-5 lg:col-span-2 flex flex-col justify-between">
+      <div class="card-bento overflow-visible! p-5 lg:col-span-2 flex flex-col justify-between">
         <BedGrid 
           :rooms="roomsWithBeds" 
           title="Architectural Bed-Space Floorplan" 
+          :compact="true"
           @select-bed="handleSelectBed"
         />
       </div>

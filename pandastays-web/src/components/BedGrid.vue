@@ -13,6 +13,10 @@ const props = defineProps({
   showMetrics: {
     type: Boolean,
     default: true
+  },
+  compact: {
+    type: Boolean,
+    default: false
   }
 })
 
@@ -20,6 +24,20 @@ const emit = defineEmits(['select-bed', 'add-bed', 'assign-tenant'])
 
 const handleBedClick = (bed, room) => {
   emit('select-bed', { bed, room })
+}
+
+const getBedSize = (bedCount) => {
+  if (!bedCount || bedCount <= 2) return 'md'
+  if (bedCount <= 4) return 'sm'
+  return 'xs'
+}
+
+const getBedLayoutClass = (bedCount) => {
+  if (!bedCount || bedCount === 1) return 'flex items-center justify-center'
+  if (bedCount === 2) return 'flex items-center justify-around gap-2.5 sm:gap-4'
+  if (bedCount <= 4) return 'grid grid-cols-2 gap-2 justify-items-center items-center'
+  if (bedCount <= 6) return 'grid grid-cols-3 gap-1.5 justify-items-center items-center'
+  return 'grid grid-cols-3 sm:grid-cols-4 gap-1 justify-items-center items-center'
 }
 </script>
 
@@ -63,11 +81,14 @@ const handleBedClick = (bed, room) => {
     </div>
 
     <!-- Room Floorplan Grid -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3.5">
+    <div 
+      class="grid gap-3.5"
+      :class="compact ? 'grid-cols-1 sm:grid-cols-2' : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'"
+    >
       <div 
         v-for="room in rooms" 
         :key="room.id"
-        class="card-bento p-4 bg-surface hover:border-primary/40 flex flex-col justify-between"
+        class="card-bento overflow-visible! relative p-4 bg-surface hover:border-primary/40 flex flex-col justify-between hover:z-30 transition-all"
         :class="{
           'border-t-3 border-t-primary': room.status === 'Paid',
           'border-t-3 border-t-tertiary': room.status === 'Partial',
@@ -89,15 +110,24 @@ const handleBedClick = (bed, room) => {
         </div>
 
         <!-- Bed-Grid Layout (Architectural Floor Plan View) -->
-        <div class="py-2.5 flex items-center justify-around gap-2 bg-surface-dim/60 rounded-xl p-2 border border-border-card/60 my-1">
-          <BedIcon
-            v-for="bed in room.beds" 
-            :key="bed.id"
-            :bed="bed"
-            size="md"
-            :show-details="false"
-            @click="handleBedClick(bed, room)"
-          />
+        <div class="bg-surface-dim/60 rounded-xl p-2.5 border border-border-card/60 my-1 min-h-24 flex items-center justify-center overflow-visible">
+          <div 
+            v-if="room.beds && room.beds.length > 0"
+            class="w-full"
+            :class="getBedLayoutClass(room.beds.length)"
+          >
+            <BedIcon
+              v-for="bed in room.beds" 
+              :key="bed.id"
+              :bed="bed"
+              :size="getBedSize(room.beds.length)"
+              :show-details="false"
+              @click="handleBedClick(bed, room)"
+            />
+          </div>
+          <div v-else class="text-[11px] text-on-surface-muted italic py-4 text-center">
+            No beds allocated
+          </div>
         </div>
 
         <!-- Room Details Footer -->

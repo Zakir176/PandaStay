@@ -77,7 +77,7 @@ const handleSelectBed = ({ bed, room }) => {
     </div>
 
     <!-- Centerpiece: Bed-Grid Architectural Floorplan in Bento Container -->
-    <div class="card-bento p-5 bg-surface">
+    <div class="card-bento overflow-visible! p-5 bg-surface">
       <BedGrid 
         :rooms="roomsWithBeds" 
         title="Mukuba House — Architectural Bed-Space Layout" 
@@ -113,19 +113,19 @@ const handleSelectBed = ({ bed, room }) => {
               :key="bed.id"
               class="hover:bg-surface-dim/40 transition-colors"
             >
-              <td class="py-3 px-3">
+              <td class="py-3 px-3 align-middle">
                 <BedIcon :bed="bed" size="sm" :interactive="false" />
               </td>
-              <td class="py-3 px-3 font-bold text-on-surface text-xs">
+              <td class="py-3 px-3 align-middle font-bold text-on-surface text-xs">
                 {{ bed.label }}
               </td>
-              <td class="py-3 px-3 text-on-surface-variant font-data-mono text-xs">
+              <td class="py-3 px-3 align-middle text-on-surface-variant font-data-mono text-xs">
                 Room {{ bed.label.match(/\d+/)?.[0] || '101' }}
               </td>
-              <td class="py-3 px-3 font-data-mono font-bold text-xs text-on-surface">
+              <td class="py-3 px-3 align-middle font-data-mono font-bold text-xs text-on-surface">
                 ZMW {{ Number(bed.rent_amount).toLocaleString() }}
               </td>
-              <td class="py-3 px-3">
+              <td class="py-3 px-3 align-middle">
                 <span 
                   class="badge-pill"
                   :class="{
@@ -142,7 +142,7 @@ const handleSelectBed = ({ bed, room }) => {
                   <span class="capitalize">{{ bed.status }}</span>
                 </span>
               </td>
-              <td class="py-3 px-3 text-xs text-on-surface">
+              <td class="py-3 px-3 align-middle text-xs text-on-surface">
                 <span v-if="bed.tenantName" class="font-semibold text-primary">
                   {{ bed.tenantName }}
                 </span>
@@ -150,7 +150,7 @@ const handleSelectBed = ({ bed, room }) => {
                   None (Vacant)
                 </span>
               </td>
-              <td class="py-3 px-3 text-right">
+              <td class="py-3 px-3 align-middle text-right">
                 <button 
                   v-if="bed.status === 'vacant'"
                   @click="handleSelectBed({ bed, room: { room_number: bed.label.match(/\d+/)?.[0] } })"
