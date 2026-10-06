@@ -66,11 +66,17 @@ const loadProfile = async (user) => {
         return
       }
     } else {
-      const { data: tenant } = await supabase
-        .from('tenants')
-        .select('*')
-        .eq('auth_user_id', user.id)
-        .single()
+      let tenant = null
+      if (user.email) {
+        const { data } = await supabase
+          .from('tenants')
+          .select('*')
+          .ilike('email', user.email)
+          .limit(1)
+        if (data && data.length > 0) {
+          tenant = data[0]
+        }
+      }
 
       if (tenant) {
         userProfile.value = { ...tenant, role: 'tenant' }
@@ -148,31 +154,34 @@ export const useAuth = () => {
             lenco_subaccount_id: `sub_${Date.now().toString().slice(-6)}`
           })
         } else {
-          // Link existing tenant profile created by landlord
+          // Link or find existing tenant profile created by landlord
+          let matchedTenant = null
           try {
-            await fetch('http://localhost:3001/api/tenants/link-auth', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ email: email, auth_user_id: user.id })
-            })
-          } catch {
-            // Trigger fallback
+            const { data: existingTenants } = await supabase
+              .from('tenants')
+              .select('*')
+              .or(`email.ilike.${email},phone.eq.${phone}`)
+              .limit(1)
+
+            if (existingTenants && existingTenants.length > 0) {
+              matchedTenant = existingTenants[0]
+            }
+          } catch (e) {
+            console.warn('Tenant lookup note:', e.message)
           }
 
-          // If no existing tenant was linked, create a new record
-          const { data: existingTenant } = await supabase
-            .from('tenants')
-            .select('*')
-            .eq('auth_user_id', user.id)
-            .limit(1)
-
-          if (!existingTenant || existingTenant.length === 0) {
-            await supabase.from('tenants').insert({
-              auth_user_id: user.id,
-              name: name,
-              email: email,
-              phone: phone || '+260 97 0000000'
-            })
+          // Only insert if no tenant profile exists for this email or phone
+          if (!matchedTenant) {
+            try {
+              const { data: createdTenant } = await supabase.from('tenants').insert({
+                name: name,
+                email: email,
+                phone: phone || '+260 97 0000000'
+              }).select().single()
+              matchedTenant = createdTenant
+            } catch (insErr) {
+              console.warn('Tenant insert note:', insErr.message)
+            }
           }
         }
       }

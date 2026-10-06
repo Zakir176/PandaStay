@@ -81,6 +81,11 @@ const primaryOverdueTenant = computed(() => {
 const recentPayments = computed(() => {
   return state.payments.slice(0, 5)
 })
+
+// Active roster tenants (strictly allocated tenants with active leases)
+const activeRosterTenants = computed(() => {
+  return state.tenants.filter(t => t.tenancy_id || t.bed_id || t.status === 'active').slice(0, 4)
+})
 </script>
 
 <template>
@@ -373,7 +378,7 @@ const recentPayments = computed(() => {
 
           <div class="divide-y divide-border-card/60 mt-2">
             <div 
-              v-for="tenant in state.tenants.slice(0, 4)" 
+              v-for="tenant in activeRosterTenants" 
               :key="tenant.id"
               class="py-2.5 flex items-center justify-between gap-3 hover:bg-surface-dim/40 px-2 rounded-xl transition-colors"
             >
