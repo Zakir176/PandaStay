@@ -1,19 +1,20 @@
 <script setup>
 import { ref } from 'vue'
 import { useStore } from '../lib/store'
+import { currentAccent, applyTheme, ACCENT_THEMES } from '../lib/theme'
 
 const { state } = useStore()
 
-const savedNotification = ref(false)
-const selectedAccent = ref('Forest')
+const toastMessage = ref('')
 const weekStart = ref('Monday')
 
-const accents = [
-  { name: 'Forest', color: '#144D2F' },
-  { name: 'Ocean', color: '#1D3BB2' },
-  { name: 'Plum', color: '#5A246B' },
-  { name: 'Ember', color: '#A83820' }
-]
+const handleSelectAccent = (themeName) => {
+  applyTheme(themeName)
+  toastMessage.value = `Accent theme updated to ${themeName}!`
+  setTimeout(() => {
+    toastMessage.value = ''
+  }, 2500)
+}
 
 const settingsForm = ref({
   landlordName: state.currentLandlord.name,
@@ -32,9 +33,9 @@ const saveSettings = () => {
   state.currentLandlord.lenco_subaccount_id = settingsForm.value.lencoSubaccount
   state.currentLandlord.whatsapp_reminder_days_before = Number(settingsForm.value.whatsappDaysBefore)
 
-  savedNotification.value = true
+  toastMessage.value = 'Settings and WhatsApp reminder rules updated successfully!'
   setTimeout(() => {
-    savedNotification.value = false
+    toastMessage.value = ''
   }, 3000)
 }
 </script>
@@ -44,11 +45,11 @@ const saveSettings = () => {
     <!-- Save Toast Notification -->
     <transition enter-active-class="transition duration-200 ease-out" enter-from-class="opacity-0 -translate-y-2" enter-to-class="opacity-100 translate-y-0" leave-active-class="transition duration-150 ease-in" leave-from-class="opacity-100 translate-y-0" leave-to-class="opacity-0 -translate-y-2">
       <div 
-        v-if="savedNotification" 
+        v-if="toastMessage" 
         class="fixed top-20 right-6 z-50 flex items-center gap-3 px-4 py-3 bg-primary text-white rounded-full shadow-lg text-xs font-semibold border border-white/20"
       >
         <span class="material-symbols-outlined text-[18px]">check_circle</span>
-        <span>Settings and WhatsApp reminder rules updated successfully!</span>
+        <span>{{ toastMessage }}</span>
       </div>
     </transition>
 
@@ -70,10 +71,10 @@ const saveSettings = () => {
       <div class="border-b border-border-card pb-3">
         <h3 class="font-bold text-sm text-on-surface flex items-center gap-2">
           <span class="material-symbols-outlined text-primary text-[20px]">palette</span>
-          Workspace Appearance (Reference Design)
+          Workspace Appearance
         </h3>
         <p class="text-xs text-on-surface-variant">
-          The accent re-tints the workspace and is remembered on this device.
+          Select an accent theme to re-tint the entire workspace in real-time. Preference is saved on this device.
         </p>
       </div>
 
@@ -82,16 +83,17 @@ const saveSettings = () => {
           <label class="block font-bold text-on-surface-muted uppercase text-[10px] tracking-wider mb-2">Accent Theme</label>
           <div class="flex flex-wrap items-center gap-2.5">
             <button 
-              v-for="accent in accents" 
+              v-for="accent in ACCENT_THEMES" 
               :key="accent.name"
-              @click="selectedAccent = accent.name"
-              class="flex items-center gap-2 px-3 py-1.5 rounded-full border transition-all cursor-pointer"
-              :class="selectedAccent === accent.name 
-                ? 'border-primary ring-2 ring-primary/20 bg-primary-container font-bold text-primary' 
+              @click="handleSelectAccent(accent.name)"
+              class="flex items-center gap-2 px-3.5 py-1.5 rounded-full border transition-all cursor-pointer"
+              :class="currentAccent === accent.name 
+                ? 'border-primary ring-2 ring-primary/30 bg-primary/10 font-bold text-primary shadow-xs' 
                 : 'border-border-card bg-surface-dim hover:bg-surface text-on-surface'"
             >
-              <span class="w-3.5 h-3.5 rounded-full shadow-xs" :style="{ backgroundColor: accent.color }"></span>
+              <span class="w-3.5 h-3.5 rounded-full shadow-xs shrink-0" :style="{ backgroundColor: accent.color }"></span>
               <span>{{ accent.name }}</span>
+              <span v-if="currentAccent === accent.name" class="material-symbols-outlined text-[15px] ml-0.5">check</span>
             </button>
           </div>
         </div>
