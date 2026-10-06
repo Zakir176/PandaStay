@@ -368,37 +368,65 @@ const operationsNav = [
             <button 
               @click="isThemeDropdownOpen = !isThemeDropdownOpen" 
               class="w-9 h-9 rounded-full border border-border-card bg-surface hover:bg-surface-dim text-on-surface-variant flex items-center justify-center transition-colors"
+              :class="{ 'ring-2 ring-primary/30 border-primary text-primary': isThemeDropdownOpen }"
               title="Change Color Theme"
             >
               <span class="material-symbols-outlined text-[18px]">palette</span>
             </button>
 
+            <!-- Backdrop to close on click outside -->
+            <div 
+              v-if="isThemeDropdownOpen" 
+              @click="isThemeDropdownOpen = false" 
+              class="fixed inset-0 z-40 bg-transparent"
+            ></div>
+
             <!-- Quick Palette Dropdown Menu -->
             <div 
               v-if="isThemeDropdownOpen"
-              class="absolute right-0 mt-2 w-64 card-bento p-3 shadow-xl border border-border-card z-50 space-y-2 text-xs"
+              class="absolute top-full right-0 mt-2.5 w-72 max-w-[calc(100vw-2rem)] bg-surface rounded-2xl shadow-2xl border border-border-card p-3.5 z-50 space-y-2.5 text-xs"
             >
               <div class="flex items-center justify-between pb-2 border-b border-border-card">
-                <span class="font-bold text-xs text-on-surface">Accent Themes</span>
+                <div class="flex items-center gap-2">
+                  <span class="font-bold text-xs text-on-surface">Accent Color</span>
+                  <span class="badge-pill bg-primary-container text-primary text-[10px] font-bold">
+                    {{ currentAccent }}
+                  </span>
+                </div>
                 <router-link 
                   to="/app/settings" 
-                  @click="isThemeDropdownOpen = false"
-                  class="text-[10px] text-primary hover:underline font-semibold"
+                  @click="isThemeDropdownOpen = false" 
+                  class="text-[11px] text-primary hover:underline font-semibold flex items-center gap-0.5"
                 >
                   Custom &rarr;
                 </router-link>
               </div>
 
+              <!-- 5x2 Swatch Grid with theme labels -->
               <div class="grid grid-cols-5 gap-1.5 pt-1">
                 <button
                   v-for="accent in ACCENT_THEMES"
                   :key="accent.name"
                   @click="applyTheme(accent.name); isThemeDropdownOpen = false"
-                  class="w-9 h-9 rounded-full flex items-center justify-center border transition-all cursor-pointer hover:scale-105"
-                  :class="currentAccent === accent.name ? 'border-primary ring-2 ring-primary/40' : 'border-border-card'"
-                  :title="accent.name + ' (' + accent.description + ')'"
+                  class="flex flex-col items-center gap-1 p-1 rounded-xl transition-all hover:bg-surface-dim group cursor-pointer"
+                  :class="currentAccent === accent.name ? 'bg-surface-dim/80 ring-1 ring-primary/40' : ''"
+                  :title="accent.name + ' — ' + accent.description"
                 >
-                  <span class="w-5 h-5 rounded-full shadow-2xs" :style="{ backgroundColor: accent.color }"></span>
+                  <span 
+                    class="w-7 h-7 rounded-full flex items-center justify-center transition-transform group-hover:scale-110 shadow-xs border border-white/20"
+                    :style="{ backgroundColor: accent.color }"
+                  >
+                    <span 
+                      v-if="currentAccent === accent.name" 
+                      class="material-symbols-outlined text-white text-[15px]"
+                    >check</span>
+                  </span>
+                  <span 
+                    class="text-[9px] font-medium text-on-surface-variant truncate max-w-full leading-tight"
+                    :class="{ 'text-primary font-bold': currentAccent === accent.name }"
+                  >
+                    {{ accent.name }}
+                  </span>
                 </button>
               </div>
             </div>
@@ -415,6 +443,7 @@ const operationsNav = [
             <button 
               @click="isProfileDropdownOpen = !isProfileDropdownOpen"
               class="flex items-center gap-2 px-2 py-1.5 rounded-full border border-border-card hover:bg-surface-dim transition-colors bg-surface"
+              :class="{ 'ring-2 ring-primary/30 border-primary': isProfileDropdownOpen }"
             >
               <div class="w-7 h-7 rounded-full bg-primary text-white font-bold text-xs flex items-center justify-center shadow-xs">
                 {{ userProfile.name?.split(' ').map(n=>n[0]).join('').substring(0, 2) || 'MK' }}
@@ -426,10 +455,17 @@ const operationsNav = [
               <span class="material-symbols-outlined text-[16px] text-on-surface-muted">expand_more</span>
             </button>
 
+            <!-- Backdrop to close on click outside -->
+            <div 
+              v-if="isProfileDropdownOpen" 
+              @click="isProfileDropdownOpen = false" 
+              class="fixed inset-0 z-40 bg-transparent"
+            ></div>
+
             <!-- Profile Dropdown Menu -->
             <div 
               v-if="isProfileDropdownOpen"
-              class="absolute right-0 mt-2 w-56 card-bento p-2 shadow-xl border border-border-card z-50 space-y-1 text-xs"
+              class="absolute top-full right-0 mt-2.5 w-56 bg-surface rounded-2xl shadow-2xl border border-border-card p-2 z-50 space-y-1 text-xs"
             >
               <div class="p-2 border-b border-border-card">
                 <p class="font-bold text-on-surface truncate">{{ userProfile.name }}</p>

@@ -78,7 +78,7 @@ const sizeDimensions = computed(() => {
 
 <template>
   <div 
-    class="group relative inline-flex flex-col items-center shrink-0"
+    class="group relative inline-flex flex-col items-center shrink-0 hover:z-40"
     :class="{ 'cursor-pointer': interactive }"
     @click="interactive && emit('click', bed)"
   >
@@ -146,11 +146,12 @@ const sizeDimensions = computed(() => {
       </p>
     </div>
 
-    <!-- Hover Tooltip -->
+    <!-- Hover Tooltip (Interactive floorplan mode) -->
     <div 
-      class="pointer-events-none absolute bottom-full mb-2 hidden group-hover:flex flex-col z-30 min-w-36 px-2.5 py-1.5 bg-hero-dark text-white text-[11px] rounded-xl shadow-lg border border-white/10"
+      v-if="interactive"
+      class="pointer-events-none absolute bottom-full mb-2.5 hidden group-hover:flex flex-col z-50 min-w-48 max-w-64 px-3 py-2 bg-hero-dark text-white text-[11px] rounded-xl shadow-2xl border border-white/20 left-1/2 -translate-x-1/2 whitespace-nowrap"
     >
-      <div class="flex items-center justify-between gap-2 border-b border-white/15 pb-1 mb-1 font-semibold">
+      <div class="flex items-center justify-between gap-3 border-b border-white/15 pb-1 mb-1 font-semibold">
         <span>{{ bed.label }}</span>
         <span class="capitalize text-[10px] px-1.5 py-0.5 rounded-full" :class="{
           'bg-primary-accent text-hero-dark font-bold': bed.status === 'occupied',
@@ -158,22 +159,36 @@ const sizeDimensions = computed(() => {
           'bg-white/20 text-white': bed.status === 'vacant'
         }">{{ bed.status }}</span>
       </div>
-      <div v-if="bed.status === 'occupied'" class="space-y-0.5">
-        <p><span class="opacity-70">Tenant:</span> {{ bed.tenantName || 'Assigned Tenant' }}</p>
-        <p><span class="opacity-70">Rent:</span> <span class="font-data-mono">ZMW {{ Number(bed.rent_amount || 0).toLocaleString() }}/mo</span></p>
-        <p v-if="bed.paymentStatus">
-          <span class="opacity-70">Status:</span> 
+      <div v-if="bed.status === 'occupied'" class="space-y-1">
+        <p class="flex items-center justify-between gap-3">
+          <span class="opacity-70 text-[10px]">Tenant:</span> 
+          <span class="font-bold text-white">{{ bed.tenantName || 'Assigned Tenant' }}</span>
+        </p>
+        <p class="flex items-center justify-between gap-3">
+          <span class="opacity-70 text-[10px]">Rent:</span> 
+          <span class="font-data-mono text-primary-accent font-semibold">ZMW {{ Number(bed.rent_amount || 0).toLocaleString() }}/mo</span>
+        </p>
+        <p v-if="bed.paymentStatus" class="flex items-center justify-between gap-3">
+          <span class="opacity-70 text-[10px]">Status:</span> 
           <span :class="{
-            'text-primary-accent': bed.paymentStatus === 'paid',
-            'text-tertiary-accent': bed.paymentStatus === 'partial',
-            'text-error-container': bed.paymentStatus === 'overdue'
-          }" class="font-medium capitalize"> {{ bed.paymentStatus }}</span>
+            'text-primary-accent font-semibold': bed.paymentStatus === 'paid',
+            'text-tertiary-accent font-semibold': bed.paymentStatus === 'partial',
+            'text-error-container font-bold': bed.paymentStatus === 'overdue'
+          }" class="capitalize">{{ bed.paymentStatus }}</span>
         </p>
       </div>
-      <div v-else class="space-y-0.5">
-        <p><span class="opacity-70">Rent:</span> <span class="font-data-mono">ZMW {{ Number(bed.rent_amount || 0).toLocaleString() }}/mo</span></p>
-        <p class="text-[10px] text-primary-accent mt-1">Click to assign tenant</p>
+      <div v-else class="space-y-1">
+        <p class="flex items-center justify-between gap-3">
+          <span class="opacity-70 text-[10px]">Rent:</span> 
+          <span class="font-data-mono text-primary-accent font-semibold">ZMW {{ Number(bed.rent_amount || 0).toLocaleString() }}/mo</span>
+        </p>
+        <p class="text-[10px] text-primary-accent mt-0.5 flex items-center gap-1 font-medium">
+          <span class="material-symbols-outlined text-[13px]">add_circle</span>
+          <span>Click to assign tenant</span>
+        </p>
       </div>
+      <!-- Triangle Indicator pointing down to the bed -->
+      <div class="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-x-4 border-x-transparent border-t-4 border-t-hero-dark"></div>
     </div>
   </div>
 </template>

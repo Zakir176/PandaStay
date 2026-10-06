@@ -88,7 +88,7 @@ const getBedLayoutClass = (bedCount) => {
       <div 
         v-for="room in rooms" 
         :key="room.id"
-        class="card-bento p-4 bg-surface hover:border-primary/40 flex flex-col justify-between"
+        class="card-bento !overflow-visible relative p-4 bg-surface hover:border-primary/40 flex flex-col justify-between hover:z-30 transition-all"
         :class="{
           'border-t-3 border-t-primary': room.status === 'Paid',
           'border-t-3 border-t-tertiary': room.status === 'Partial',
@@ -110,7 +110,7 @@ const getBedLayoutClass = (bedCount) => {
         </div>
 
         <!-- Bed-Grid Layout (Architectural Floor Plan View) -->
-        <div class="bg-surface-dim/60 rounded-xl p-2.5 border border-border-card/60 my-1 min-h-[96px] flex items-center justify-center overflow-hidden">
+        <div class="bg-surface-dim/60 rounded-xl p-2.5 border border-border-card/60 my-1 min-h-[96px] flex items-center justify-center overflow-visible">
           <div 
             v-if="room.beds && room.beds.length > 0"
             class="w-full"
