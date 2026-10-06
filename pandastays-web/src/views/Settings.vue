@@ -1,16 +1,40 @@
 <script setup>
 import { ref } from 'vue'
 import { useStore } from '../lib/store'
-import { currentAccent, applyTheme, ACCENT_THEMES } from '../lib/theme'
+import { currentAccent, customColor, applyTheme, ACCENT_THEMES } from '../lib/theme'
 
 const { state } = useStore()
 
 const toastMessage = ref('')
 const weekStart = ref('Monday')
+const customHexInput = ref(customColor.value || '#2563EB')
+const selectedCategory = ref('All')
+
+const categories = ['All', 'Nature', 'Corporate', 'Modern', 'Warm', 'Luxury']
+
+const filteredThemes = () => {
+  if (selectedCategory.value === 'All') return ACCENT_THEMES
+  return ACCENT_THEMES.filter(t => t.category === selectedCategory.value)
+}
 
 const handleSelectAccent = (themeName) => {
   applyTheme(themeName)
   toastMessage.value = `Accent theme updated to ${themeName}!`
+  setTimeout(() => {
+    toastMessage.value = ''
+  }, 2500)
+}
+
+const handleApplyCustomColor = () => {
+  if (!/^#[0-9A-Fa-f]{6}$/.test(customHexInput.value)) {
+    toastMessage.value = 'Please enter a valid 6-digit hex code (e.g. #2563EB)'
+    setTimeout(() => {
+      toastMessage.value = ''
+    }, 3000)
+    return
+  }
+  applyTheme('Custom', customHexInput.value)
+  toastMessage.value = `Custom color ${customHexInput.value.toUpperCase()} applied!`
   setTimeout(() => {
     toastMessage.value = ''
   }, 2500)
@@ -66,51 +90,163 @@ const saveSettings = () => {
       </p>
     </div>
 
-    <!-- Appearance & Accent Theme (Modeled directly on Fernly Reference Video) -->
-    <div class="card-bento p-5 bg-surface space-y-4">
-      <div class="border-b border-border-card pb-3">
-        <h3 class="font-bold text-sm text-on-surface flex items-center gap-2">
-          <span class="material-symbols-outlined text-primary text-[20px]">palette</span>
-          Workspace Appearance
-        </h3>
-        <p class="text-xs text-on-surface-variant">
-          Select an accent theme to re-tint the entire workspace in real-time. Preference is saved on this device.
-        </p>
+    <!-- Appearance & Accent Theme Studio -->
+    <div class="card-bento p-5 bg-surface space-y-5">
+      <div class="border-b border-border-card pb-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+        <div>
+          <h3 class="font-bold text-sm text-on-surface flex items-center gap-2">
+            <span class="material-symbols-outlined text-primary text-[20px]">palette</span>
+            Workspace Appearance & Color Themes
+          </h3>
+          <p class="text-xs text-on-surface-variant">
+            Select from 10 curated architectural themes or define your own custom brand color.
+          </p>
+        </div>
+
+        <div class="flex items-center gap-1.5 self-start sm:self-auto">
+          <span 
+            v-if="currentAccent === 'Custom'"
+            class="badge-pill bg-primary text-white text-[10px]"
+          >
+            Custom Theme Active
+          </span>
+          <span 
+            v-else
+            class="badge-pill bg-primary-container text-primary text-[10px]"
+          >
+            {{ currentAccent }} Active
+          </span>
+        </div>
       </div>
 
-      <div class="space-y-4 text-xs">
-        <div>
-          <label class="block font-bold text-on-surface-muted uppercase text-[10px] tracking-wider mb-2">Accent Theme</label>
-          <div class="flex flex-wrap items-center gap-2.5">
-            <button 
-              v-for="accent in ACCENT_THEMES" 
-              :key="accent.name"
-              @click="handleSelectAccent(accent.name)"
-              class="flex items-center gap-2 px-3.5 py-1.5 rounded-full border transition-all cursor-pointer"
-              :class="currentAccent === accent.name 
-                ? 'border-primary ring-2 ring-primary/30 bg-primary/10 font-bold text-primary shadow-xs' 
-                : 'border-border-card bg-surface-dim hover:bg-surface text-on-surface'"
+      <!-- Category Filter Pills -->
+      <div class="flex items-center gap-1.5 overflow-x-auto pb-1">
+        <button 
+          v-for="cat in categories" 
+          :key="cat"
+          @click="selectedCategory = cat"
+          class="badge-pill py-1 px-3 text-xs transition-colors cursor-pointer"
+          :class="selectedCategory === cat 
+            ? 'bg-primary text-white font-bold shadow-2xs' 
+            : 'bg-surface-dim hover:bg-surface-dim/80 text-on-surface-variant'"
+        >
+          {{ cat }}
+        </button>
+      </div>
+
+      <!-- Presets Swatches Grid (10 Themes) -->
+      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2.5 text-xs">
+        <div 
+          v-for="accent in filteredThemes()" 
+          :key="accent.name"
+          @click="handleSelectAccent(accent.name)"
+          class="p-3 rounded-2xl border transition-all cursor-pointer flex flex-col justify-between group hover:shadow-sm"
+          :class="currentAccent === accent.name 
+            ? 'border-primary ring-2 ring-primary/20 bg-primary/8 font-bold' 
+            : 'border-border-card bg-surface-dim hover:bg-surface hover:border-border-card/80'"
+        >
+          <div class="flex items-center justify-between mb-2">
+            <!-- Dual Swatch: Primary dot & Mini Dark Pill -->
+            <div class="flex items-center gap-1.5">
+              <span 
+                class="w-4 h-4 rounded-full shadow-xs inline-block" 
+                :style="{ backgroundColor: accent.color }"
+              ></span>
+              <span 
+                class="w-2.5 h-4 rounded-full inline-block opacity-80" 
+                :style="{ backgroundColor: accent.vars['--color-hero-dark'] }"
+                title="Hero Card Tint"
+              ></span>
+            </div>
+
+            <span 
+              v-if="currentAccent === accent.name" 
+              class="w-4 h-4 rounded-full bg-primary text-white flex items-center justify-center text-[11px]"
             >
-              <span class="w-3.5 h-3.5 rounded-full shadow-xs shrink-0" :style="{ backgroundColor: accent.color }"></span>
-              <span>{{ accent.name }}</span>
-              <span v-if="currentAccent === accent.name" class="material-symbols-outlined text-[15px] ml-0.5">check</span>
-            </button>
+              ✓
+            </span>
+          </div>
+
+          <div>
+            <p class="font-bold text-on-surface text-xs leading-tight group-hover:text-primary transition-colors">
+              {{ accent.name }}
+            </p>
+            <p class="text-[10px] text-on-surface-variant truncate mt-0.5">
+              {{ accent.description }}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Custom Color Generator Section -->
+      <div class="p-4 rounded-2xl bg-surface-dim/60 border border-border-card space-y-3">
+        <div class="flex items-center justify-between">
+          <div>
+            <h4 class="font-bold text-xs text-on-surface flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-[16px] text-primary">colorize</span>
+              Custom Brand Accent
+            </h4>
+            <p class="text-[11px] text-on-surface-variant">
+              Pick any color: the system automatically generates matching dark hero tints, hover states, and background canvas.
+            </p>
           </div>
         </div>
 
-        <div class="pt-2 border-t border-border-card/60">
-          <label class="block font-bold text-on-surface-muted uppercase text-[10px] tracking-wider mb-2">Week Starts On</label>
-          <div class="flex items-center gap-2">
-            <button 
-              v-for="d in ['Monday', 'Sunday']" 
-              :key="d"
-              @click="weekStart = d"
-              class="badge-pill py-1 px-3 text-xs transition-colors cursor-pointer"
-              :class="weekStart === d ? 'bg-primary text-white font-bold' : 'bg-surface-dim text-on-surface-variant'"
-            >
-              {{ d }}
-            </button>
+        <div class="flex flex-wrap items-center gap-3">
+          <!-- Color Picker Swatch Input -->
+          <div class="flex items-center gap-2 p-1.5 bg-surface rounded-full border border-border-card shadow-2xs">
+            <input 
+              v-model="customHexInput"
+              type="color" 
+              class="w-7 h-7 rounded-full border-0 cursor-pointer overflow-hidden p-0 bg-transparent"
+              title="Pick color"
+            />
+            <input 
+              v-model="customHexInput"
+              type="text" 
+              placeholder="#2563EB"
+              maxlength="7"
+              class="w-20 px-2 py-0.5 text-xs font-data-mono font-bold uppercase bg-transparent text-on-surface focus:outline-none"
+            />
           </div>
+
+          <!-- Live Mini Preview Chips -->
+          <div class="flex items-center gap-1.5 text-[10px] font-semibold text-on-surface-variant">
+            <span>Preview:</span>
+            <span 
+              class="px-2.5 py-1 rounded-full text-white font-bold" 
+              :style="{ backgroundColor: customHexInput }"
+            >
+              Button
+            </span>
+          </div>
+
+          <!-- Apply Button -->
+          <button 
+            @click="handleApplyCustomColor"
+            class="btn-pill-primary text-xs py-1.5 px-3.5"
+          >
+            Apply Custom Color
+          </button>
+        </div>
+      </div>
+
+      <!-- Calendar Setting -->
+      <div class="pt-3 border-t border-border-card/60 flex items-center justify-between text-xs">
+        <div>
+          <label class="block font-bold text-on-surface text-xs">Week Starts On</label>
+          <p class="text-[11px] text-on-surface-variant">Controls bed occupancy calendar columns</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <button 
+            v-for="d in ['Monday', 'Sunday']" 
+            :key="d"
+            @click="weekStart = d"
+            class="badge-pill py-1 px-3 text-xs transition-colors cursor-pointer"
+            :class="weekStart === d ? 'bg-primary text-white font-bold' : 'bg-surface-dim text-on-surface-variant'"
+          >
+            {{ d }}
+          </button>
         </div>
       </div>
     </div>

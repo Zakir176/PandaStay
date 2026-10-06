@@ -3,6 +3,7 @@ import { ref, onMounted, onUnmounted } from 'vue'
 import RecordPaymentModal from '../components/RecordPaymentModal.vue'
 import AuthModal from '../components/AuthModal.vue'
 import { useAuth, initAuth } from '../lib/auth'
+import { currentAccent, applyTheme, ACCENT_THEMES } from '../lib/theme'
 
 const { userProfile, currentRole, signOut } = useAuth()
 
@@ -11,6 +12,7 @@ const isMobileMenuOpen = ref(false)
 const isPaymentModalOpen = ref(false)
 const isAuthModalOpen = ref(false)
 const isProfileDropdownOpen = ref(false)
+const isThemeDropdownOpen = ref(false)
 const searchQuery = ref('')
 
 const toggleSidebarCollapse = () => {
@@ -360,6 +362,47 @@ const operationsNav = [
             <span class="material-symbols-outlined text-[16px]">add_card</span>
             <span>Record Payment</span>
           </button>
+
+          <!-- Quick Palette Switcher Dropdown -->
+          <div class="relative">
+            <button 
+              @click="isThemeDropdownOpen = !isThemeDropdownOpen" 
+              class="w-9 h-9 rounded-full border border-border-card bg-surface hover:bg-surface-dim text-on-surface-variant flex items-center justify-center transition-colors"
+              title="Change Color Theme"
+            >
+              <span class="material-symbols-outlined text-[18px]">palette</span>
+            </button>
+
+            <!-- Quick Palette Dropdown Menu -->
+            <div 
+              v-if="isThemeDropdownOpen"
+              class="absolute right-0 mt-2 w-64 card-bento p-3 shadow-xl border border-border-card z-50 space-y-2 text-xs"
+            >
+              <div class="flex items-center justify-between pb-2 border-b border-border-card">
+                <span class="font-bold text-xs text-on-surface">Accent Themes</span>
+                <router-link 
+                  to="/app/settings" 
+                  @click="isThemeDropdownOpen = false"
+                  class="text-[10px] text-primary hover:underline font-semibold"
+                >
+                  Custom &rarr;
+                </router-link>
+              </div>
+
+              <div class="grid grid-cols-5 gap-1.5 pt-1">
+                <button
+                  v-for="accent in ACCENT_THEMES"
+                  :key="accent.name"
+                  @click="applyTheme(accent.name); isThemeDropdownOpen = false"
+                  class="w-9 h-9 rounded-full flex items-center justify-center border transition-all cursor-pointer hover:scale-105"
+                  :class="currentAccent === accent.name ? 'border-primary ring-2 ring-primary/40' : 'border-border-card'"
+                  :title="accent.name + ' (' + accent.description + ')'"
+                >
+                  <span class="w-5 h-5 rounded-full shadow-2xs" :style="{ backgroundColor: accent.color }"></span>
+                </button>
+              </div>
+            </div>
+          </div>
 
           <!-- Notification Bell -->
           <button class="relative w-9 h-9 rounded-full border border-border-card bg-surface hover:bg-surface-dim text-on-surface-variant flex items-center justify-center transition-colors">
