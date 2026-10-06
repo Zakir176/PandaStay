@@ -2,9 +2,8 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useStore, roomsWithBeds, occupancyStats, topPriorityReport, termProgress } from '../lib/store'
-import BedGrid from '../components/BedGrid.vue'
-import RecordPaymentModal from '../components/RecordPaymentModal.vue'
-import AssignTenantModal from '../components/AssignTenantModal.vue'
+import { BedGrid, RecordPaymentModal, AssignTenantModal } from '../components'
+import { formatCurrency, getInitials, formatNRC } from '../utils/formatters'
 
 const router = useRouter()
 const { state, triggerWhatsAppReminder } = useStore()
@@ -386,11 +385,11 @@ const activeRosterTenants = computed(() => {
             >
               <div class="flex items-center gap-3 min-w-0">
                 <div class="w-8 h-8 rounded-full bg-primary-container text-primary font-bold text-xs flex items-center justify-center shrink-0 shadow-xs">
-                  {{ tenant.name?.split(' ').map(n=>n[0]).join('').substring(0, 2) || 'ST' }}
+                  {{ getInitials(tenant.name) }}
                 </div>
                 <div class="min-w-0">
                   <p class="text-xs font-bold text-on-surface leading-tight truncate">{{ tenant.name }}</p>
-                  <p class="text-[10px] text-on-surface-variant truncate">{{ tenant.phone }} &bull; ID: {{ tenant.id_number || 'NRC-Verified' }}</p>
+                  <p class="text-[10px] text-on-surface-variant truncate">{{ tenant.phone }} &bull; ID: {{ formatNRC(tenant.id_number) }}</p>
                 </div>
               </div>
 

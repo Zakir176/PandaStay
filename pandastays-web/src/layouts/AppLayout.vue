@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
-import RecordPaymentModal from '../components/RecordPaymentModal.vue'
-import AuthModal from '../components/AuthModal.vue'
+import { RecordPaymentModal, AuthModal } from '../components'
+import { getInitials } from '../utils/formatters'
 import { useAuth, initAuth } from '../lib/auth'
 import { currentAccent, applyTheme, ACCENT_THEMES } from '../lib/theme'
 
@@ -446,7 +446,7 @@ const operationsNav = [
               :class="{ 'ring-2 ring-primary/30 border-primary': isProfileDropdownOpen }"
             >
               <div class="w-7 h-7 rounded-full bg-primary text-white font-bold text-xs flex items-center justify-center shadow-xs">
-                {{ userProfile.name?.split(' ').map(n=>n[0]).join('').substring(0, 2) || 'MK' }}
+                {{ getInitials(userProfile.name) }}
               </div>
               <div class="hidden lg:flex flex-col text-left pr-1">
                 <span class="text-xs font-semibold text-on-surface leading-tight">{{ userProfile.name }}</span>

@@ -3,7 +3,8 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuth, initAuth } from '../lib/auth'
 import { useStore } from '../lib/store'
-import AuthModal from '../components/AuthModal.vue'
+import { AuthModal } from '../components'
+import { getInitials } from '../utils/formatters'
 
 const router = useRouter()
 const route = useRoute()
@@ -41,15 +42,7 @@ const currentBed = computed(() => {
 })
 
 // Student initials for avatar
-const tenantInitials = computed(() => {
-  if (!currentTenant.value?.name) return 'ST'
-  return currentTenant.value.name
-    .split(' ')
-    .map(n => n[0])
-    .join('')
-    .substring(0, 2)
-    .toUpperCase()
-})
+const tenantInitials = computed(() => getInitials(currentTenant.value?.name))
 
 const handleSignOut = async () => {
   await signOut()

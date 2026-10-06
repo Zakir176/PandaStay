@@ -2,7 +2,7 @@
 import { ref, computed } from 'vue'
 import { useStore } from '../lib/store'
 import { useAuth } from '../lib/auth'
-import BedIcon from '../components/BedIcon.vue'
+import { BedIcon } from '../components'
 
 const { state, addReport } = useStore()
 const { userProfile, currentRole } = useAuth()

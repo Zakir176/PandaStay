@@ -1,21 +1,23 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import AppLayout from '../layouts/AppLayout.vue'
 import TenantLayout from '../layouts/TenantLayout.vue'
-import LandingPage from '../views/LandingPage.vue'
-import Dashboard from '../views/Dashboard.vue'
-import Rooms from '../views/Rooms.vue'
-import Financials from '../views/Financials.vue'
-import Maintenance from '../views/Maintenance.vue'
-import Leases from '../views/Leases.vue'
-import Deposits from '../views/Deposits.vue'
-import Tenants from '../views/Tenants.vue'
-import TenantProfile from '../views/TenantProfile.vue'
-import Settings from '../views/Settings.vue'
-import TenantPortal from '../views/TenantPortal.vue'
-import TenantPayments from '../views/TenantPayments.vue'
-import TenantMaintenance from '../views/TenantMaintenance.vue'
-import TenantLease from '../views/TenantLease.vue'
-import TenantCheckout from '../views/TenantCheckout.vue'
+import {
+  LandingPage,
+  Dashboard,
+  Rooms,
+  Financials,
+  Maintenance,
+  Leases,
+  Deposits,
+  Tenants,
+  TenantProfile,
+  Settings,
+  TenantPortal,
+  TenantPayments,
+  TenantMaintenance,
+  TenantLease,
+  TenantCheckout
+} from '../views'
 import { useAuth } from '../lib/auth'
 
 const routes = [
