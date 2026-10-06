@@ -71,16 +71,26 @@ export const syncWithSupabase = async () => {
     // 3. Fetch Bed Spaces
     const { data: dbBeds } = await supabase.from('bed_spaces').select('*')
     if (dbBeds) {
-      state.bedSpaces = dbBeds.map(b => ({
-        id: b.id,
-        room_id: b.room_id,
-        label: b.label,
-        shortLabel: b.label.replace(/Bed\s*/i, '').replace(/\s*\(.*\)/, ''),
-        rent_amount: Number(b.rent_amount),
-        status: b.status,
-        tenantId: null,
-        tenantName: null
-      }))
+      let savedReservations = {}
+      try {
+        savedReservations = JSON.parse(localStorage.getItem('pandastays_reservations') || '{}')
+      } catch (e) {}
+
+      state.bedSpaces = dbBeds.map(b => {
+        const resInfo = savedReservations[b.id] || {}
+        return {
+          id: b.id,
+          room_id: b.room_id,
+          label: b.label,
+          shortLabel: b.label.replace(/Bed\s*/i, '').replace(/\s*\(.*\)/, ''),
+          rent_amount: Number(b.rent_amount),
+          status: b.status,
+          tenantId: null,
+          tenantName: b.status === 'reserved' ? (resInfo.name || 'Reserved (Deposit Pending)') : null,
+          tenantPhone: b.status === 'reserved' ? (resInfo.phone || null) : null,
+          reservationNotes: b.status === 'reserved' ? (resInfo.notes || null) : null
+        }
+      })
     }
 
     // 4. Fetch Tenants & Tenancies
@@ -286,6 +296,152 @@ export const useStore = () => {
     }
   }
 
+  // Update Room and adjust Bed-Spaces
+  const updateRoom = async ({ roomId, roomNumber, capacity, bedUpdates = [] }) => {
+    const targetRoom = state.rooms.find(r => r.id === roomId)
+    if (!targetRoom) return
+
+    const oldRoomNumber = targetRoom.room_number
+    targetRoom.room_number = roomNumber
+    targetRoom.capacity = Number(capacity)
+
+    try {
+      await supabase.from('rooms').update({
+        room_number: roomNumber,
+        capacity: Number(capacity)
+      }).eq('id', roomId)
+    } catch (err) {
+      console.warn('Supabase update room note:', err.message)
+    }
+
+    // Handle bed updates (labels and rent amounts)
+    const roomBeds = state.bedSpaces.filter(b => b.room_id === roomId)
+
+    for (const bed of roomBeds) {
+      const update = bedUpdates.find(u => u.id === bed.id)
+      let newLabel = bed.label
+      let newRent = Number(bed.rent_amount)
+
+      if (update) {
+        newLabel = update.label || newLabel
+        newRent = Number(update.rent_amount || newRent)
+      } else if (oldRoomNumber !== roomNumber && bed.label.includes(oldRoomNumber)) {
+        newLabel = bed.label.replace(oldRoomNumber, roomNumber)
+      }
+
+      bed.label = newLabel
+      bed.shortLabel = newLabel.replace(/Bed\s*/i, '').replace(/\s*\(.*\)/, '')
+      bed.rent_amount = newRent
+
+      try {
+        await supabase.from('bed_spaces').update({
+          label: newLabel,
+          rent_amount: newRent
+        }).eq('id', bed.id)
+      } catch (err) {
+        console.warn('Supabase update bed note:', err.message)
+      }
+    }
+
+    // Handle capacity adjustments
+    const newCapacity = Number(capacity)
+    const currentBedCount = roomBeds.length
+
+    if (newCapacity > currentBedCount) {
+      const defaultRent = roomBeds[0]?.rent_amount || 2500
+      for (let i = currentBedCount; i < newCapacity; i++) {
+        const letter = String.fromCharCode(65 + i)
+        const label = `Bed ${roomNumber}-${letter}`
+        const tempBedId = crypto.randomUUID ? crypto.randomUUID() : `bed-${Date.now()}-${i}`
+
+        try {
+          const { data: dbBed } = await supabase.from('bed_spaces').insert({
+            id: tempBedId,
+            room_id: roomId,
+            label: label,
+            rent_amount: defaultRent,
+            status: 'vacant'
+          }).select().single()
+
+          state.bedSpaces.push({
+            id: dbBed?.id || tempBedId,
+            room_id: roomId,
+            label: label,
+            shortLabel: `${roomNumber}${letter}`,
+            rent_amount: defaultRent,
+            status: 'vacant',
+            tenantId: null,
+            tenantName: null
+          })
+        } catch (err) {
+          console.warn('Supabase insert extra bed note:', err.message)
+          state.bedSpaces.push({
+            id: tempBedId,
+            room_id: roomId,
+            label: label,
+            shortLabel: `${roomNumber}${letter}`,
+            rent_amount: defaultRent,
+            status: 'vacant',
+            tenantId: null,
+            tenantName: null
+          })
+        }
+      }
+    } else if (newCapacity < currentBedCount) {
+      const excessCount = currentBedCount - newCapacity
+      const vacantBeds = roomBeds.filter(b => b.status === 'vacant')
+      const bedsToRemove = vacantBeds.slice(-excessCount)
+
+      for (const b of bedsToRemove) {
+        try {
+          await supabase.from('bed_spaces').delete().eq('id', b.id)
+        } catch (err) {
+          console.warn('Supabase delete bed note:', err.message)
+        }
+        const idx = state.bedSpaces.findIndex(item => item.id === b.id)
+        if (idx !== -1) state.bedSpaces.splice(idx, 1)
+      }
+    }
+
+    return targetRoom
+  }
+
+  // Delete Room and cascade-remove its Bed-Spaces
+  const deleteRoom = async (roomId) => {
+    const roomBeds = state.bedSpaces.filter(b => b.room_id === roomId)
+    const occupiedBeds = roomBeds.filter(b => b.status === 'occupied')
+
+    if (occupiedBeds.length > 0) {
+      throw new Error(`Cannot delete room with active tenants (${occupiedBeds.map(b => b.tenantName).join(', ')}). Please vacate or reassign tenants first.`)
+    }
+
+    // Clear reservations from localStorage if any
+    try {
+      const saved = JSON.parse(localStorage.getItem('pandastays_reservations') || '{}')
+      roomBeds.forEach(b => {
+        delete saved[b.id]
+      })
+      localStorage.setItem('pandastays_reservations', JSON.stringify(saved))
+    } catch (e) {}
+
+    // Delete from Supabase
+    try {
+      await supabase.from('bed_spaces').delete().eq('room_id', roomId)
+      await supabase.from('rooms').delete().eq('id', roomId)
+    } catch (err) {
+      console.warn('Supabase delete room note:', err.message)
+    }
+
+    // Remove from local reactive state
+    state.bedSpaces = state.bedSpaces.filter(b => b.room_id !== roomId)
+    const roomIdx = state.rooms.findIndex(r => r.id === roomId)
+    if (roomIdx !== -1) {
+      state.rooms.splice(roomIdx, 1)
+    }
+
+    return { success: true }
+  }
+
   // Onboard Tenant & assign to Bed-Space
   const onboardTenant = async (tenantData) => {
     // 1. Insert into tenants table
@@ -338,7 +494,72 @@ export const useStore = () => {
       status: 'active'
     })
 
+    // If bed was previously reserved, clear its reservation entry
+    try {
+      const saved = JSON.parse(localStorage.getItem('pandastays_reservations') || '{}')
+      delete saved[tenantData.bedSpaceId]
+      localStorage.setItem('pandastays_reservations', JSON.stringify(saved))
+    } catch (e) {}
+
     return { tenantId, tenancyId: dbTenancy?.id }
+  }
+
+  // Reserve Bed-Space (locks bed as reserved without payment)
+  const reserveBedSpace = async ({ bedSpaceId, studentName, studentPhone, notes }) => {
+    try {
+      await supabase.from('bed_spaces').update({ status: 'reserved' }).eq('id', bedSpaceId)
+    } catch (e) {
+      console.warn('Supabase reserve note:', e.message)
+    }
+
+    const targetBed = state.bedSpaces.find(b => b.id === bedSpaceId)
+    if (targetBed) {
+      targetBed.status = 'reserved'
+      targetBed.tenantName = studentName || 'Reserved (Deposit Pending)'
+      targetBed.tenantPhone = studentPhone || ''
+      targetBed.reservationNotes = notes || ''
+      targetBed.paymentStatus = 'unpaid'
+    }
+
+    try {
+      const saved = JSON.parse(localStorage.getItem('pandastays_reservations') || '{}')
+      saved[bedSpaceId] = {
+        name: studentName || 'Reserved (Deposit Pending)',
+        phone: studentPhone || '',
+        notes: notes || '',
+        reservedAt: new Date().toISOString()
+      }
+      localStorage.setItem('pandastays_reservations', JSON.stringify(saved))
+    } catch (e) {}
+
+    return { success: true, bed: targetBed }
+  }
+
+  // Release Bed-Space back to vacant
+  const releaseBedSpace = async (bedSpaceId) => {
+    try {
+      await supabase.from('bed_spaces').update({ status: 'vacant' }).eq('id', bedSpaceId)
+    } catch (e) {
+      console.warn('Supabase release note:', e.message)
+    }
+
+    const targetBed = state.bedSpaces.find(b => b.id === bedSpaceId)
+    if (targetBed) {
+      targetBed.status = 'vacant'
+      targetBed.tenantId = null
+      targetBed.tenantName = null
+      targetBed.tenantPhone = null
+      targetBed.reservationNotes = null
+      targetBed.paymentStatus = null
+    }
+
+    try {
+      const saved = JSON.parse(localStorage.getItem('pandastays_reservations') || '{}')
+      delete saved[bedSpaceId]
+      localStorage.setItem('pandastays_reservations', JSON.stringify(saved))
+    } catch (e) {}
+
+    return { success: true }
   }
 
   // Record Payment — routed exclusively through backend service role endpoint (RLS rejects client direct insert)
@@ -500,7 +721,11 @@ export const useStore = () => {
     occupancyStats,
     ensureProperty,
     addRoomWithBeds,
+    updateRoom,
+    deleteRoom,
     onboardTenant,
+    reserveBedSpace,
+    releaseBedSpace,
     syncWithSupabase,
     recordPayment,
     addReport,

@@ -177,6 +177,24 @@ const sizeDimensions = computed(() => {
           }" class="capitalize">{{ bed.paymentStatus }}</span>
         </p>
       </div>
+      <div v-else-if="bed.status === 'reserved'" class="space-y-1">
+        <p class="flex items-center justify-between gap-3">
+          <span class="opacity-70 text-[10px]">Prospect:</span> 
+          <span class="font-bold text-white">{{ bed.tenantName || 'Holding Prospect' }}</span>
+        </p>
+        <p v-if="bed.tenantPhone" class="flex items-center justify-between gap-3">
+          <span class="opacity-70 text-[10px]">Phone:</span> 
+          <span class="font-data-mono text-white/90">{{ bed.tenantPhone }}</span>
+        </p>
+        <p class="flex items-center justify-between gap-3">
+          <span class="opacity-70 text-[10px]">Rent:</span> 
+          <span class="font-data-mono text-primary-accent font-semibold">ZMW {{ Number(bed.rent_amount || 0).toLocaleString() }}/mo</span>
+        </p>
+        <p class="text-[10px] text-tertiary-accent mt-0.5 flex items-center gap-1 font-medium">
+          <span class="material-symbols-outlined text-[13px]">lock_clock</span>
+          <span>Unpaid hold &bull; Click to manage</span>
+        </p>
+      </div>
       <div v-else class="space-y-1">
         <p class="flex items-center justify-between gap-3">
           <span class="opacity-70 text-[10px]">Rent:</span> 
@@ -184,7 +202,7 @@ const sizeDimensions = computed(() => {
         </p>
         <p class="text-[10px] text-primary-accent mt-0.5 flex items-center gap-1 font-medium">
           <span class="material-symbols-outlined text-[13px]">add_circle</span>
-          <span>Click to assign tenant</span>
+          <span>Click to reserve or assign</span>
         </p>
       </div>
       <!-- Triangle Indicator pointing down to the bed -->
