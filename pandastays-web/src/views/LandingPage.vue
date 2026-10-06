@@ -118,18 +118,20 @@ const steps = [
           <a href="#testimonials" class="hover:text-white transition-colors">Testimonials</a>
         </div>
 
-        <div class="flex items-center gap-3">
+        <div class="flex items-center gap-2.5">
           <router-link
-            to="/"
-            class="text-white/70 hover:text-white transition-colors text-sm font-medium"
+            to="/tenant/portal"
+            class="px-3.5 py-1.5 rounded-full border border-white/20 text-white/80 hover:text-white hover:bg-white/10 text-xs font-semibold transition-all flex items-center gap-1.5"
           >
-            Sign In
+            <span class="material-symbols-outlined text-[15px]">school</span>
+            <span>Resident Portal</span>
           </router-link>
           <router-link
-            to="/"
-            class="px-4 py-2 bg-primary hover:bg-on-primary-fixed-variant text-white text-sm font-semibold rounded-lg transition-colors"
+            to="/app"
+            class="px-4 py-2 bg-primary hover:bg-on-primary-fixed-variant text-white text-xs font-semibold rounded-full transition-colors flex items-center gap-1.5 shadow-xs"
           >
-            Get Started
+            <span class="material-symbols-outlined text-[15px]">real_estate_agent</span>
+            <span>Landlord Portal</span>
           </router-link>
         </div>
       </div>
@@ -166,19 +168,19 @@ const steps = [
 
           <div class="flex flex-wrap gap-4 mb-16">
             <router-link
-              to="/"
+              to="/app"
               class="flex items-center gap-2 px-6 py-3.5 bg-primary hover:bg-on-primary-fixed-variant text-white font-semibold rounded-xl transition-all hover:scale-[1.02] active:scale-95 shadow-lg shadow-primary/40"
             >
-              <span class="material-symbols-outlined text-[20px]">rocket_launch</span>
-              Start Managing Free
+              <span class="material-symbols-outlined text-[20px]">real_estate_agent</span>
+              <span>Launch Landlord Portal</span>
             </router-link>
-            <a
-              href="#how-it-works"
-              class="flex items-center gap-2 px-6 py-3.5 border border-white/20 hover:border-white/40 text-white/80 hover:text-white font-medium rounded-xl transition-all"
+            <router-link
+              to="/tenant/portal"
+              class="flex items-center gap-2 px-6 py-3.5 border border-white/20 hover:border-white/40 text-white/80 hover:text-white font-medium rounded-xl transition-all hover:bg-white/5"
             >
-              <span class="material-symbols-outlined text-[20px]">play_circle</span>
-              See How It Works
-            </a>
+              <span class="material-symbols-outlined text-[20px]">school</span>
+              <span>Resident Tenant Portal</span>
+            </router-link>
           </div>
 
           <!-- Trust Stats -->
