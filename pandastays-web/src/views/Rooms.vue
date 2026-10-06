@@ -5,13 +5,21 @@ import BedGrid from '../components/BedGrid.vue'
 import BedIcon from '../components/BedIcon.vue'
 import AssignTenantModal from '../components/AssignTenantModal.vue'
 import AddRoomModal from '../components/AddRoomModal.vue'
+import EditRoomModal from '../components/EditRoomModal.vue'
 
-const { state } = useStore()
+const { state, deleteRoom } = useStore()
 
 const selectedBed = ref(null)
 const selectedRoom = ref(null)
 const isAssignModalOpen = ref(false)
 const isAddRoomModalOpen = ref(false)
+
+// Edit & Delete Room Modals State
+const selectedRoomToEdit = ref(null)
+const isEditRoomModalOpen = ref(false)
+const roomToDelete = ref(null)
+const isDeleteConfirmModalOpen = ref(false)
+const isDeleting = ref(false)
 
 // Inventory per-room filter & view controls
 const selectedRoomFilter = ref('all') // 'all' or room_number
@@ -86,6 +94,51 @@ const handleSelectBed = ({ bed, room }) => {
   selectedRoom.value = room
   if (bed.status === 'vacant' || bed.status === 'reserved') {
     isAssignModalOpen.value = true
+  }
+}
+
+// Room CRUD Handlers
+const openEditRoom = (room) => {
+  selectedRoomToEdit.value = room
+  isEditRoomModalOpen.value = true
+}
+
+const promptDeleteRoom = (room) => {
+  roomToDelete.value = room
+  isDeleteConfirmModalOpen.value = true
+}
+
+const roomToDeleteHasTenants = computed(() => {
+  if (!roomToDelete.value?.beds) return false
+  return roomToDelete.value.beds.some(b => b.status === 'occupied')
+})
+
+const executeDeleteRoom = async () => {
+  if (!roomToDelete.value) return
+  isDeleting.value = true
+  try {
+    await deleteRoom(roomToDelete.value.id)
+    if (selectedRoomFilter.value === roomToDelete.value.room_number) {
+      selectedRoomFilter.value = 'all'
+    }
+    isDeleteConfirmModalOpen.value = false
+    roomToDelete.value = null
+  } catch (err) {
+    console.error('Failed to delete room:', err)
+  } finally {
+    isDeleting.value = false
+  }
+}
+
+const handleRoomUpdated = (updatedRoom) => {
+  if (selectedRoomToEdit.value && selectedRoomFilter.value === selectedRoomToEdit.value.room_number) {
+    selectedRoomFilter.value = updatedRoom.room_number
+  }
+}
+
+const handleRoomDeleted = (deletedRoom) => {
+  if (selectedRoomFilter.value === deletedRoom.room_number) {
+    selectedRoomFilter.value = 'all'
   }
 }
 </script>
@@ -168,7 +221,7 @@ const handleSelectBed = ({ bed, room }) => {
             </div>
             <h3 class="font-bold text-lg text-on-surface">Bed-Space Inventory & Pricing</h3>
             <p class="text-xs text-on-surface-variant">
-              Organized by room unit. View independent rates, occupant details, and manage reservations without clutter.
+              Organized by room unit. View independent rates, edit room details, and manage reservations without clutter.
             </p>
           </div>
 
@@ -353,15 +406,37 @@ const handleSelectBed = ({ bed, room }) => {
             </div>
           </div>
 
-          <!-- Right side: Revenue & Collapse Trigger -->
-          <div class="flex items-center justify-between sm:justify-end gap-4">
-            <div class="text-right">
+          <!-- Right side: Revenue, CRUD Action Buttons & Collapse Trigger -->
+          <div class="flex items-center justify-between sm:justify-end gap-2.5">
+            <div class="text-right mr-1">
               <p class="text-[10px] uppercase font-bold text-on-surface-muted tracking-wider">Room Potential</p>
               <p class="font-data-mono font-bold text-sm text-primary">
                 ZMW {{ getRoomStats(room).totalMonthly.toLocaleString() }} <span class="text-[10px] font-normal text-on-surface-variant">/mo</span>
               </p>
             </div>
 
+            <!-- Edit Room Button -->
+            <button 
+              @click.stop="openEditRoom(room)"
+              type="button"
+              class="btn-pill-outline py-1 px-2.5 text-[11px] flex items-center gap-1 hover:border-primary hover:text-primary transition-colors"
+              title="Edit room credentials & beds"
+            >
+              <span class="material-symbols-outlined text-[14px]">edit</span>
+              <span>Edit</span>
+            </button>
+
+            <!-- Delete Room Button -->
+            <button 
+              @click.stop="promptDeleteRoom(room)"
+              type="button"
+              class="btn-pill-outline py-1 px-2 text-[11px] text-error border-error/30 hover:bg-error/10 hover:border-error flex items-center transition-colors"
+              title="Delete room"
+            >
+              <span class="material-symbols-outlined text-[14px]">delete</span>
+            </button>
+
+            <!-- Collapse Chevron -->
             <div class="w-8 h-8 rounded-full flex items-center justify-center bg-surface-dim text-on-surface-variant group-hover:bg-primary/10 group-hover:text-primary transition-all">
               <span class="material-symbols-outlined text-[18px] transition-transform duration-200" :class="{ 'rotate-180': !collapsedRooms[room.id] }">
                 expand_more
@@ -508,6 +583,72 @@ const handleSelectBed = ({ bed, room }) => {
               </tr>
             </tbody>
           </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal: Edit Room & Bed Credentials -->
+    <EditRoomModal
+      :is-open="isEditRoomModalOpen"
+      :room="selectedRoomToEdit"
+      @close="isEditRoomModalOpen = false"
+      @room-updated="handleRoomUpdated"
+      @room-deleted="handleRoomDeleted"
+    />
+
+    <!-- Modal: Confirm Direct Delete Room -->
+    <div 
+      v-if="isDeleteConfirmModalOpen" 
+      class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-inverse-surface/40 backdrop-blur-xs"
+    >
+      <div class="card-bento w-full max-w-sm p-6 bg-surface shadow-2xl space-y-4 border border-outline-variant/60">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-full bg-error/10 text-error flex items-center justify-center shrink-0">
+            <span class="material-symbols-outlined text-[20px]">delete_forever</span>
+          </div>
+          <div>
+            <h3 class="font-bold text-base text-on-surface">Delete Room {{ roomToDelete?.room_number }}?</h3>
+            <p class="text-xs text-on-surface-variant">Permanent unit removal</p>
+          </div>
+        </div>
+
+        <div v-if="roomToDeleteHasTenants" class="p-3 rounded-xl bg-error/10 border border-error/20 text-error text-xs">
+          <p class="font-bold flex items-center gap-1 mb-1">
+            <span class="material-symbols-outlined text-[15px]">block</span>
+            Active Tenants Detected
+          </p>
+          <p>
+            Room {{ roomToDelete?.room_number }} cannot be deleted because it contains occupied beds with active tenancies. Please vacate or reassign tenants first.
+          </p>
+        </div>
+        <div v-else class="text-xs text-on-surface-variant space-y-2">
+          <p>
+            Are you sure you want to delete <strong>Room {{ roomToDelete?.room_number }}</strong>?
+          </p>
+          <p class="text-[11px] text-on-surface-muted">
+            This will permanently remove the room and its {{ roomToDelete?.beds?.length || 0 }} bed space(s) from the architectural floorplan and inventory.
+          </p>
+        </div>
+
+        <div class="flex items-center justify-end gap-2.5 pt-3 border-t border-border-card">
+          <button 
+            @click="isDeleteConfirmModalOpen = false"
+            type="button"
+            class="btn-pill-outline text-xs"
+          >
+            Cancel
+          </button>
+          <button 
+            v-if="!roomToDeleteHasTenants"
+            @click="executeDeleteRoom"
+            :disabled="isDeleting"
+            type="button"
+            class="btn-pill-primary text-xs bg-error hover:bg-error/90 text-white flex items-center gap-1"
+          >
+            <span v-if="isDeleting" class="material-symbols-outlined animate-spin text-[14px]">sync</span>
+            <span v-else class="material-symbols-outlined text-[14px]">delete</span>
+            <span>{{ isDeleting ? 'Deleting...' : 'Confirm Delete' }}</span>
+          </button>
         </div>
       </div>
     </div>
