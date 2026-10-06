@@ -105,8 +105,8 @@ const operationsNav = [
     <aside 
       class="flex flex-col fixed left-0 top-0 h-full bg-surface border-r border-border-card z-50 py-5 transition-all duration-300 ease-in-out md:translate-x-0"
       :class="[
-        isMobileMenuOpen ? 'translate-x-0 shadow-2xl w-[250px] px-3.5' : '-translate-x-full md:translate-x-0',
-        isSidebarCollapsed ? 'md:w-[72px] md:px-2.5' : 'md:w-[250px] md:px-3.5'
+        isMobileMenuOpen ? 'translate-x-0 shadow-2xl w-sidebar-width px-3.5' : '-translate-x-full md:translate-x-0',
+        isSidebarCollapsed ? 'md:w-18 md:px-2.5' : 'md:w-sidebar-width md:px-3.5'
       ]"
     >
       <!-- Brand Logo Header & Collapse Toggle -->
@@ -115,7 +115,7 @@ const operationsNav = [
         :class="isSidebarCollapsed ? 'md:justify-center px-1' : 'justify-between px-2'"
       >
         <div class="flex items-center gap-2.5 overflow-hidden">
-          <div class="w-9 h-9 min-w-[36px] rounded-xl bg-primary-container flex items-center justify-center text-primary shadow-xs">
+          <div class="w-9 h-9 min-w-9 rounded-xl bg-primary-container flex items-center justify-center text-primary shadow-xs">
             <span class="material-symbols-outlined text-[20px]">holiday_village</span>
           </div>
           <div 
@@ -311,7 +311,7 @@ const operationsNav = [
     <!-- Main Content Wrapper -->
     <div 
       class="flex flex-col min-h-screen w-full transition-all duration-300 ease-in-out"
-      :class="isSidebarCollapsed ? 'md:ml-[72px] md:w-[calc(100%-72px)]' : 'md:ml-[250px] md:w-[calc(100%-250px)]'"
+      :class="isSidebarCollapsed ? 'md:ml-18 md:w-[calc(100%-72px)]' : 'md:ml-sidebar-width md:w-[calc(100%-250px)]'"
     >
       <!-- TopNavBar Header (Clean White Bento Header) -->
       <header class="flex justify-between items-center w-full px-4 md:px-6 py-3 h-16 bg-surface border-b border-border-card sticky top-0 z-40">
