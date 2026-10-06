@@ -89,6 +89,8 @@ const submitPayment = async () => {
 
     // Record payment into reactive store
     const paymentRecord = await recordPayment({
+      tenancyId: tenant?.tenancy_id,
+      tenantId: tenant?.id,
       tenantName: tenant.name,
       bedLabel: tenant.bed_label || 'Assigned Bed',
       amount: Number(paymentForm.value.amount),
@@ -254,17 +256,17 @@ const submitPayment = async () => {
       </div>
 
       <!-- Footer Buttons -->
-      <div class="p-4 border-t border-outline-variant bg-surface-container-lowest flex items-center justify-end gap-3">
+      <div class="p-4 border-t border-border-card bg-surface flex items-center justify-end gap-3">
         <button 
           @click="handleClose" 
-          class="px-4 py-2 border border-outline-variant text-on-surface text-xs font-medium rounded-sm hover:bg-surface-container-low"
+          class="btn-pill-outline text-xs"
         >
           Cancel
         </button>
         <button 
           @click="submitPayment"
           :disabled="isSubmitting || !paymentForm.amount"
-          class="px-4 py-2 bg-primary text-on-primary text-xs font-semibold rounded-sm hover:bg-primary/90 disabled:opacity-50 flex items-center gap-2"
+          class="btn-pill-primary text-xs disabled:opacity-50"
         >
           <span v-if="isSubmitting" class="material-symbols-outlined animate-spin text-[16px]">sync</span>
           <span>Send Mobile Money STK Push</span>

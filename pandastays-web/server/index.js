@@ -1,6 +1,7 @@
 import express from 'express'
 import cors from 'cors'
 import dotenv from 'dotenv'
+import crypto from 'crypto'
 import { createClient } from '@supabase/supabase-js'
 
 dotenv.config()
@@ -9,15 +10,54 @@ const app = express()
 const PORT = process.env.PORT || 3001
 
 app.use(cors())
-app.use(express.json())
+app.use(express.json({
+  verify: (req, res, buf) => { req.rawBody = buf }
+}))
 
 // Initialize Supabase Client for backend operations
 const supabaseUrl = process.env.VITE_SUPABASE_URL || 'https://placeholder.supabase.co'
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY || 'placeholder-key'
 const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
+const supabaseAuthClient = createClient(
+  supabaseUrl,
+  process.env.VITE_SUPABASE_ANON_KEY || 'placeholder-key'
+)
+
 const LENCO_SECRET_KEY = process.env.LENCO_SECRET_KEY || 'lenco_secret_placeholder'
 const LENCO_API_BASE = 'https://api.lenco.co/v2'
+
+function verifyLencoSignature(req) {
+  const signature = req.headers['x-lenco-signature']
+  if (!signature || !req.rawBody) return false
+
+  const webhookHashKey = crypto.createHash('sha256').update(LENCO_SECRET_KEY).digest('hex')
+  const expectedSignature = crypto
+    .createHmac('sha512', webhookHashKey)
+    .update(req.rawBody)
+    .digest('hex')
+
+  const sigBuf = Buffer.from(signature, 'utf8')
+  const expectedBuf = Buffer.from(expectedSignature, 'utf8')
+  if (sigBuf.length !== expectedBuf.length) return false
+  return crypto.timingSafeEqual(sigBuf, expectedBuf)
+}
+
+async function requireLandlord(req, res, next) {
+  const authHeader = req.headers.authorization || ''
+  const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null
+  if (!token) {
+    return res.status(401).json({ error: 'Missing Authorization bearer token' })
+  }
+
+  const { data: { user }, error } = await supabaseAuthClient.auth.getUser(token)
+  if (error || !user) {
+    return res.status(401).json({ error: 'Invalid or expired session' })
+  }
+
+  req.landlordId = user.id
+  next()
+}
 
 /**
  * POST /api/payments/momo
@@ -134,6 +174,11 @@ app.post('/api/payments/momo', async (req, res) => {
  * Webhook handler for Lenco collection success notifications
  */
 app.post('/api/webhooks/lenco', async (req, res) => {
+  if (!verifyLencoSignature(req)) {
+    console.warn('Rejected Lenco webhook: invalid or missing signature')
+    return res.status(401).json({ error: 'Invalid signature' })
+  }
+
   try {
     const event = req.body
     console.log('Received Lenco Webhook Event:', JSON.stringify(event))
@@ -170,76 +215,69 @@ app.post('/api/webhooks/lenco', async (req, res) => {
  * Server-side payment recording using service role key (bypasses RLS)
  * Spec: Docs/pandastays-full-rebuild-brief.md & RLS Security Fix Brief
  */
-app.post('/api/payments/record', async (req, res) => {
+app.post('/api/payments/record', requireLandlord, async (req, res) => {
   try {
     const {
       tenancy_id,
-      tenant_name,
-      bed_label,
-      amount,
       method = 'momo_mtn',
       method_label = 'MTN MoMo',
       gateway_reference,
-      status = 'success'
+      amount
     } = req.body
+    // NOTE: `status` is intentionally no longer read from the request body.
+    // A manually-recorded payment from an authenticated landlord is always 'success' —
+    // there is no legitimate case for a client to set any other status here.
 
-    let resolvedTenancyId = tenancy_id
-    if (!resolvedTenancyId) {
-      // Find active tenancy
-      const { data: tenancy } = await supabase
-        .from('tenancies')
-        .select('id')
-        .eq('status', 'active')
-        .limit(1)
-        .single()
-      resolvedTenancyId = tenancy?.id || '66666666-0000-4000-8000-000000000001'
+    if (!tenancy_id || !amount) {
+      return res.status(400).json({ error: 'tenancy_id and amount are required' })
     }
 
-    // Determine count of payments for receipt number
+    // Verify the calling landlord actually owns this tenancy's property chain
+    const { data: tenancyCheck, error: ownErr } = await supabase
+      .from('tenancies')
+      .select(`
+        id,
+        bed_space:bed_spaces (
+          room:rooms (
+            property:properties ( landlord_id )
+          )
+        )
+      `)
+      .eq('id', tenancy_id)
+      .single()
+
+    const ownerId = tenancyCheck?.bed_space?.room?.property?.landlord_id
+    if (ownErr || !tenancyCheck || ownerId !== req.landlordId) {
+      return res.status(403).json({ error: 'You do not have access to this tenancy' })
+    }
+
     const { count } = await supabase
       .from('payments')
       .select('*', { count: 'exact', head: true })
 
     const receiptNumber = `REC-2026-${String((count || 0) + 1).padStart(3, '0')}`
-    const refNum = gateway_reference || `LNC-INIT-${Date.now().toString().slice(-6)}`
+    const refNum = gateway_reference || `MANUAL-${Date.now().toString().slice(-6)}`
 
     const { data: dbPayment, error: insertError } = await supabase
       .from('payments')
       .insert({
-        tenancy_id: resolvedTenancyId,
+        tenancy_id,
         amount: Number(amount),
         paid_at: new Date().toISOString(),
-        method: method,
+        method,
         gateway_reference: refNum,
-        status: status,
+        status: 'success', // hardcoded — never from req.body
         receipt_number: receiptNumber
       })
       .select()
-      .single()
 
     if (insertError) {
-      console.error('Server payments insert error:', insertError)
-      return res.status(500).json({ success: false, error: insertError.message })
+      return res.status(500).json({ error: insertError.message })
     }
 
-    return res.status(200).json({
-      success: true,
-      payment: {
-        id: dbPayment.id,
-        tenant_name: tenant_name || 'Tenant',
-        bed_label: bed_label || 'Bed Space',
-        amount: Number(dbPayment.amount),
-        paid_at: dbPayment.paid_at?.substring(0, 16).replace('T', ' ') || '',
-        method: dbPayment.method,
-        method_label: method_label,
-        gateway_reference: dbPayment.gateway_reference,
-        status: dbPayment.status,
-        receipt_number: dbPayment.receipt_number
-      }
-    })
+    return res.status(200).json({ success: true, payment: dbPayment })
   } catch (error) {
-    console.error('Error recording payment on server:', error)
-    return res.status(500).json({ success: false, error: error.message })
+    return res.status(500).json({ error: error.message })
   }
 })
 

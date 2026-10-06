@@ -22,23 +22,23 @@ const props = defineProps({
 
 const emit = defineEmits(['click'])
 
-// Status styling according to Section 5.1 & 5.3
+// Status styling according to Bento architecture & Section 5 rules
 const statusColorClass = computed(() => {
   if (props.bed.status === 'vacant') {
-    return 'border-dashed border-outline text-on-surface-variant/60 bg-transparent hover:border-primary hover:bg-primary-container/20'
+    return 'border-dashed border-outline text-on-surface-muted bg-surface hover:border-primary hover:text-primary hover:bg-primary-container/20'
   }
   if (props.bed.status === 'reserved') {
-    return 'border-tertiary-accent/60 bg-tertiary-container/30 text-tertiary hover:border-tertiary'
+    return 'border-primary/60 bg-hatch-diagonal text-primary hover:border-primary'
   }
   // Occupied: check payment status if present
   const payStatus = props.bed.paymentStatus || 'paid'
   if (payStatus === 'overdue') {
-    return 'border-error bg-error-container/40 text-error hover:ring-1 hover:ring-error'
+    return 'border-error bg-error-container/60 text-error hover:ring-2 hover:ring-error/20'
   }
   if (payStatus === 'partial') {
-    return 'border-tertiary-accent bg-tertiary-container/50 text-tertiary hover:ring-1 hover:ring-tertiary-accent'
+    return 'border-tertiary bg-tertiary-container/60 text-tertiary hover:ring-2 hover:ring-tertiary/20'
   }
-  return 'border-primary bg-primary-container/60 text-primary hover:ring-1 hover:ring-primary'
+  return 'border-primary bg-primary-container text-primary hover:ring-2 hover:ring-primary/20 shadow-xs'
 })
 
 const sizeDimensions = computed(() => {
@@ -77,28 +77,31 @@ const sizeDimensions = computed(() => {
   >
     <!-- Bed Architectural Silhouette Card (Top-Down Floorplan View) -->
     <div 
-      class="relative flex flex-col items-center justify-between p-1 rounded-sm border transition-all duration-150 select-none shadow-[0_1px_2px_rgba(0,0,0,0.03)]"
+      class="relative flex flex-col items-center justify-between p-1 rounded-lg border transition-all duration-150 select-none"
       :class="[statusColorClass, sizeDimensions.box]"
     >
       <!-- Headboard Top Rail -->
       <div 
-        class="w-full h-1 rounded-t-xs opacity-80"
+        class="w-full h-1.5 rounded-t-sm opacity-90"
         :class="{
           'bg-primary': bed.status === 'occupied' && (bed.paymentStatus !== 'overdue' && bed.paymentStatus !== 'partial'),
           'bg-error': bed.status === 'occupied' && bed.paymentStatus === 'overdue',
-          'bg-tertiary-accent': (bed.status === 'occupied' && bed.paymentStatus === 'partial') || bed.status === 'reserved',
+          'bg-tertiary': bed.status === 'occupied' && bed.paymentStatus === 'partial',
+          'bg-primary-accent': bed.status === 'reserved',
           'bg-outline': bed.status === 'vacant'
         }"
       ></div>
 
       <!-- Pillow Element -->
       <div 
-        class="rounded-xs border opacity-90 transition-transform group-hover:scale-105"
+        class="rounded-sm border opacity-95 transition-transform group-hover:scale-105"
         :class="[
           sizeDimensions.pillow,
           bed.status === 'occupied' 
-            ? 'bg-surface-container-lowest border-current shadow-xs' 
-            : 'border-dashed border-outline-variant bg-surface/50'
+            ? 'bg-surface border-current shadow-xs' 
+            : bed.status === 'reserved'
+            ? 'bg-surface border-primary/50'
+            : 'border-dashed border-outline/80 bg-surface/80'
         ]"
       ></div>
 
@@ -110,7 +113,7 @@ const sizeDimensions = computed(() => {
           </span>
         </template>
         <template v-else-if="bed.status === 'reserved'">
-          <span class="material-symbols-outlined" :class="sizeDimensions.icon">lock_clock</span>
+          <span class="material-symbols-outlined text-primary" :class="sizeDimensions.icon">lock_clock</span>
         </template>
         <template v-else>
           <span class="material-symbols-outlined opacity-60 group-hover:opacity-100 group-hover:text-primary transition-opacity" :class="sizeDimensions.icon">add</span>
@@ -138,14 +141,14 @@ const sizeDimensions = computed(() => {
 
     <!-- Hover Tooltip -->
     <div 
-      class="pointer-events-none absolute bottom-full mb-2 hidden group-hover:flex flex-col z-30 min-w-35 px-2.5 py-1.5 bg-inverse-surface text-inverse-on-surface text-[11px] rounded-sm shadow-md border border-outline/30"
+      class="pointer-events-none absolute bottom-full mb-2 hidden group-hover:flex flex-col z-30 min-w-36 px-2.5 py-1.5 bg-hero-dark text-white text-[11px] rounded-xl shadow-lg border border-white/10"
     >
-      <div class="flex items-center justify-between gap-2 border-b border-inverse-on-surface/20 pb-1 mb-1 font-semibold">
+      <div class="flex items-center justify-between gap-2 border-b border-white/15 pb-1 mb-1 font-semibold">
         <span>{{ bed.label }}</span>
-        <span class="capitalize text-[10px] px-1 rounded" :class="{
-          'bg-primary text-on-primary': bed.status === 'occupied',
-          'bg-tertiary-accent text-on-primary': bed.status === 'reserved',
-          'bg-surface-variant text-on-surface': bed.status === 'vacant'
+        <span class="capitalize text-[10px] px-1.5 py-0.5 rounded-full" :class="{
+          'bg-primary-accent text-hero-dark font-bold': bed.status === 'occupied',
+          'bg-tertiary text-white': bed.status === 'reserved',
+          'bg-white/20 text-white': bed.status === 'vacant'
         }">{{ bed.status }}</span>
       </div>
       <div v-if="bed.status === 'occupied'" class="space-y-0.5">
@@ -154,15 +157,15 @@ const sizeDimensions = computed(() => {
         <p v-if="bed.paymentStatus">
           <span class="opacity-70">Status:</span> 
           <span :class="{
-            'text-primary-fixed-dim': bed.paymentStatus === 'paid',
-            'text-tertiary-fixed-dim': bed.paymentStatus === 'partial',
+            'text-primary-accent': bed.paymentStatus === 'paid',
+            'text-tertiary-accent': bed.paymentStatus === 'partial',
             'text-error-container': bed.paymentStatus === 'overdue'
           }" class="font-medium capitalize"> {{ bed.paymentStatus }}</span>
         </p>
       </div>
       <div v-else class="space-y-0.5">
         <p><span class="opacity-70">Rent:</span> <span class="font-data-mono">ZMW {{ Number(bed.rent_amount || 0).toLocaleString() }}/mo</span></p>
-        <p class="text-[10px] text-primary-fixed-dim mt-1">Click to assign tenant</p>
+        <p class="text-[10px] text-primary-accent mt-1">Click to assign tenant</p>
       </div>
     </div>
   </div>
