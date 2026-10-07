@@ -2,6 +2,7 @@
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useStore } from '../lib/store'
+import { ReceiptVoucher } from '../components'
 
 const router = useRouter()
 const { state, recordPayment } = useStore()
@@ -83,9 +84,9 @@ const printReceipt = () => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-surface py-8 px-4 flex flex-col items-center justify-center">
+  <div class="min-h-screen bg-surface py-6 sm:py-8 px-3 sm:px-4 flex flex-col items-center justify-center">
     <!-- PandaStays Brand Header -->
-    <div class="mb-6 text-center">
+    <div class="mb-5 sm:mb-6 text-center">
       <div class="inline-flex items-center gap-2 mb-1">
         <div class="w-8 h-8 rounded bg-primary text-on-primary flex items-center justify-center font-bold text-sm">
           PS
@@ -95,10 +96,9 @@ const printReceipt = () => {
       <p class="text-xs text-on-surface-variant font-medium">Official Student Housing Rent Checkout</p>
     </div>
 
-    <!-- Main Payment Container (Paper Receipt Aesthetic) -->
-    <div class="w-full max-w-md receipt-paper rounded-sm p-6 shadow-md border border-outline space-y-5">
-      <!-- Checkout Mode Selector -->
-      <div v-if="!isSuccess" class="space-y-4">
+    <!-- Main Payment Container (Checkout form when not yet paid) -->
+    <div v-if="!isSuccess" class="w-full max-w-md receipt-paper rounded-2xl p-4 sm:p-6 shadow-md border border-border-card space-y-4 sm:space-y-5">
+      <div class="space-y-4">
         <div class="flex items-center justify-between border-b border-outline-variant pb-3">
           <div>
             <span class="text-[10px] uppercase font-bold text-on-surface-variant">TENANCY INVOICE</span>
@@ -148,29 +148,29 @@ const printReceipt = () => {
           <label class="block text-xs font-semibold text-on-surface-variant uppercase mb-1.5">
             Select Mobile Money Operator
           </label>
-          <div class="grid grid-cols-3 gap-2">
+          <div class="grid grid-cols-3 gap-1.5 sm:gap-2">
             <label 
-              class="flex flex-col items-center justify-center p-2.5 rounded-sm border cursor-pointer transition-colors"
+              class="flex flex-col items-center justify-center p-2 sm:p-2.5 rounded-sm border cursor-pointer transition-colors"
               :class="selectedOperator === 'mtn' ? 'border-primary bg-primary-container/40 text-primary font-bold' : 'border-outline-variant bg-surface-container-low text-on-surface-variant'"
             >
               <input type="radio" value="mtn" v-model="selectedOperator" class="sr-only" />
-              <span class="text-xs">MTN MoMo</span>
+              <span class="text-[11px] sm:text-xs">MTN MoMo</span>
             </label>
 
             <label 
-              class="flex flex-col items-center justify-center p-2.5 rounded-sm border cursor-pointer transition-colors"
+              class="flex flex-col items-center justify-center p-2 sm:p-2.5 rounded-sm border cursor-pointer transition-colors"
               :class="selectedOperator === 'airtel' ? 'border-primary bg-primary-container/40 text-primary font-bold' : 'border-outline-variant bg-surface-container-low text-on-surface-variant'"
             >
               <input type="radio" value="airtel" v-model="selectedOperator" class="sr-only" />
-              <span class="text-xs">Airtel Money</span>
+              <span class="text-[11px] sm:text-xs">Airtel Money</span>
             </label>
 
             <label 
-              class="flex flex-col items-center justify-center p-2.5 rounded-sm border cursor-pointer transition-colors"
+              class="flex flex-col items-center justify-center p-2 sm:p-2.5 rounded-sm border cursor-pointer transition-colors"
               :class="selectedOperator === 'zamtel' ? 'border-primary bg-primary-container/40 text-primary font-bold' : 'border-outline-variant bg-surface-container-low text-on-surface-variant'"
             >
               <input type="radio" value="zamtel" v-model="selectedOperator" class="sr-only" />
-              <span class="text-xs">Zamtel</span>
+              <span class="text-[11px] sm:text-xs">Zamtel</span>
             </label>
           </div>
         </div>
@@ -195,78 +195,29 @@ const printReceipt = () => {
         <button 
           @click="initiateMobileMoneyPayment"
           :disabled="isProcessing"
-          class="w-full py-3 bg-primary text-on-primary font-semibold text-sm rounded-sm hover:bg-primary/90 transition-colors shadow-sm disabled:opacity-50 flex items-center justify-center gap-2"
+          class="w-full py-3 px-3 bg-primary text-on-primary font-semibold text-xs sm:text-sm rounded-sm hover:bg-primary/90 transition-colors shadow-sm disabled:opacity-50 flex items-center justify-center gap-2 text-center"
         >
           <span v-if="isProcessing" class="material-symbols-outlined animate-spin text-[18px]">sync</span>
           <span v-if="!isProcessing">Pay ZMW {{ Number(bed?.rent_amount || 2500).toLocaleString() }} via STK Push</span>
           <span v-else>Waiting for phone prompt confirmation...</span>
         </button>
       </div>
+    </div>
 
-      <!-- Success & Official Digital Paper Receipt Screen -->
-      <div v-else class="space-y-4">
-        <div class="text-center pb-2 border-b border-outline-variant">
-          <div class="w-12 h-12 rounded-full bg-primary-container text-primary mx-auto flex items-center justify-center mb-2">
-            <span class="material-symbols-outlined text-2xl">verified</span>
-          </div>
-          <h3 class="font-bold text-lg text-on-surface">Payment Successful!</h3>
-          <p class="text-xs text-primary font-semibold">Rent Confirmed & Reconciled</p>
-        </div>
-
-        <div class="space-y-2 font-data-mono text-xs">
-          <div class="flex justify-between py-1 border-b border-dashed border-outline-variant">
-            <span class="text-on-surface-variant">Receipt No:</span>
-            <span class="font-bold text-primary">{{ generatedReceipt?.receipt_number }}</span>
-          </div>
-
-          <div class="flex justify-between py-1 border-b border-dashed border-outline-variant">
-            <span class="text-on-surface-variant">Tenant:</span>
-            <span class="font-bold text-on-surface">{{ tenant?.name }}</span>
-          </div>
-
-          <div class="flex justify-between py-1 border-b border-dashed border-outline-variant">
-            <span class="text-on-surface-variant">Bed-Space:</span>
-            <span class="font-medium text-on-surface">{{ bed?.label }}</span>
-          </div>
-
-          <div class="flex justify-between py-1 border-b border-dashed border-outline-variant">
-            <span class="text-on-surface-variant">Gateway Ref:</span>
-            <span class="text-[11px]">{{ generatedReceipt?.gateway_reference }}</span>
-          </div>
-
-          <div class="flex justify-between py-1 border-b border-dashed border-outline-variant">
-            <span class="text-on-surface-variant">Channel:</span>
-            <span>{{ generatedReceipt?.method_label }}</span>
-          </div>
-
-          <div class="flex justify-between py-2 text-base font-bold text-primary border-t-2 border-primary mt-2">
-            <span>TOTAL PAID:</span>
-            <span>ZMW {{ Number(generatedReceipt?.amount).toLocaleString() }}</span>
-          </div>
-        </div>
-
-        <!-- Receipt Actions -->
-        <div class="flex flex-col gap-2 pt-2">
-          <button 
-            @click="printReceipt"
-            class="w-full py-2 bg-surface-container border border-outline rounded-sm text-xs font-semibold text-on-surface hover:bg-surface-container-high transition-colors"
-          >
-            Print Official Receipt Voucher
-          </button>
-          <router-link 
-            to="/tenant/portal"
-            class="w-full py-2 bg-primary text-on-primary text-center rounded-sm text-xs font-semibold hover:bg-primary/90 transition-colors"
-          >
-            Go to Tenant Portal &rarr;
-          </router-link>
-        </div>
-      </div>
+    <!-- Success & Official Executive Voucher with Scannable QR -->
+    <div v-else class="w-full max-w-145 animate-fade-in">
+      <ReceiptVoucher
+        :receipt="generatedReceipt"
+        :property-name="state.currentProperty?.name || 'Mukuba House'"
+        :show-actions="true"
+        @close="router.push('/tenant/portal')"
+      />
     </div>
 
     <!-- Back to Portal Footer -->
     <div class="mt-6 text-center">
-      <router-link to="/app" class="text-xs text-on-surface-variant hover:text-primary transition-colors">
-        &larr; Return to Landlord Dashboard
+      <router-link to="/tenant/portal" class="text-xs text-on-surface-variant hover:text-primary transition-colors">
+        &larr; Return to Resident Portal
       </router-link>
     </div>
   </div>
