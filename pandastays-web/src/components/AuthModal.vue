@@ -16,7 +16,7 @@ const props = defineProps({
 
 const emit = defineEmits(['close', 'authSuccess'])
 const router = useRouter()
-const { signInWithPassword, signUp, signInWithMagicLink, switchDemoRole, isLoading, authError } = useAuth()
+const { signInWithPassword, signUp, signInWithMagicLink, isLoading, authError } = useAuth()
 
 const activeRole = ref(props.initialRole)
 const authMode = ref('signin') // 'signin' or 'signup'
@@ -73,7 +73,9 @@ const handleSubmit = async () => {
     })
 
     if (res.success) {
-      successMessage.value = 'Account created successfully! Check your email to confirm, or proceed to portal.'
+      successMessage.value = res.fallback
+        ? `Account verified & active! Redirecting to ${activeRole.value === 'landlord' ? 'Landlord Dashboard' : 'Tenant Portal'}...`
+        : 'Account created successfully! Proceeding to portal...'
       setTimeout(() => {
         emit('authSuccess', res.user)
         handleClose()
@@ -82,31 +84,12 @@ const handleSubmit = async () => {
         } else {
           router.push('/app')
         }
-      }, 1500)
+      }, 1200)
     }
   }
 }
 
-// 1-Click Demo Logins
-const loginAsDemoLandlord = () => {
-  switchDemoRole('landlord')
-  successMessage.value = 'Switched to Demo Landlord: Mwamba Kaunda (Mukuba House)'
-  setTimeout(() => {
-    emit('authSuccess', { role: 'landlord' })
-    handleClose()
-    router.push('/app')
-  }, 700)
-}
 
-const loginAsDemoTenant = () => {
-  switchDemoRole('tenant')
-  successMessage.value = 'Switched to Demo Tenant: John Phiri (Bed 101-A)'
-  setTimeout(() => {
-    emit('authSuccess', { role: 'tenant' })
-    handleClose()
-    router.push('/tenant/portal')
-  }, 700)
-}
 </script>
 
 <template>
@@ -271,32 +254,21 @@ const loginAsDemoTenant = () => {
               {{ authMethod === 'magiclink' ? 'Send Magic Sign-in Link' : (authMode === 'signin' ? 'Sign In to ' + (activeRole === 'landlord' ? 'Landlord Portal' : 'Tenant Portal') : 'Create ' + (activeRole === 'landlord' ? 'Landlord' : 'Tenant') + ' Account') }}
             </span>
           </button>
+
+          <!-- Test Account Pre-fill Helper -->
+          <div v-if="authMode === 'signin'" class="pt-2 border-t border-outline-variant/50 flex items-center justify-between text-[11px] text-on-surface-variant">
+            <span>Test credentials:</span>
+            <button 
+              type="button" 
+              @click="form.email = activeRole === 'landlord' ? 'mukuba@pandastays.zm' : 'john.phiri@unza.zm'; form.password = 'password123'"
+              class="text-primary hover:underline font-data-mono font-medium cursor-pointer"
+            >
+              Use {{ activeRole === 'landlord' ? 'mukuba@pandastays.zm' : 'john.phiri@unza.zm' }}
+            </button>
+          </div>
         </form>
 
-        <!-- Divider with Quick Demo Shortcuts -->
-        <div class="pt-3 border-t border-outline-variant/60 space-y-2">
-          <div class="text-center text-[10px] uppercase font-bold text-on-surface-variant tracking-wider">
-            Quick 1-Click Demo Profiles
-          </div>
 
-          <div class="grid grid-cols-2 gap-2">
-            <button 
-              @click="loginAsDemoLandlord"
-              class="px-2.5 py-1.5 rounded-sm bg-surface-container-low hover:bg-surface-container text-on-surface border border-outline-variant text-[11px] font-medium flex items-center justify-center gap-1 transition-colors"
-            >
-              <span class="material-symbols-outlined text-primary text-[14px]">real_estate_agent</span>
-              <span>Landlord Mwamba</span>
-            </button>
-
-            <button 
-              @click="loginAsDemoTenant"
-              class="px-2.5 py-1.5 rounded-sm bg-surface-container-low hover:bg-surface-container text-on-surface border border-outline-variant text-[11px] font-medium flex items-center justify-center gap-1 transition-colors"
-            >
-              <span class="material-symbols-outlined text-primary text-[14px]">school</span>
-              <span>Student John Phiri</span>
-            </button>
-          </div>
-        </div>
       </div>
     </div>
   </div>
