@@ -1,5 +1,5 @@
 import { reactive, computed } from 'vue'
-import { supabase } from './supabaseClient'
+import { supabase } from './supabaseClient.js'
 
 // Clean-slate state initialized with property shell and empty inventory
 const state = reactive({

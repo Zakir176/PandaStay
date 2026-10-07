@@ -16,9 +16,10 @@ import {
   TenantPayments,
   TenantMaintenance,
   TenantLease,
-  TenantCheckout
+  TenantCheckout,
+  PublicVerification
 } from '../views'
-import { useAuth } from '../lib/auth'
+import { useAuth, initAuth } from '../lib/auth'
 
 const routes = [
   // ─── Public Landing Site ───
@@ -26,6 +27,13 @@ const routes = [
     path: '/',
     name: 'Landing',
     component: LandingPage
+  },
+
+  // ─── Public Scannable Verification Route (Zero Auth Required) ───
+  {
+    path: '/verify/:id',
+    name: 'PublicVerification',
+    component: PublicVerification
   },
 
   // ─── Landlord Operations Portal (Dedicated to Property Owners & Managers) ───
@@ -158,15 +166,22 @@ const router = createRouter({
   }
 })
 
-// Route Navigation Guard: Enforce Portal Separation & Data Integrity
-router.beforeEach((to, from, next) => {
-  const { currentRole } = useAuth()
+// Route Navigation Guard: Enforce Real Authentication & Bi-Directional Role Isolation
+router.beforeEach(async (to, from, next) => {
+  await initAuth()
+  const { currentRole, isAuthenticated } = useAuth()
+  const requiresRole = to.matched.find(record => record.meta?.role)?.meta?.role
 
-  // Protect Landlord Portal against active tenants
-  if (to.matched.some(record => record.meta?.role === 'landlord')) {
-    if (currentRole.value === 'tenant') {
-      return next({ path: '/tenant/portal', query: { restricted: 'landlord_only' } })
-    }
+  if (requiresRole && !isAuthenticated.value) {
+    return next({ path: '/', query: { auth_required: '1' } })
+  }
+
+  if (requiresRole === 'landlord' && currentRole.value === 'tenant') {
+    return next({ path: '/tenant/portal', query: { restricted: 'landlord_only' } })
+  }
+
+  if (requiresRole === 'tenant' && currentRole.value === 'landlord') {
+    return next({ path: '/app', query: { restricted: 'tenant_only' } })
   }
 
   next()

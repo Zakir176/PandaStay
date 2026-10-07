@@ -1,12 +1,29 @@
 <script setup>
 import { ref } from 'vue'
 import { useStore } from '../lib/store'
+import { openPrintReceipt } from '../lib/receiptPrinter.js'
 
 const { state } = useStore()
 
 const currentTerm = ref('Semester 1 (Jan - June 2026)')
 const nextTerm = ref('Semester 2 (July - Dec 2026)')
 const toastMessage = ref('')
+
+const printLeaseVoucher = (tenant) => {
+  openPrintReceipt({
+    receipt_number: `LSE-${tenant.id?.slice(0, 6) || '2026-01'}`,
+    tenant_name: tenant.name,
+    bed_label: tenant.bed_label,
+    amount: 2500,
+    paid_at: 'Jan 05, 2026',
+    gateway_reference: 'LEASE-CONTRACT-ACTIVE',
+    method_label: 'Escrow Escrowed & Reconciled',
+    status: 'ACTIVE LEASE'
+  }, {
+    type: 'LEASE',
+    propertyName: state.currentProperty?.name || 'Mukuba House'
+  })
+}
 
 const renewLease = (tenant) => {
   toastMessage.value = `Lease renewal agreement drafted for ${tenant.name} (${tenant.bed_label})`
@@ -80,10 +97,10 @@ const endLease = (tenant) => {
         </div>
       </div>
 
-      <div class="flex items-center gap-2 shrink-0">
+      <div class="flex items-center gap-2 shrink-0 w-full sm:w-auto">
         <button 
           @click="toastMessage = 'Batch renewal notices sent to all 6 active tenants!'"
-          class="px-3.5 py-2 bg-primary text-on-primary text-xs font-semibold rounded-sm hover:bg-primary/90 transition-colors shadow-xs"
+          class="w-full sm:w-auto px-3.5 py-2 bg-primary text-on-primary text-xs font-semibold rounded-sm hover:bg-primary/90 transition-colors shadow-xs text-center"
         >
           Send Bulk Term Renewal Notices
         </button>
@@ -102,7 +119,8 @@ const endLease = (tenant) => {
         </span>
       </div>
 
-      <div class="overflow-x-auto">
+      <!-- Desktop Table View -->
+      <div class="hidden md:block overflow-x-auto">
         <table class="w-full text-left text-xs border-collapse">
           <thead>
             <tr class="border-b border-outline-variant text-[10px] uppercase font-bold text-on-surface-variant bg-surface-container-low/60">
@@ -147,16 +165,24 @@ const endLease = (tenant) => {
               </td>
               <td class="py-3 px-3 text-right space-x-2">
                 <button 
+                  @click="printLeaseVoucher(tenant)"
+                  class="px-2.5 py-1 text-xs text-on-surface bg-surface-container hover:bg-surface-container-high border border-border-card rounded-sm transition-colors font-medium inline-flex items-center gap-1 cursor-pointer"
+                  title="Print / Save Official Lease PDF"
+                >
+                  <span class="material-symbols-outlined text-[14px] text-primary">download</span>
+                  <span>Lease PDF</span>
+                </button>
+                <button 
                   v-if="tenant.status === 'active'"
                   @click="renewLease(tenant)"
-                  class="px-2.5 py-1 text-xs text-primary bg-primary-container hover:bg-primary hover:text-on-primary rounded-sm transition-colors font-medium"
+                  class="px-2.5 py-1 text-xs text-primary bg-primary-container hover:bg-primary hover:text-on-primary rounded-sm transition-colors font-medium cursor-pointer"
                 >
                   Renew
                 </button>
                 <button 
                   v-if="tenant.status === 'active'"
                   @click="endLease(tenant)"
-                  class="px-2.5 py-1 text-xs text-error bg-error-container hover:bg-error hover:text-on-error rounded-sm transition-colors font-medium"
+                  class="px-2.5 py-1 text-xs text-error bg-error-container hover:bg-error hover:text-on-error rounded-sm transition-colors font-medium cursor-pointer"
                 >
                   End Tenancy
                 </button>
@@ -167,6 +193,64 @@ const endLease = (tenant) => {
             </tr>
           </tbody>
         </table>
+      </div>
+
+      <!-- Mobile Lease Cards View (< 768px) -->
+      <div class="block md:hidden space-y-3">
+        <div 
+          v-for="tenant in state.tenants" 
+          :key="tenant.id"
+          class="p-4 rounded-xl bg-surface-container-low border border-border-card space-y-3 shadow-2xs"
+        >
+          <div class="flex items-center justify-between gap-2">
+            <span class="font-bold text-xs text-on-surface">{{ tenant.name }}</span>
+            <span 
+              class="badge-pill text-[10px]"
+              :class="tenant.status === 'active' ? 'bg-primary-container text-primary font-semibold' : 'bg-surface-container text-on-surface-variant'"
+            >
+              <span class="w-1.5 h-1.5 rounded-full" :class="tenant.status === 'active' ? 'bg-primary' : 'bg-outline'"></span>
+              <span>{{ tenant.status === 'active' ? 'Active' : 'Ended' }}</span>
+            </span>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2 text-xs">
+            <div>
+              <span class="text-[9px] uppercase font-bold text-on-surface-muted block">Allocation</span>
+              <span class="font-medium text-on-surface">{{ tenant.bed_label }}</span>
+            </div>
+            <div class="text-right">
+              <span class="text-[9px] uppercase font-bold text-on-surface-muted block">Monthly Rent</span>
+              <span class="font-data-mono font-bold text-on-surface">ZMW 2,500</span>
+            </div>
+            <div class="col-span-2 text-[11px] text-on-surface-variant font-data-mono">
+              Term: Jan 05, 2026 – Dec 15, 2026
+            </div>
+          </div>
+
+          <div class="pt-2 border-t border-border-card/60 flex flex-wrap items-center gap-2">
+            <button 
+              @click="printLeaseVoucher(tenant)"
+              class="flex-1 py-1.5 px-3 text-xs text-on-surface bg-surface-container hover:bg-surface-container-high border border-border-card rounded-full font-medium inline-flex items-center justify-center gap-1 cursor-pointer"
+            >
+              <span class="material-symbols-outlined text-[14px] text-primary">download</span>
+              <span>Lease PDF</span>
+            </button>
+            <button 
+              v-if="tenant.status === 'active'"
+              @click="renewLease(tenant)"
+              class="py-1.5 px-3 text-xs text-primary bg-primary-container hover:bg-primary hover:text-on-primary rounded-full font-medium cursor-pointer"
+            >
+              Renew
+            </button>
+            <button 
+              v-if="tenant.status === 'active'"
+              @click="endLease(tenant)"
+              class="py-1.5 px-3 text-xs text-error bg-error-container hover:bg-error hover:text-on-error rounded-full font-medium cursor-pointer"
+            >
+              End
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   </div>

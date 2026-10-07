@@ -1,10 +1,12 @@
 <script setup>
-import { computed } from 'vue'
+import { ref, computed } from 'vue'
 import { useStore } from '../lib/store'
 import { useAuth } from '../lib/auth'
+import ReceiptVoucherModal from '../components/ReceiptVoucherModal.vue'
 
 const { state } = useStore()
 const { userProfile, currentRole } = useAuth()
+const selectedReceipt = ref(null)
 
 // Strictly scoped to logged-in tenant
 const tenant = computed(() => {
@@ -52,7 +54,7 @@ const totalPaid = computed(() => {
 
       <router-link
         to="/tenant/checkout"
-        class="btn-pill-primary text-xs"
+        class="btn-pill-primary text-xs w-full sm:w-auto justify-center"
       >
         <span class="material-symbols-outlined text-[16px]">point_of_sale</span>
         <span>Make Rent Payment</span>
@@ -100,7 +102,8 @@ const totalPaid = computed(() => {
         </span>
       </div>
 
-      <div v-if="myPayments.length > 0" class="overflow-x-auto">
+      <!-- Desktop/Tablet View: Full Table -->
+      <div v-if="myPayments.length > 0" class="hidden sm:block overflow-x-auto">
         <table class="w-full text-left text-sm border-collapse">
           <thead>
             <tr class="border-b border-border-card text-[11px] uppercase tracking-wider text-on-surface-muted font-bold bg-surface-dim/50">
@@ -109,7 +112,8 @@ const totalPaid = computed(() => {
               <th class="py-2.5 px-3">Amount</th>
               <th class="py-2.5 px-3">Payment Method</th>
               <th class="py-2.5 px-3">Reference</th>
-              <th class="py-2.5 px-3 text-right rounded-r-xl">Status</th>
+              <th class="py-2.5 px-3 text-center">Status</th>
+              <th class="py-2.5 px-3 text-right rounded-r-xl">Receipt</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-border-card/60">
@@ -136,14 +140,69 @@ const totalPaid = computed(() => {
               <td class="py-3 px-3 align-middle font-data-mono text-[11px] text-on-surface-variant">
                 {{ p.gateway_reference }}
               </td>
-              <td class="py-3 px-3 align-middle text-right">
+              <td class="py-3 px-3 align-middle text-center">
                 <span class="badge-pill bg-primary/10 text-primary border border-primary/20 text-[10px]">
                   Verified
                 </span>
               </td>
+              <td class="py-3 px-3 align-middle text-right">
+                <button
+                  @click="selectedReceipt = p"
+                  class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-surface-container hover:bg-primary hover:text-white border border-border-card text-on-surface transition-all shadow-2xs cursor-pointer group"
+                  title="View Official Scannable QR Voucher"
+                >
+                  <span class="material-symbols-outlined text-[15px] text-primary group-hover:text-white transition-colors">qr_code_2</span>
+                  <span>View Voucher</span>
+                </button>
+              </td>
             </tr>
           </tbody>
         </table>
+      </div>
+
+      <!-- Mobile Phone View: Native Responsive Bento Cards (< 640px) -->
+      <div v-if="myPayments.length > 0" class="block sm:hidden space-y-3">
+        <div 
+          v-for="p in myPayments" 
+          :key="p.id"
+          class="p-4 rounded-xl bg-surface-container-low border border-border-card space-y-3 shadow-2xs"
+        >
+          <div class="flex items-center justify-between gap-2">
+            <span class="font-data-mono font-bold text-xs text-primary">#{{ p.receipt_number }}</span>
+            <span class="badge-pill bg-primary/10 text-primary border border-primary/20 text-[10px]">
+              Verified
+            </span>
+          </div>
+
+          <div class="flex items-baseline justify-between gap-2">
+            <div>
+              <span class="text-[9px] uppercase font-bold text-on-surface-muted block">Kwacha Amount</span>
+              <span class="text-base font-bold font-data-mono text-on-surface">
+                ZMW {{ Number(p.amount).toLocaleString() }}
+              </span>
+            </div>
+            <div class="text-right">
+              <span class="text-[9px] uppercase font-bold text-on-surface-muted block">Payment Method</span>
+              <span class="text-xs font-semibold text-on-surface flex items-center justify-end gap-1">
+                <span class="material-symbols-outlined text-[14px] text-primary">credit_card</span>
+                {{ p.method_label || 'MTN MoMo' }}
+              </span>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between text-[11px] text-on-surface-variant border-t border-border-card/60 pt-2 font-data-mono">
+            <span>{{ p.paid_at }}</span>
+            <span class="text-[10px] truncate max-w-35">{{ p.gateway_reference }}</span>
+          </div>
+
+          <button
+            @click="selectedReceipt = p"
+            class="w-full py-2.5 px-3 rounded-full text-xs font-semibold bg-surface-container hover:bg-primary hover:text-white border border-border-card text-on-surface flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-2xs group"
+          >
+            <span class="material-symbols-outlined text-[16px] text-primary group-hover:text-white">qr_code_2</span>
+            <span>View & Download Voucher</span>
+          </button>
+        </div>
       </div>
       <div v-else class="text-center py-12 text-on-surface-variant text-xs space-y-3">
         <span class="material-symbols-outlined text-[36px] text-on-surface-muted">receipt_long</span>
@@ -156,5 +215,13 @@ const totalPaid = computed(() => {
         </router-link>
       </div>
     </div>
+
+    <!-- Official Scannable QR Receipt Modal -->
+    <ReceiptVoucherModal
+      :is-open="!!selectedReceipt"
+      :receipt="selectedReceipt"
+      :property-name="state.currentProperty?.name || 'Mukuba House'"
+      @close="selectedReceipt = null"
+    />
   </div>
 </template>

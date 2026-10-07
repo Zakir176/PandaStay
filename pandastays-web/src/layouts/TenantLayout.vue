@@ -8,7 +8,7 @@ import { getInitials } from '../utils/formatters'
 
 const router = useRouter()
 const route = useRoute()
-const { userProfile, currentRole, signOut, switchDemoRole } = useAuth()
+const { userProfile, currentRole, signOut } = useAuth()
 const { state } = useStore()
 
 const isProfileDropdownOpen = ref(false)
@@ -50,11 +50,7 @@ const handleSignOut = async () => {
   router.push('/')
 }
 
-const handleSwitchToLandlord = () => {
-  switchDemoRole('landlord')
-  isProfileDropdownOpen.value = false
-  router.push('/app')
-}
+
 
 const navItems = [
   { name: 'My Bed & Room', path: '/tenant/portal', icon: 'bed' },
@@ -189,14 +185,7 @@ const isActive = (path) => route.path === path
               </router-link>
 
               <div class="border-t border-border-card pt-1">
-                <!-- Portal Switcher -->
-                <button
-                  @click="handleSwitchToLandlord"
-                  class="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-left text-on-surface-variant hover:text-on-surface hover:bg-surface-dim transition-colors"
-                >
-                  <span class="material-symbols-outlined text-[16px]">admin_panel_settings</span>
-                  <span>Switch to Landlord Portal</span>
-                </button>
+
 
                 <button
                   @click="handleSignOut"
