@@ -83,7 +83,7 @@ export async function generateReceiptHtml(record = {}, options = {}) {
       background-color: #f3f4f6;
       color: #1f2937;
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      font-size: 13px;
+      font-size: 14px;
       line-height: 1.5;
       padding: 32px 16px;
       display: flex;
@@ -159,30 +159,30 @@ export async function generateReceiptHtml(record = {}, options = {}) {
     }
 
     .brand-mark {
-      width: 34px;
-      height: 34px;
-      border-radius: 9px;
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
       background: rgba(255, 255, 255, 0.15);
       border: 1px solid rgba(255, 255, 255, 0.25);
       display: flex;
       align-items: center;
       justify-content: center;
       font-weight: 800;
-      font-size: 14px;
+      font-size: 15px;
       color: #ffffff;
       letter-spacing: -0.5px;
     }
 
     .brand-kicker {
-      font-size: 10px;
+      font-size: 11px;
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 1.2px;
-      color: rgba(255, 255, 255, 0.8);
+      color: rgba(255, 255, 255, 0.85);
     }
 
     .record-title {
-      font-size: 20px;
+      font-size: 22px;
       font-weight: 800;
       letter-spacing: -0.4px;
       color: #ffffff;
@@ -192,8 +192,8 @@ export async function generateReceiptHtml(record = {}, options = {}) {
     }
 
     .record-subtitle {
-      font-size: 11px;
-      color: rgba(255, 255, 255, 0.8);
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.85);
       margin-top: 2px;
       position: relative;
       z-index: 1;
@@ -205,9 +205,9 @@ export async function generateReceiptHtml(record = {}, options = {}) {
       gap: 6px;
       background: rgba(16, 185, 129, 0.2);
       border: 1px solid rgba(16, 185, 129, 0.4);
-      padding: 4px 10px;
+      padding: 5px 12px;
       border-radius: 9999px;
-      font-size: 10px;
+      font-size: 11px;
       font-weight: 700;
       color: #A7F3D0;
       letter-spacing: 0.5px;
@@ -226,11 +226,11 @@ export async function generateReceiptHtml(record = {}, options = {}) {
     .reference-strip {
       background-color: #ECFDF5;
       border-bottom: 1px solid #D1FAE5;
-      padding: 10px 28px;
+      padding: 11px 28px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      font-size: 11px;
+      font-size: 12px;
     }
 
     .reference-id {
@@ -241,7 +241,7 @@ export async function generateReceiptHtml(record = {}, options = {}) {
 
     .reference-time {
       color: #047857;
-      font-size: 11px;
+      font-size: 12px;
     }
 
     /* Content Area */
@@ -250,11 +250,11 @@ export async function generateReceiptHtml(record = {}, options = {}) {
     }
 
     .section-title {
-      font-size: 10px;
+      font-size: 11px;
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 1px;
-      color: #6b7280;
+      color: #4b5563;
       margin-bottom: 10px;
     }
 
@@ -274,16 +274,16 @@ export async function generateReceiptHtml(record = {}, options = {}) {
     }
 
     .data-label {
-      font-size: 9px;
+      font-size: 11px;
       text-transform: uppercase;
-      font-weight: 600;
+      font-weight: 700;
       letter-spacing: 0.6px;
-      color: #9ca3af;
-      margin-bottom: 2px;
+      color: #6b7280;
+      margin-bottom: 3px;
     }
 
     .data-value {
-      font-size: 12px;
+      font-size: 13.5px;
       font-weight: 600;
       color: #111827;
       white-space: nowrap;
@@ -331,7 +331,7 @@ export async function generateReceiptHtml(record = {}, options = {}) {
     }
 
     .total-label-kicker {
-      font-size: 9px;
+      font-size: 11px;
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 1px;
@@ -340,20 +340,20 @@ export async function generateReceiptHtml(record = {}, options = {}) {
     }
 
     .total-meta {
-      font-size: 11px;
+      font-size: 12px;
       color: #34D399;
       font-weight: 500;
     }
 
     .total-amount {
-      font-size: 26px;
+      font-size: 28px;
       font-weight: 800;
       letter-spacing: -0.5px;
       color: #ffffff;
     }
 
     .currency-symbol {
-      font-size: 13px;
+      font-size: 15px;
       font-weight: 600;
       color: #9ca3af;
       margin-right: 2px;
@@ -395,7 +395,7 @@ export async function generateReceiptHtml(record = {}, options = {}) {
     }
 
     .verify-title {
-      font-size: 11px;
+      font-size: 12px;
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.8px;
@@ -404,14 +404,14 @@ export async function generateReceiptHtml(record = {}, options = {}) {
     }
 
     .verify-instructions {
-      font-size: 11px;
+      font-size: 12px;
       color: #4b5563;
-      line-height: 1.4;
+      line-height: 1.45;
       margin-bottom: 6px;
     }
 
     .verify-link {
-      font-size: 10px;
+      font-size: 11px;
       color: #0A6640;
       font-weight: 600;
       text-decoration: underline;
@@ -421,7 +421,7 @@ export async function generateReceiptHtml(record = {}, options = {}) {
     .hash-badge {
       display: inline-block;
       margin-top: 4px;
-      font-size: 9px;
+      font-size: 10px;
       color: #6b7280;
       background: #ffffff;
       border: 1px solid #e5e7eb;
@@ -435,7 +435,7 @@ export async function generateReceiptHtml(record = {}, options = {}) {
       padding-top: 16px;
       text-align: center;
       color: #9ca3af;
-      font-size: 10px;
+      font-size: 11px;
       line-height: 1.5;
     }
 
@@ -583,14 +583,14 @@ export async function generateReceiptHtml(record = {}, options = {}) {
       <div class="highlight-card">
         <div class="highlight-left">
           <span class="data-label">Allocated Accommodation</span>
-          <div class="data-value" style="font-size: 13px;">${bedLabel}</div>
-          <div style="font-size: 11px; color: #6b7280; margin-top: 2px;">${propertyName}</div>
+          <div class="data-value" style="font-size: 15px;">${bedLabel}</div>
+          <div style="font-size: 12.5px; color: #6b7280; margin-top: 2px;">${propertyName}</div>
         </div>
         <div class="highlight-divider"></div>
         <div class="highlight-right">
           <span class="data-label">Residency Term</span>
-          <div class="data-value" style="font-size: 12px; color: #0A6640;">Term 1 2026</div>
-          <div style="font-size: 10px; color: #6b7280; margin-top: 2px;">Monthly Lease</div>
+          <div class="data-value" style="font-size: 14px; color: #0A6640;">Term 1 2026</div>
+          <div style="font-size: 11.5px; color: #6b7280; margin-top: 2px;">Monthly Lease</div>
         </div>
       </div>
 
@@ -607,7 +607,7 @@ export async function generateReceiptHtml(record = {}, options = {}) {
         </div>
         <div class="data-card">
           <div class="data-label">Gateway Reference</div>
-          <div class="data-value font-mono" style="font-size: 11px;">${gatewayRef}</div>
+          <div class="data-value font-mono" style="font-size: 12.5px;">${gatewayRef}</div>
         </div>
         <div class="data-card">
           <div class="data-label">Verification Status</div>

@@ -125,7 +125,7 @@ const operationsNav = [
             class="transition-opacity duration-200 whitespace-nowrap overflow-hidden"
           >
             <h1 class="text-base font-bold text-on-surface tracking-tight leading-none">PandaStays</h1>
-            <p class="text-[10px] text-on-surface-variant uppercase tracking-wider font-semibold mt-0.5">Boarding Portal</p>
+            <p class="text-xs text-on-surface-variant font-medium mt-0.5">Boarding Portal</p>
           </div>
         </div>
 
@@ -162,7 +162,7 @@ const operationsNav = [
         <div>
           <p 
             v-if="!isSidebarCollapsed" 
-            class="text-[10px] font-bold uppercase tracking-wider text-on-surface-muted px-3 mb-1.5 transition-opacity duration-200"
+            class="text-xs font-bold uppercase tracking-wider text-on-surface-muted px-3 mb-1.5 transition-opacity duration-200"
           >
             Management
           </p>
@@ -175,7 +175,7 @@ const operationsNav = [
               :to="item.path" 
               @click="closeMobileMenu"
               :title="item.name"
-              class="group relative flex items-center rounded-xl text-xs font-medium transition-all duration-150"
+              class="group relative flex items-center rounded-xl text-sm font-medium transition-all duration-150"
               :class="[
                 isSidebarCollapsed ? 'md:justify-center md:px-0 md:py-2.5 px-3 py-2 gap-2.5' : 'px-3 py-2 gap-2.5',
                 ($route.path === item.path || (item.path === '/app' && $route.path === '/app/')) 
@@ -201,7 +201,7 @@ const operationsNav = [
         <div>
           <p 
             v-if="!isSidebarCollapsed" 
-            class="text-[10px] font-bold uppercase tracking-wider text-on-surface-muted px-3 mb-1.5 transition-opacity duration-200"
+            class="text-xs font-bold uppercase tracking-wider text-on-surface-muted px-3 mb-1.5 transition-opacity duration-200"
           >
             Operations
           </p>
@@ -214,7 +214,7 @@ const operationsNav = [
               :to="item.path" 
               @click="closeMobileMenu"
               :title="item.name"
-              class="group relative flex items-center rounded-xl text-xs font-medium transition-all duration-150"
+              class="group relative flex items-center rounded-xl text-sm font-medium transition-all duration-150"
               :class="[
                 isSidebarCollapsed ? 'md:justify-center md:px-0 md:py-2.5 px-3 py-2 gap-2.5' : 'px-3 py-2 gap-2.5',
                 ($route.path === item.path) 
@@ -242,14 +242,14 @@ const operationsNav = [
         <!-- Expanded bottom widget -->
         <div v-if="!isSidebarCollapsed" class="card-bento-hero bg-topo-dark p-3 text-white">
           <div class="flex items-center justify-between">
-            <span class="text-[10px] font-bold uppercase tracking-wider text-white/70">Gateway</span>
-            <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-primary-accent/20 text-primary-accent text-[9px] font-semibold">
+            <span class="text-xs font-bold uppercase tracking-wider text-white/80">Gateway</span>
+            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary-accent/20 text-primary-accent text-xs font-semibold">
               <span class="w-1.5 h-1.5 rounded-full bg-primary-accent animate-pulse"></span>
               Live
             </span>
           </div>
-          <p class="text-xs font-semibold mt-1">Lenco MoMo Gateway</p>
-          <p class="text-[10px] text-white/60">MTN &bull; Airtel &bull; Zamtel Push</p>
+          <p class="text-sm font-semibold mt-1">Lenco MoMo Gateway</p>
+          <p class="text-xs text-white/70">MTN &bull; Airtel &bull; Zamtel Push</p>
         </div>
 
         <!-- Collapsed bottom widget icon -->
@@ -302,9 +302,9 @@ const operationsNav = [
               v-model="searchQuery"
               type="text"
               placeholder="Search rooms, beds, tenants..."
-              class="w-full pl-9 pr-10 py-1.5 bg-surface-dim border border-border-card rounded-full text-xs text-on-surface placeholder:text-on-surface-muted focus:outline-none focus:border-primary focus:bg-surface transition-colors"
+              class="w-full pl-9 pr-10 py-1.5 bg-surface-dim border border-border-card rounded-full text-sm text-on-surface placeholder:text-on-surface-muted focus:outline-none focus:border-primary focus:bg-surface transition-colors"
             />
-            <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] font-mono font-semibold px-1.5 py-0.5 rounded bg-surface border border-border-card text-on-surface-muted pointer-events-none">
+            <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs font-mono font-semibold px-1.5 py-0.5 rounded bg-surface border border-border-card text-on-surface-muted pointer-events-none">
               ⌘K
             </span>
           </div>
@@ -346,15 +346,15 @@ const operationsNav = [
             >
               <div class="flex items-center justify-between pb-2 border-b border-border-card">
                 <div class="flex items-center gap-2">
-                  <span class="font-bold text-xs text-on-surface">Accent Color</span>
-                  <span class="badge-pill bg-primary-container text-primary text-[10px] font-bold">
+                  <span class="font-bold text-sm text-on-surface">Accent Color</span>
+                  <span class="badge-pill bg-primary-container text-primary text-xs font-bold">
                     {{ currentAccent }}
                   </span>
                 </div>
                 <router-link 
                   to="/app/settings" 
                   @click="isThemeDropdownOpen = false" 
-                  class="text-[11px] text-primary hover:underline font-semibold flex items-center gap-0.5"
+                  class="text-xs text-primary hover:underline font-semibold flex items-center gap-0.5"
                 >
                   Custom &rarr;
                 </router-link>
@@ -380,7 +380,7 @@ const operationsNav = [
                     >check</span>
                   </span>
                   <span 
-                    class="text-[9px] font-medium text-on-surface-variant truncate max-w-full leading-tight"
+                    class="text-xs font-medium text-on-surface-variant truncate max-w-full leading-tight"
                     :class="{ 'text-primary font-bold': currentAccent === accent.name }"
                   >
                     {{ accent.name }}
@@ -400,15 +400,15 @@ const operationsNav = [
           <div class="relative">
             <button 
               @click="isProfileDropdownOpen = !isProfileDropdownOpen"
-              class="flex items-center gap-2 px-2 py-1.5 rounded-full border border-border-card hover:bg-surface-dim transition-colors bg-surface"
+              class="flex items-center gap-2 px-2.5 py-1.5 rounded-full border border-border-card hover:bg-surface-dim transition-colors bg-surface"
               :class="{ 'ring-2 ring-primary/30 border-primary': isProfileDropdownOpen }"
             >
               <div class="w-7 h-7 rounded-full bg-primary text-white font-bold text-xs flex items-center justify-center shadow-xs">
                 {{ getInitials(userProfile?.name) }}
               </div>
               <div class="hidden lg:flex flex-col text-left pr-1">
-                <span class="text-xs font-semibold text-on-surface leading-tight">{{ userProfile?.name || 'Landlord' }}</span>
-                <span class="text-[10px] text-on-surface-variant capitalize leading-none">Mukuba House</span>
+                <span class="text-sm font-semibold text-on-surface leading-tight">{{ userProfile?.name || 'Landlord' }}</span>
+                <span class="text-xs text-on-surface-variant capitalize leading-none">Mukuba House</span>
               </div>
               <span class="material-symbols-outlined text-[16px] text-on-surface-muted">expand_more</span>
             </button>
@@ -423,12 +423,12 @@ const operationsNav = [
             <!-- Profile Dropdown Menu -->
             <div 
               v-if="isProfileDropdownOpen"
-              class="absolute top-full right-0 mt-2.5 w-56 bg-surface rounded-2xl shadow-2xl border border-border-card p-2 z-50 space-y-1 text-xs"
+              class="absolute top-full right-0 mt-2.5 w-60 bg-surface rounded-2xl shadow-2xl border border-border-card p-2.5 z-50 space-y-1 text-sm"
             >
               <div class="p-2 border-b border-border-card">
-                <p class="font-bold text-on-surface truncate">{{ userProfile?.name || 'Landlord' }}</p>
-                <p class="font-data-mono text-[11px] text-on-surface-variant truncate">{{ userProfile?.email || '' }}</p>
-                <span class="badge-pill bg-primary-container text-primary text-[9px] mt-1 inline-flex uppercase tracking-wider font-bold">
+                <p class="font-bold text-sm text-on-surface truncate">{{ userProfile?.name || 'Landlord' }}</p>
+                <p class="font-data-mono text-xs text-on-surface-variant truncate">{{ userProfile?.email || '' }}</p>
+                <span class="badge-pill bg-primary-container text-primary text-xs mt-1.5 inline-flex uppercase tracking-wider font-bold">
                   {{ currentRole || 'landlord' }} Account
                 </span>
               </div>

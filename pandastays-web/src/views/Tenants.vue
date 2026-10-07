@@ -112,22 +112,22 @@ const goToProfile = (tenantId) => {
                 {{ tenant.name.split(' ').map(n=>n[0]).join('') }}
               </div>
               <div>
-                <h3 class="font-bold text-sm text-on-surface group-hover:text-primary transition-colors">
+                <h3 class="font-bold text-base text-on-surface group-hover:text-primary transition-colors">
                   {{ tenant.name }}
                 </h3>
-                <p class="text-[11px] text-on-surface-variant font-data-mono">
+                <p class="text-xs text-on-surface-variant font-data-mono">
                   {{ tenant.phone }}
                 </p>
               </div>
             </div>
 
-            <span class="badge-pill bg-surface-container-high text-on-surface-variant text-[10px] font-bold">
+            <span class="badge-pill bg-surface-container-high text-on-surface-variant text-xs font-bold">
               Room {{ tenant.room_number }}
             </span>
           </div>
 
           <!-- Tenancy Specs -->
-          <div class="space-y-2 text-xs">
+          <div class="space-y-2 text-xs sm:text-sm">
             <div class="flex items-center justify-between">
               <span class="text-on-surface-variant">Allocated Bed:</span>
               <span class="font-bold text-primary">{{ tenant.bed_label }}</span>
@@ -149,15 +149,15 @@ const goToProfile = (tenantId) => {
         <div class="mt-4 pt-3 border-t border-outline-variant/50 flex items-center justify-between gap-2">
           <button 
             @click.stop="sendReminder(tenant)"
-            class="flex items-center gap-1.5 text-[11px] font-semibold text-primary hover:bg-primary/10 px-3 py-1.5 rounded-full transition-colors"
+            class="flex items-center gap-1.5 text-xs font-semibold text-primary hover:bg-primary/10 px-3 py-1.5 rounded-full transition-colors cursor-pointer"
           >
-            <span class="material-symbols-outlined text-[14px]">send</span>
+            <span class="material-symbols-outlined text-[15px]">send</span>
             WhatsApp Nudge
           </button>
 
-          <span class="text-[11px] font-semibold text-on-surface-variant group-hover:text-primary transition-colors flex items-center gap-1">
+          <span class="text-xs font-semibold text-on-surface-variant group-hover:text-primary transition-colors flex items-center gap-1">
             <span>Profile</span>
-            <span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+            <span class="material-symbols-outlined text-[15px]">arrow_forward</span>
           </span>
         </div>
       </div>
