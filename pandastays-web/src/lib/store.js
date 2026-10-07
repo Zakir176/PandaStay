@@ -19,6 +19,7 @@ const state = reactive({
   rooms: [],
   bedSpaces: [],
   tenants: [],
+  tenancies: [],
   payments: [],
   reports: [],
   reminderLogs: []
@@ -33,6 +34,7 @@ export const syncWithSupabase = async () => {
     state.rooms = []
     state.bedSpaces = []
     state.tenants = []
+    state.tenancies = []
     state.payments = []
     state.reports = []
 
@@ -96,8 +98,27 @@ export const syncWithSupabase = async () => {
     // 4. Fetch Tenants & Tenancies
     const { data: dbTenants } = await supabase.from('tenants').select('*')
     const { data: dbTenancies } = await supabase.from('tenancies').select('*')
+    state.tenancies = dbTenancies || []
     if (dbTenants) {
-      state.tenants = dbTenants.map(t => {
+      // Deduplicate tenant records by email or phone, prioritizing the record with an active tenancy or verified ID
+      const deduplicatedMap = new Map()
+
+      for (const t of dbTenants) {
+        const key = (t.email || t.phone || t.id).toLowerCase().trim()
+        const existing = deduplicatedMap.get(key)
+        const hasTenancy = dbTenancies?.some(tc => tc.tenant_id === t.id && tc.status === 'active')
+        
+        if (!existing) {
+          deduplicatedMap.set(key, t)
+        } else {
+          const existingHasTenancy = dbTenancies?.some(tc => tc.tenant_id === existing.id && tc.status === 'active')
+          if ((!existingHasTenancy && hasTenancy) || (!existing.id_number && t.id_number)) {
+            deduplicatedMap.set(key, t)
+          }
+        }
+      }
+
+      state.tenants = Array.from(deduplicatedMap.values()).map(t => {
         const tenancy = dbTenancies?.find(tc => tc.tenant_id === t.id && tc.status === 'active')
         const bed = state.bedSpaces.find(b => b.id === tenancy?.bed_space_id)
         if (bed) {
@@ -114,12 +135,12 @@ export const syncWithSupabase = async () => {
           id_number: t.id_number,
           emergency_contact_name: t.emergency_contact_name,
           emergency_contact_phone: t.emergency_contact_phone,
-          bed_label: bed?.label || 'Bed Space',
-          bed_id: bed?.id,
-          room_number: bed?.label?.match(/\d+/)?.[0] || '101',
+          bed_label: bed?.label || (tenancy ? 'Bed Space' : 'Unallocated'),
+          bed_id: bed?.id || null,
+          room_number: bed?.label?.match(/\d+/)?.[0] || '',
           deposit_amount: 1250,
           deposit_status: 'held',
-          status: 'active',
+          status: tenancy ? 'active' : 'unassigned',
           tenancy_id: tenancy?.id
         }
       })
@@ -196,8 +217,10 @@ export const occupancyStats = computed(() => {
     .filter(p => p.status === 'success')
     .reduce((sum, p) => sum + Number(p.amount), 0)
 
-  const overdueRent = state.bedSpaces
+  const overdueBedSpaces = state.bedSpaces
     .filter(b => b.paymentStatus === 'overdue' || b.paymentStatus === 'partial')
+
+  const overdueRent = overdueBedSpaces
     .reduce((sum, b) => sum + (b.balanceDue || (b.paymentStatus === 'overdue' ? Number(b.rent_amount) : 0)), 0)
 
   return {
@@ -207,8 +230,33 @@ export const occupancyStats = computed(() => {
     reservedBeds,
     percentage,
     totalRentCollected,
-    overdueRent
+    overdueRent,
+    overdueTenantCount: overdueBedSpaces.length
   }
+})
+
+export const topPriorityReport = computed(() => {
+  return state.reports.find(r => r.status !== 'resolved') || null
+})
+
+export const termProgress = computed(() => {
+  const activeTenancies = state.tenancies.filter(t => t.status === 'active' && t.start_date && t.end_date)
+
+  if (activeTenancies.length === 0) {
+    return { hasData: false, percentage: 0, daysElapsed: 0, totalDays: 0 }
+  }
+
+  const starts = activeTenancies.map(t => new Date(t.start_date).getTime())
+  const ends = activeTenancies.map(t => new Date(t.end_date).getTime())
+  const termStart = new Date(Math.min(...starts))
+  const termEnd = new Date(Math.max(...ends))
+  const now = new Date()
+
+  const totalDays = Math.max(1, Math.round((termEnd - termStart) / 86400000))
+  const daysElapsed = Math.min(totalDays, Math.max(0, Math.round((now - termStart) / 86400000)))
+  const percentage = Math.round((daysElapsed / totalDays) * 100)
+
+  return { hasData: true, percentage, daysElapsed, totalDays }
 })
 
 // Actions
@@ -444,30 +492,68 @@ export const useStore = () => {
 
   // Onboard Tenant & assign to Bed-Space
   const onboardTenant = async (tenantData) => {
-    // 1. Insert into tenants table
-    const { data: dbTenant } = await supabase.from('tenants').insert({
-      name: tenantData.name,
-      email: tenantData.email || `${tenantData.name.toLowerCase().replace(/\s+/g, '.')}@unza.zm`,
-      phone: tenantData.phone || '+260 97 1234567',
-      id_number: tenantData.idNumber || '392819/11/1',
-      emergency_contact_name: tenantData.emergencyName || 'Guardian',
-      emergency_contact_phone: tenantData.emergencyPhone || '+260 96 0000000'
-    }).select().single()
+    const tenantEmail = tenantData.email || `${tenantData.name.toLowerCase().trim().replace(/\s+/g, '.')}@unza.zm`
+    const tenantPhone = tenantData.phone || '+260 97 1234567'
 
-    const tenantId = dbTenant?.id || `ten-${Date.now()}`
+    // 1. Prevent duplicate tenant rows: check if tenant already exists by email or phone
+    let tenantId = null
+    try {
+      const { data: existingTenants } = await supabase
+        .from('tenants')
+        .select('*')
+        .or(`email.ilike.${tenantEmail},phone.eq.${tenantPhone}`)
+        .limit(1)
+
+      if (existingTenants && existingTenants.length > 0) {
+        tenantId = existingTenants[0].id
+        await supabase.from('tenants').update({
+          name: tenantData.name,
+          id_number: tenantData.idNumber || existingTenants[0].id_number,
+          emergency_contact_name: tenantData.emergencyName || existingTenants[0].emergency_contact_name,
+          emergency_contact_phone: tenantData.emergencyPhone || existingTenants[0].emergency_contact_phone
+        }).eq('id', tenantId)
+      } else {
+        const { data: dbTenant } = await supabase.from('tenants').insert({
+          name: tenantData.name,
+          email: tenantEmail,
+          phone: tenantPhone,
+          id_number: tenantData.idNumber || '392819/11/1',
+          emergency_contact_name: tenantData.emergencyName || 'Guardian',
+          emergency_contact_phone: tenantData.emergencyPhone || '+260 96 0000000'
+        }).select().single()
+
+        tenantId = dbTenant?.id || `ten-${Date.now()}`
+      }
+    } catch (dbErr) {
+      console.warn('Supabase tenant upsert note:', dbErr.message)
+      tenantId = `ten-${Date.now()}`
+    }
 
     // 2. Create Tenancy
-    const { data: dbTenancy } = await supabase.from('tenancies').insert({
-      bed_space_id: tenantData.bedSpaceId,
-      tenant_id: tenantId,
-      start_date: new Date().toISOString().substring(0, 10),
-      rent_amount: Number(tenantData.rentAmount || 2500),
-      billing_cycle: 'monthly',
-      status: 'active'
-    }).select().single()
+    let tenancyId = null
+    try {
+      const { data: dbTenancy } = await supabase.from('tenancies').insert({
+        bed_space_id: tenantData.bedSpaceId,
+        tenant_id: tenantId,
+        start_date: new Date().toISOString().substring(0, 10),
+        rent_amount: Number(tenantData.rentAmount || 2500),
+        billing_cycle: 'monthly',
+        status: 'active'
+      }).select().single()
+      tenancyId = dbTenancy?.id
+      if (dbTenancy) {
+        state.tenancies.push(dbTenancy)
+      }
+    } catch (tErr) {
+      console.warn('Supabase tenancy insert note:', tErr.message)
+    }
 
     // 3. Mark Bed Space occupied
-    await supabase.from('bed_spaces').update({ status: 'occupied' }).eq('id', tenantData.bedSpaceId)
+    try {
+      await supabase.from('bed_spaces').update({ status: 'occupied' }).eq('id', tenantData.bedSpaceId)
+    } catch (bErr) {
+      console.warn('Supabase bed status update note:', bErr.message)
+    }
 
     const targetBed = state.bedSpaces.find(b => b.id === tenantData.bedSpaceId)
     if (targetBed) {
@@ -478,12 +564,12 @@ export const useStore = () => {
       targetBed.paymentStatus = 'paid'
     }
 
-    state.tenants.push({
+    const newOrUpdatedTenant = {
       id: tenantId,
       name: tenantData.name,
-      email: tenantData.email || `${tenantData.name.toLowerCase().replace(/\s+/g, '.')}@unza.zm`,
-      phone: tenantData.phone,
-      id_number: tenantData.idNumber,
+      email: tenantEmail,
+      phone: tenantPhone,
+      id_number: tenantData.idNumber || 'NRC-Verified',
       emergency_contact_name: tenantData.emergencyName,
       emergency_contact_phone: tenantData.emergencyPhone,
       bed_label: targetBed?.label || 'Bed Space',
@@ -491,8 +577,16 @@ export const useStore = () => {
       room_number: targetBed?.label?.match(/\d+/)?.[0] || '101',
       deposit_amount: 1250,
       deposit_status: 'held',
-      status: 'active'
-    })
+      status: 'active',
+      tenancy_id: tenancyId
+    }
+
+    const existingIdx = state.tenants.findIndex(t => t.id === tenantId || (t.email && t.email.toLowerCase() === tenantEmail.toLowerCase()))
+    if (existingIdx !== -1) {
+      state.tenants[existingIdx] = newOrUpdatedTenant
+    } else {
+      state.tenants.push(newOrUpdatedTenant)
+    }
 
     // If bed was previously reserved, clear its reservation entry
     try {
@@ -501,7 +595,7 @@ export const useStore = () => {
       localStorage.setItem('pandastays_reservations', JSON.stringify(saved))
     } catch (e) {}
 
-    return { tenantId, tenancyId: dbTenancy?.id }
+    return { tenantId, tenancyId }
   }
 
   // Reserve Bed-Space (locks bed as reserved without payment)
@@ -719,6 +813,8 @@ export const useStore = () => {
     state,
     roomsWithBeds,
     occupancyStats,
+    topPriorityReport,
+    termProgress,
     ensureProperty,
     addRoomWithBeds,
     updateRoom,

@@ -1,10 +1,9 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { useStore, roomsWithBeds, occupancyStats } from '../lib/store'
-import BedGrid from '../components/BedGrid.vue'
-import RecordPaymentModal from '../components/RecordPaymentModal.vue'
-import AssignTenantModal from '../components/AssignTenantModal.vue'
+import { useStore, roomsWithBeds, occupancyStats, topPriorityReport, termProgress } from '../lib/store'
+import { BedGrid, RecordPaymentModal, AssignTenantModal } from '../components'
+import { formatCurrency, getInitials, formatNRC } from '../utils/formatters'
 
 const router = useRouter()
 const { state, triggerWhatsAppReminder } = useStore()
@@ -80,6 +79,11 @@ const primaryOverdueTenant = computed(() => {
 // Recent collections stream (max 5)
 const recentPayments = computed(() => {
   return state.payments.slice(0, 5)
+})
+
+// Active roster tenants (strictly allocated tenants with active leases)
+const activeRosterTenants = computed(() => {
+  return state.tenants.filter(t => t.tenancy_id || t.bed_id || t.status === 'active').slice(0, 4)
 })
 </script>
 
@@ -208,7 +212,7 @@ const recentPayments = computed(() => {
               K{{ occupancyStats.overdueRent.toLocaleString() }}
             </span>
             <span class="badge-pill bg-error-container text-error text-[10px]">
-              2 Tenants Overdue
+              {{ occupancyStats.overdueTenantCount }} {{ occupancyStats.overdueTenantCount === 1 ? 'Tenant' : 'Tenants' }} Overdue
             </span>
           </div>
         </div>
@@ -242,7 +246,9 @@ const recentPayments = computed(() => {
           </div>
         </div>
         <div class="mt-4 pt-3 border-t border-border-card flex items-center justify-between text-xs text-on-surface-variant">
-          <span class="truncate">Priority #1: Plumbing Leaks</span>
+          <span class="truncate">
+            {{ topPriorityReport ? `Priority #1: ${topPriorityReport.category}` : 'No open tickets' }}
+          </span>
           <router-link to="/app/maintenance" class="text-primary hover:underline text-[11px] font-semibold">Tickets &rarr;</router-link>
         </div>
       </div>
@@ -373,17 +379,17 @@ const recentPayments = computed(() => {
 
           <div class="divide-y divide-border-card/60 mt-2">
             <div 
-              v-for="tenant in state.tenants.slice(0, 4)" 
+              v-for="tenant in activeRosterTenants" 
               :key="tenant.id"
               class="py-2.5 flex items-center justify-between gap-3 hover:bg-surface-dim/40 px-2 rounded-xl transition-colors"
             >
               <div class="flex items-center gap-3 min-w-0">
                 <div class="w-8 h-8 rounded-full bg-primary-container text-primary font-bold text-xs flex items-center justify-center shrink-0 shadow-xs">
-                  {{ tenant.name?.split(' ').map(n=>n[0]).join('').substring(0, 2) || 'ST' }}
+                  {{ getInitials(tenant.name) }}
                 </div>
                 <div class="min-w-0">
                   <p class="text-xs font-bold text-on-surface leading-tight truncate">{{ tenant.name }}</p>
-                  <p class="text-[10px] text-on-surface-variant truncate">{{ tenant.phone }} &bull; ID: {{ tenant.id_number || 'NRC-Verified' }}</p>
+                  <p class="text-[10px] text-on-surface-variant truncate">{{ tenant.phone }} &bull; ID: {{ formatNRC(tenant.id_number) }}</p>
                 </div>
               </div>
 
@@ -407,7 +413,7 @@ const recentPayments = computed(() => {
         </div>
 
         <div class="pt-3 border-t border-border-card mt-3 flex items-center justify-between text-xs text-on-surface-variant">
-          <span>Showing 4 of {{ state.tenants.length }} tenants</span>
+          <span>Showing {{ Math.min(4, state.tenants.length) }} of {{ state.tenants.length }} tenants</span>
           <router-link to="/app/tenants" class="text-primary hover:underline font-semibold text-[11px]">View All Tenants &rarr;</router-link>
         </div>
       </div>
@@ -428,28 +434,34 @@ const recentPayments = computed(() => {
                 <path
                   d="M 10 50 A 40 40 0 0 1 90 50"
                   fill="none"
-                  stroke="#E2E7E2"
+                  stroke="var(--color-border-card)"
                   stroke-width="12"
                   stroke-linecap="round"
                 />
-                <!-- Progress Arc (48% Term Elapsed) -->
+                <!-- Progress Arc -->
                 <path
                   d="M 10 50 A 40 40 0 0 1 90 50"
                   fill="none"
-                  stroke="#144D2F"
+                  stroke="var(--color-primary)"
                   stroke-width="12"
                   stroke-linecap="round"
                   stroke-dasharray="125.66"
-                  stroke-dashoffset="65"
+                  :stroke-dashoffset="125.66 * (1 - termProgress.percentage / 100)"
                 />
               </svg>
               <!-- Center Display Percentage -->
               <div class="absolute bottom-0 flex flex-col items-center text-center">
-                <span class="text-2xl font-bold font-data-mono text-on-surface leading-none">48%</span>
-                <span class="text-[10px] text-on-surface-variant font-medium mt-0.5">Term Elapsed</span>
+                <span class="text-2xl font-bold font-data-mono text-on-surface leading-none">
+                  {{ termProgress.hasData ? `${termProgress.percentage}%` : '—' }}
+                </span>
+                <span class="text-[10px] text-on-surface-variant font-medium mt-0.5">
+                  {{ termProgress.hasData ? 'Term Elapsed' : 'No Active Term' }}
+                </span>
               </div>
             </div>
-            <p class="text-[11px] text-on-surface-variant mt-2 font-medium">72 of 150 Days Completed</p>
+            <p class="text-[11px] text-on-surface-variant mt-2 font-medium">
+              {{ termProgress.hasData ? `${termProgress.daysElapsed} of ${termProgress.totalDays} Days Completed` : 'No active tenancies with lease dates' }}
+            </p>
           </div>
         </div>
 

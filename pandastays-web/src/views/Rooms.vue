@@ -1,11 +1,13 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { useStore, roomsWithBeds, occupancyStats } from '../lib/store'
-import BedGrid from '../components/BedGrid.vue'
-import BedIcon from '../components/BedIcon.vue'
-import AssignTenantModal from '../components/AssignTenantModal.vue'
-import AddRoomModal from '../components/AddRoomModal.vue'
-import EditRoomModal from '../components/EditRoomModal.vue'
+import { 
+  BedGrid, 
+  BedIcon, 
+  AssignTenantModal, 
+  AddRoomModal, 
+  EditRoomModal 
+} from '../components'
 
 const { state, deleteRoom } = useStore()
 
