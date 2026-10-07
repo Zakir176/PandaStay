@@ -10,7 +10,8 @@
     "preview": "vite preview",
     "test:supabase": "node scripts/test-supabase.js",
     "test:rls": "node scripts/test-rls.js",
-    "test:payments": "node scripts/test-payments.js"
+    "test:payments": "node scripts/test-payments.js",
+    "test:roles": "node scripts/test-role-isolation.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.112.0",
@@ -18,6 +19,7 @@
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
+    "qrcode": "^1.5.4",
     "tailwindcss": "^4.3.3",
     "vue": "^3.5.40",
     "vue-router": "^4.6.4"
