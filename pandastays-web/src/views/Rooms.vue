@@ -175,27 +175,27 @@ const handleRoomDeleted = (deletedRoom) => {
     <!-- Summary Metrics Cards (Bento 4-Column Row) -->
     <div class="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
       <div class="card-bento p-4.5 bg-surface">
-        <p class="text-[10px] font-bold uppercase tracking-wider text-on-surface-muted">Total Bed-Spaces</p>
+        <p class="text-xs font-bold uppercase tracking-wider text-on-surface-muted">Total Bed-Spaces</p>
         <p class="text-2xl font-bold font-data-mono text-on-surface mt-1.5">{{ occupancyStats.totalBeds }}</p>
-        <p class="text-[11px] text-on-surface-variant mt-0.5">Across {{ state.rooms.length }} rooms</p>
+        <p class="text-xs text-on-surface-variant mt-0.5">Across {{ state.rooms.length }} rooms</p>
       </div>
 
       <div class="card-bento p-4.5 bg-surface border-t-3 border-t-primary">
-        <p class="text-[10px] font-bold uppercase tracking-wider text-primary">Occupied Beds</p>
+        <p class="text-xs font-bold uppercase tracking-wider text-primary">Occupied Beds</p>
         <p class="text-2xl font-bold font-data-mono text-primary mt-1.5">{{ occupancyStats.occupiedBeds }}</p>
-        <p class="text-[11px] text-primary font-medium mt-0.5">{{ occupancyStats.percentage }}% occupancy rate</p>
+        <p class="text-xs text-primary font-medium mt-0.5">{{ occupancyStats.percentage }}% occupancy rate</p>
       </div>
 
       <div class="card-bento p-4.5 bg-surface">
-        <p class="text-[10px] font-bold uppercase tracking-wider text-on-surface-muted">Vacant Beds</p>
+        <p class="text-xs font-bold uppercase tracking-wider text-on-surface-muted">Vacant Beds</p>
         <p class="text-2xl font-bold font-data-mono text-on-surface mt-1.5">{{ occupancyStats.vacantBeds }}</p>
-        <p class="text-[11px] text-on-surface-variant mt-0.5">Ready for immediate lease</p>
+        <p class="text-xs text-on-surface-variant mt-0.5">Ready for immediate lease</p>
       </div>
 
       <div class="card-bento p-4.5 bg-surface border-t-3 border-t-tertiary">
-        <p class="text-[10px] font-bold uppercase tracking-wider text-tertiary">Reserved Beds</p>
+        <p class="text-xs font-bold uppercase tracking-wider text-tertiary">Reserved Beds</p>
         <p class="text-2xl font-bold font-data-mono text-tertiary mt-1.5">{{ occupancyStats.reservedBeds }}</p>
-        <p class="text-[11px] text-tertiary font-medium mt-0.5">Deposit pending</p>
+        <p class="text-xs text-tertiary font-medium mt-0.5">Deposit pending</p>
       </div>
     </div>
 
@@ -216,7 +216,7 @@ const handleRoomDeleted = (deletedRoom) => {
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-3 border-b border-border-card">
           <div>
             <div class="flex items-center gap-2 mb-0.5">
-              <span class="badge-pill bg-primary/10 text-primary border border-primary/20 text-[10px]">
+              <span class="badge-pill bg-primary/10 text-primary border border-primary/20 text-xs">
                 Modular Inventory
               </span>
               <span class="text-xs text-on-surface-variant font-medium">Grouped per room</span>
@@ -238,7 +238,7 @@ const handleRoomDeleted = (deletedRoom) => {
                 v-model="searchQuery"
                 type="text"
                 placeholder="Search tenant or bed..."
-                class="w-full pl-9 pr-8 py-1.5 text-xs rounded-full border border-border-card bg-surface-dim/50 text-on-surface focus:border-primary focus:bg-surface focus:outline-none transition-all"
+                class="w-full pl-9 pr-8 py-1.5 text-xs sm:text-sm rounded-full border border-border-card bg-surface-dim/50 text-on-surface focus:border-primary focus:bg-surface focus:outline-none transition-all"
               />
               <button 
                 v-if="searchQuery" 
@@ -254,7 +254,7 @@ const handleRoomDeleted = (deletedRoom) => {
               <button 
                 @click="expandAllRooms"
                 type="button"
-                class="px-2.5 py-1 rounded-full text-[11px] font-semibold text-on-surface-variant hover:text-on-surface transition-colors"
+                class="px-2.5 py-1 rounded-full text-xs font-semibold text-on-surface-variant hover:text-on-surface transition-colors cursor-pointer"
                 title="Expand all rooms"
               >
                 Expand All
@@ -263,7 +263,7 @@ const handleRoomDeleted = (deletedRoom) => {
               <button 
                 @click="collapseAllRooms"
                 type="button"
-                class="px-2.5 py-1 rounded-full text-[11px] font-semibold text-on-surface-variant hover:text-on-surface transition-colors"
+                class="px-2.5 py-1 rounded-full text-xs font-semibold text-on-surface-variant hover:text-on-surface transition-colors cursor-pointer"
                 title="Collapse all rooms"
               >
                 Collapse All
@@ -297,17 +297,17 @@ const handleRoomDeleted = (deletedRoom) => {
                 : 'bg-surface-dim/60 text-on-surface-variant border-border-card hover:bg-surface-dim hover:text-on-surface'"
             >
               <span>Room {{ room.room_number }}</span>
-              <span class="text-[10px] opacity-80 font-data-mono">({{ room.beds.length }})</span>
+              <span class="text-xs opacity-80 font-data-mono">({{ room.beds.length }})</span>
             </button>
           </div>
 
           <!-- Status Filter Toggle Pills -->
-          <div class="flex items-center gap-1 text-[11px] shrink-0 overflow-x-auto">
-            <span class="text-on-surface-muted text-[10px] font-bold uppercase tracking-wider mr-1">Filter:</span>
+          <div class="flex items-center gap-1 text-xs shrink-0 overflow-x-auto">
+            <span class="text-on-surface-muted text-xs font-bold uppercase tracking-wider mr-1">Filter:</span>
             <button 
               @click="statusFilter = 'all'"
               type="button"
-              class="px-2.5 py-1 rounded-full font-medium transition-colors"
+              class="px-2.5 py-1 rounded-full font-medium transition-colors cursor-pointer"
               :class="statusFilter === 'all' ? 'bg-primary/10 text-primary font-bold' : 'text-on-surface-variant hover:text-on-surface'"
             >
               All
@@ -315,29 +315,29 @@ const handleRoomDeleted = (deletedRoom) => {
             <button 
               @click="statusFilter = 'vacant'"
               type="button"
-              class="px-2.5 py-1 rounded-full font-medium transition-colors flex items-center gap-1"
+              class="px-2.5 py-1 rounded-full font-medium transition-colors flex items-center gap-1 cursor-pointer"
               :class="statusFilter === 'vacant' ? 'bg-primary/10 text-primary font-bold' : 'text-on-surface-variant hover:text-on-surface'"
             >
               <span>Vacant</span>
-              <span class="font-data-mono text-[10px]">({{ occupancyStats.vacantBeds }})</span>
+              <span class="font-data-mono text-xs">({{ occupancyStats.vacantBeds }})</span>
             </button>
             <button 
               @click="statusFilter = 'reserved'"
               type="button"
-              class="px-2.5 py-1 rounded-full font-medium transition-colors flex items-center gap-1"
+              class="px-2.5 py-1 rounded-full font-medium transition-colors flex items-center gap-1 cursor-pointer"
               :class="statusFilter === 'reserved' ? 'bg-tertiary/15 text-tertiary font-bold' : 'text-on-surface-variant hover:text-on-surface'"
             >
               <span>Reserved</span>
-              <span class="font-data-mono text-[10px]">({{ occupancyStats.reservedBeds }})</span>
+              <span class="font-data-mono text-xs">({{ occupancyStats.reservedBeds }})</span>
             </button>
             <button 
               @click="statusFilter = 'occupied'"
               type="button"
-              class="px-2.5 py-1 rounded-full font-medium transition-colors flex items-center gap-1"
+              class="px-2.5 py-1 rounded-full font-medium transition-colors flex items-center gap-1 cursor-pointer"
               :class="statusFilter === 'occupied' ? 'bg-primary/10 text-primary font-bold' : 'text-on-surface-variant hover:text-on-surface'"
             >
               <span>Occupied</span>
-              <span class="font-data-mono text-[10px]">({{ occupancyStats.occupiedBeds }})</span>
+              <span class="font-data-mono text-xs">({{ occupancyStats.occupiedBeds }})</span>
             </button>
           </div>
         </div>
@@ -411,9 +411,9 @@ const handleRoomDeleted = (deletedRoom) => {
           <!-- Right side: Revenue, CRUD Action Buttons & Collapse Trigger -->
           <div class="flex items-center justify-between sm:justify-end gap-2.5">
             <div class="text-right mr-1">
-              <p class="text-[10px] uppercase font-bold text-on-surface-muted tracking-wider">Room Potential</p>
-              <p class="font-data-mono font-bold text-sm text-primary">
-                ZMW {{ getRoomStats(room).totalMonthly.toLocaleString() }} <span class="text-[10px] font-normal text-on-surface-variant">/mo</span>
+              <p class="text-xs uppercase font-bold text-on-surface-muted tracking-wider">Room Potential</p>
+              <p class="font-data-mono font-bold text-sm sm:text-base text-primary">
+                ZMW {{ getRoomStats(room).totalMonthly.toLocaleString() }} <span class="text-xs font-normal text-on-surface-variant">/mo</span>
               </p>
             </div>
 
@@ -421,10 +421,10 @@ const handleRoomDeleted = (deletedRoom) => {
             <button 
               @click.stop="openEditRoom(room)"
               type="button"
-              class="btn-pill-outline py-1 px-2.5 text-[11px] flex items-center gap-1 hover:border-primary hover:text-primary transition-colors"
+              class="btn-pill-outline py-1 px-3 text-xs flex items-center gap-1 hover:border-primary hover:text-primary transition-colors cursor-pointer"
               title="Edit room credentials & beds"
             >
-              <span class="material-symbols-outlined text-[14px]">edit</span>
+              <span class="material-symbols-outlined text-[15px]">edit</span>
               <span>Edit</span>
             </button>
 
@@ -432,10 +432,10 @@ const handleRoomDeleted = (deletedRoom) => {
             <button 
               @click.stop="promptDeleteRoom(room)"
               type="button"
-              class="btn-pill-outline py-1 px-2 text-[11px] text-error border-error/30 hover:bg-error/10 hover:border-error flex items-center transition-colors"
+              class="btn-pill-outline py-1 px-2.5 text-xs text-error border-error/30 hover:bg-error/10 hover:border-error flex items-center transition-colors cursor-pointer"
               title="Delete room"
             >
-              <span class="material-symbols-outlined text-[14px]">delete</span>
+              <span class="material-symbols-outlined text-[15px]">delete</span>
             </button>
 
             <!-- Collapse Chevron -->
@@ -453,12 +453,12 @@ const handleRoomDeleted = (deletedRoom) => {
           class="py-2.5 px-3.5 bg-surface-dim/40 rounded-xl flex items-center justify-between gap-3 text-xs text-on-surface-variant"
         >
           <div class="flex items-center gap-3 overflow-x-auto">
-            <span class="text-[11px] font-semibold text-on-surface shrink-0">Beds:</span>
+            <span class="text-xs font-semibold text-on-surface shrink-0">Beds:</span>
             <div class="flex items-center gap-2">
               <div 
                 v-for="b in room.beds" 
                 :key="b.id"
-                class="flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-[11px] shrink-0"
+                class="flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-xs shrink-0"
                 :class="{
                   'bg-primary-container/40 border-primary/30 text-primary font-semibold': b.status === 'occupied',
                   'bg-hatch-diagonal border-tertiary/40 text-tertiary font-semibold': b.status === 'reserved',
@@ -471,13 +471,13 @@ const handleRoomDeleted = (deletedRoom) => {
                   'bg-outline': b.status === 'vacant'
                 }"></span>
                 <span>{{ b.shortLabel || b.label }}</span>
-                <span v-if="b.tenantName" class="text-[10px] opacity-80 font-normal">({{ b.tenantName.split(' ')[0] }})</span>
+                <span v-if="b.tenantName" class="text-xs opacity-80 font-normal">({{ b.tenantName.split(' ')[0] }})</span>
               </div>
             </div>
           </div>
           <span 
             @click.stop="toggleRoomCollapse(room.id)" 
-            class="text-[11px] text-primary font-semibold hover:underline cursor-pointer shrink-0 ml-2"
+            class="text-xs text-primary font-semibold hover:underline cursor-pointer shrink-0 ml-2"
           >
             Expand Details
           </span>
@@ -487,7 +487,7 @@ const handleRoomDeleted = (deletedRoom) => {
         <div v-else class="overflow-x-auto pt-0.5">
           <table class="w-full text-left text-sm border-collapse">
             <thead>
-              <tr class="border-b border-border-card text-[11px] uppercase tracking-wider text-on-surface-muted font-bold bg-surface-dim/50">
+              <tr class="border-b border-border-card text-xs uppercase tracking-wider text-on-surface-muted font-bold bg-surface-dim/50">
                 <th class="py-2.5 px-3 rounded-l-xl">Silhouette</th>
                 <th class="py-2.5 px-3">Bed Space</th>
                 <th class="py-2.5 px-3">Monthly Rent</th>
@@ -505,15 +505,15 @@ const handleRoomDeleted = (deletedRoom) => {
                 <td class="py-3 px-3 align-middle">
                   <BedIcon :bed="bed" size="sm" :interactive="false" />
                 </td>
-                <td class="py-3 px-3 align-middle font-bold text-on-surface text-xs">
+                <td class="py-3 px-3 align-middle font-bold text-on-surface text-sm">
                   {{ bed.label }}
                 </td>
-                <td class="py-3 px-3 align-middle font-data-mono font-bold text-xs text-on-surface">
+                <td class="py-3 px-3 align-middle font-data-mono font-bold text-sm text-on-surface">
                   ZMW {{ Number(bed.rent_amount).toLocaleString() }}
                 </td>
                 <td class="py-3 px-3 align-middle">
                   <span 
-                    class="badge-pill"
+                    class="badge-pill text-xs"
                     :class="{
                       'bg-primary-container text-primary border border-primary/20': bed.status === 'occupied',
                       'bg-hatch-diagonal text-tertiary border border-tertiary/30': bed.status === 'reserved',
@@ -528,9 +528,9 @@ const handleRoomDeleted = (deletedRoom) => {
                     <span class="capitalize">{{ bed.status }}</span>
                   </span>
                 </td>
-                <td class="py-3 px-3 align-middle text-xs text-on-surface">
+                <td class="py-3 px-3 align-middle text-sm text-on-surface">
                   <div v-if="bed.status === 'occupied'" class="flex items-center gap-2">
-                    <div class="w-6 h-6 rounded-full bg-primary/10 text-primary text-[10px] font-bold flex items-center justify-center shrink-0">
+                    <div class="w-6 h-6 rounded-full bg-primary/10 text-primary text-xs font-bold flex items-center justify-center shrink-0">
                       {{ bed.tenantInitials || bed.tenantName?.substring(0, 2).toUpperCase() || 'ST' }}
                     </div>
                     <span class="font-semibold text-primary">
@@ -538,10 +538,10 @@ const handleRoomDeleted = (deletedRoom) => {
                     </span>
                   </div>
                   <div v-else-if="bed.status === 'reserved'" class="flex items-center gap-1.5">
-                    <span class="material-symbols-outlined text-[15px] text-tertiary shrink-0">lock_clock</span>
+                    <span class="material-symbols-outlined text-[16px] text-tertiary shrink-0">lock_clock</span>
                     <div>
                       <p class="font-semibold text-tertiary leading-tight">{{ bed.tenantName || 'Holding Prospect' }}</p>
-                      <p v-if="bed.tenantPhone" class="text-[10px] font-data-mono text-on-surface-variant">{{ bed.tenantPhone }}</p>
+                      <p v-if="bed.tenantPhone" class="text-xs font-data-mono text-on-surface-variant">{{ bed.tenantPhone }}</p>
                     </div>
                   </div>
                   <span v-else class="text-on-surface-muted italic">
@@ -553,7 +553,7 @@ const handleRoomDeleted = (deletedRoom) => {
                     v-if="bed.status === 'vacant'"
                     @click="handleSelectBed({ bed, room })"
                     type="button"
-                    class="btn-pill-primary py-1 px-3 text-[11px]"
+                    class="btn-pill-primary py-1 px-3 text-xs"
                   >
                     Reserve / Assign
                   </button>
@@ -561,23 +561,23 @@ const handleRoomDeleted = (deletedRoom) => {
                     v-else-if="bed.status === 'reserved'"
                     @click="handleSelectBed({ bed, room })"
                     type="button"
-                    class="btn-pill-outline py-1 px-3 text-[11px] text-tertiary border-tertiary/40 hover:bg-tertiary/10 font-medium inline-flex items-center gap-1"
+                    class="btn-pill-outline py-1 px-3 text-xs text-tertiary border-tertiary/40 hover:bg-tertiary/10 font-medium inline-flex items-center gap-1"
                   >
-                    <span class="material-symbols-outlined text-[13px]">lock_clock</span>
+                    <span class="material-symbols-outlined text-[14px]">lock_clock</span>
                     <span>Manage</span>
                   </button>
                   <router-link
                     v-else-if="bed.tenantId"
                     :to="`/app/tenants/${bed.tenantId}`"
-                    class="btn-pill-outline py-1 px-3 text-[11px] inline-flex items-center gap-1"
+                    class="btn-pill-outline py-1 px-3 text-xs inline-flex items-center gap-1"
                   >
                     <span>View Tenancy</span>
-                    <span class="material-symbols-outlined text-[13px]">arrow_forward</span>
+                    <span class="material-symbols-outlined text-[14px]">arrow_forward</span>
                   </router-link>
                   <button 
                     v-else
                     type="button"
-                    class="btn-pill-outline py-1 px-3 text-[11px]"
+                    class="btn-pill-outline py-1 px-3 text-xs"
                   >
                     View Tenancy
                   </button>
