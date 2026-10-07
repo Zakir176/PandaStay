@@ -83,18 +83,18 @@ const isActive = (path) => route.path === path
           <div>
             <div class="flex items-center gap-2">
               <span class="font-bold text-base text-on-surface tracking-tight">PandaStays</span>
-              <span class="badge-pill bg-primary/10 text-primary border border-primary/20 text-[9px] font-bold uppercase tracking-wider">
+              <span class="badge-pill bg-primary/10 text-primary border border-primary/20 text-xs font-bold uppercase tracking-wider">
                 Resident Portal
               </span>
             </div>
-            <p class="text-[10px] text-on-surface-variant leading-none hidden sm:block">
+            <p class="text-xs text-on-surface-variant leading-none hidden sm:block mt-0.5">
               {{ state.currentProperty?.name || 'Mukuba House' }} &bull; Student Housing
             </p>
           </div>
         </router-link>
 
         <!-- Center: Primary Nav Tabs (Desktop) -->
-        <nav class="hidden md:flex items-center gap-1 bg-surface-dim/70 p-1 rounded-full border border-border-card text-xs">
+        <nav class="hidden md:flex items-center gap-1 bg-surface-dim/70 p-1 rounded-full border border-border-card text-sm">
           <router-link
             v-for="item in navItems"
             :key="item.path"
@@ -104,7 +104,7 @@ const isActive = (path) => route.path === path
               ? 'bg-primary text-white shadow-xs' 
               : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-dim'"
           >
-            <span class="material-symbols-outlined text-[16px]">{{ item.icon }}</span>
+            <span class="material-symbols-outlined text-[17px]">{{ item.icon }}</span>
             <span>{{ item.name }}</span>
           </router-link>
         </nav>
@@ -114,9 +114,9 @@ const isActive = (path) => route.path === path
           <!-- Quick MoMo Pay Button -->
           <router-link
             to="/tenant/checkout"
-            class="btn-pill-primary py-1.5 px-3 text-xs hidden sm:inline-flex items-center gap-1.5"
+            class="btn-pill-primary py-1.5 px-3.5 text-sm hidden sm:inline-flex items-center gap-1.5"
           >
-            <span class="material-symbols-outlined text-[15px]">point_of_sale</span>
+            <span class="material-symbols-outlined text-[16px]">point_of_sale</span>
             <span>Pay Rent</span>
           </router-link>
 
@@ -130,10 +130,10 @@ const isActive = (path) => route.path === path
                 {{ tenantInitials }}
               </div>
               <div class="hidden sm:flex flex-col text-left">
-                <span class="text-xs font-semibold text-on-surface leading-tight truncate max-w-28">
+                <span class="text-sm font-semibold text-on-surface leading-tight truncate max-w-28">
                   {{ currentTenant?.name || 'Student' }}
                 </span>
-                <span class="text-[9px] text-on-surface-variant font-data-mono leading-none">
+                <span class="text-xs text-on-surface-variant font-data-mono leading-none">
                   {{ currentBed?.shortLabel || 'Bed 101-A' }}
                 </span>
               </div>
@@ -150,16 +150,16 @@ const isActive = (path) => route.path === path
             <!-- Profile Dropdown -->
             <div
               v-if="isProfileDropdownOpen"
-              class="absolute top-full right-0 mt-2 w-60 bg-surface rounded-2xl shadow-2xl border border-border-card p-2 z-50 space-y-1 text-xs"
+              class="absolute top-full right-0 mt-2 w-64 bg-surface rounded-2xl shadow-2xl border border-border-card p-2.5 z-50 space-y-1 text-sm"
             >
               <div class="p-2.5 border-b border-border-card">
-                <p class="font-bold text-on-surface truncate">{{ currentTenant?.name }}</p>
-                <p class="font-data-mono text-[10px] text-on-surface-variant truncate">{{ currentTenant?.email }}</p>
+                <p class="font-bold text-sm text-on-surface truncate">{{ currentTenant?.name }}</p>
+                <p class="font-data-mono text-xs text-on-surface-variant truncate">{{ currentTenant?.email }}</p>
                 <div class="mt-1.5 flex items-center gap-1.5">
-                  <span class="badge-pill bg-primary/10 text-primary border border-primary/20 text-[9px]">
+                  <span class="badge-pill bg-primary/10 text-primary border border-primary/20 text-xs">
                     Room {{ currentTenant?.room_number || '101' }}
                   </span>
-                  <span class="badge-pill bg-surface-dim text-on-surface-variant border border-border-card text-[9px]">
+                  <span class="badge-pill bg-surface-dim text-on-surface-variant border border-border-card text-xs">
                     {{ currentBed?.label || 'Bed Space' }}
                   </span>
                 </div>
@@ -171,7 +171,7 @@ const isActive = (path) => route.path === path
                 @click="isProfileDropdownOpen = false"
                 class="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-left text-on-surface hover:bg-surface-dim transition-colors"
               >
-                <span class="material-symbols-outlined text-[16px] text-primary">receipt_long</span>
+                <span class="material-symbols-outlined text-[18px] text-primary">receipt_long</span>
                 <span>Payment Receipts</span>
               </router-link>
 
@@ -180,7 +180,7 @@ const isActive = (path) => route.path === path
                 @click="isProfileDropdownOpen = false"
                 class="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-left text-on-surface hover:bg-surface-dim transition-colors"
               >
-                <span class="material-symbols-outlined text-[16px] text-primary">handyman</span>
+                <span class="material-symbols-outlined text-[18px] text-primary">handyman</span>
                 <span>Maintenance Tickets</span>
               </router-link>
 
@@ -191,7 +191,7 @@ const isActive = (path) => route.path === path
                   @click="handleSignOut"
                   class="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-left text-error hover:bg-error/10 transition-colors"
                 >
-                  <span class="material-symbols-outlined text-[16px]">logout</span>
+                  <span class="material-symbols-outlined text-[18px]">logout</span>
                   <span>Sign Out</span>
                 </button>
               </div>
@@ -214,7 +214,7 @@ const isActive = (path) => route.path === path
       <!-- Mobile Navigation Drawer -->
       <div 
         v-if="isMobileMenuOpen"
-        class="md:hidden border-t border-border-card bg-surface px-4 py-3 space-y-1 text-xs"
+        class="md:hidden border-t border-border-card bg-surface px-4 py-3 space-y-1 text-sm"
       >
         <router-link
           v-for="item in navItems"
@@ -232,7 +232,7 @@ const isActive = (path) => route.path === path
           <router-link
             to="/tenant/checkout"
             @click="isMobileMenuOpen = false"
-            class="btn-pill-primary w-full justify-center py-2 text-xs"
+            class="btn-pill-primary w-full justify-center py-2 text-sm"
           >
             <span class="material-symbols-outlined text-[16px]">point_of_sale</span>
             <span>Pay Rent with MoMo</span>
@@ -250,11 +250,11 @@ const isActive = (path) => route.path === path
     <footer class="border-t border-border-card bg-surface py-6 text-center text-xs text-on-surface-variant">
       <div class="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
         <div class="flex items-center gap-2">
-          <span class="font-bold text-on-surface">PandaStays</span>
+          <span class="font-bold text-sm text-on-surface">PandaStays</span>
           <span>&bull;</span>
-          <span>Resident Portal for {{ state.currentProperty?.name || 'Mukuba House' }}</span>
+          <span class="text-xs">Resident Portal for {{ state.currentProperty?.name || 'Mukuba House' }}</span>
         </div>
-        <p class="text-[11px] text-on-surface-muted">
+        <p class="text-xs text-on-surface-muted">
           Need assistance? Contact property management via WhatsApp or submit a maintenance ticket.
         </p>
       </div>
