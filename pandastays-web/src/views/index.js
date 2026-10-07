@@ -5,6 +5,7 @@
 
 // Public Views
 export { default as LandingPage } from './LandingPage.vue'
+export { default as PublicVerification } from './PublicVerification.vue'
 
 // Landlord Operations Views
 export { default as Dashboard } from './Dashboard.vue'
