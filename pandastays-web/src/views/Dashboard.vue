@@ -147,7 +147,7 @@ const activeRosterTenants = computed(() => {
       <div class="card-bento-hero p-5 flex flex-col justify-between group">
         <div>
           <div class="flex items-center justify-between text-white/80">
-            <span class="text-[10px] font-bold uppercase tracking-wider">Total Revenue</span>
+            <span class="text-xs font-bold uppercase tracking-wider">Total Revenue</span>
             <router-link to="/app/financials" class="btn-circle-action" title="View Financial Ledger">
               <span class="material-symbols-outlined text-[18px]">north_east</span>
             </router-link>
@@ -159,11 +159,11 @@ const activeRosterTenants = computed(() => {
           </div>
         </div>
         <div class="mt-4 pt-3 border-t border-white/15 flex items-center justify-between text-xs text-white/80">
-          <span class="flex items-center gap-1.5 text-[11px] font-medium">
+          <span class="flex items-center gap-1.5 text-xs font-medium">
             <span class="w-1.5 h-1.5 rounded-full bg-primary-accent animate-pulse"></span>
             Lenco Verified &bull; {{ state.payments.length }} Collections
           </span>
-          <span class="text-[11px] font-bold text-primary-accent">100% Reconciled</span>
+          <span class="text-xs font-bold text-primary-accent">100% Reconciled</span>
         </div>
       </div>
 
@@ -171,7 +171,7 @@ const activeRosterTenants = computed(() => {
       <div class="card-bento p-5 flex flex-col justify-between group">
         <div>
           <div class="flex items-center justify-between text-on-surface-variant">
-            <span class="text-[10px] font-bold uppercase tracking-wider text-on-surface-muted">Occupancy Rate</span>
+            <span class="text-xs font-bold uppercase tracking-wider text-on-surface-muted">Occupancy Rate</span>
             <router-link to="/app/rooms" class="btn-circle-action-light" title="Manage Rooms & Beds">
               <span class="material-symbols-outlined text-[18px]">north_east</span>
             </router-link>
@@ -180,14 +180,14 @@ const activeRosterTenants = computed(() => {
             <span class="text-3xl font-bold font-data-mono text-on-surface">
               {{ occupancyStats.percentage }}%
             </span>
-            <span class="badge-pill bg-primary-container text-primary text-[10px]">
+            <span class="badge-pill bg-primary-container text-primary text-xs">
               {{ occupancyStats.occupiedBeds }}/{{ occupancyStats.totalBeds }} Beds
             </span>
           </div>
         </div>
         <div class="mt-4 pt-3 border-t border-border-card flex items-center justify-between text-xs text-on-surface-variant">
           <span>{{ occupancyStats.vacantBeds }} vacant bed space available</span>
-          <router-link to="/app/rooms" class="text-primary hover:underline text-[11px] font-semibold">Assign &rarr;</router-link>
+          <router-link to="/app/rooms" class="text-primary hover:underline text-xs font-semibold">Assign &rarr;</router-link>
         </div>
       </div>
 
@@ -195,7 +195,7 @@ const activeRosterTenants = computed(() => {
       <div class="card-bento p-5 flex flex-col justify-between group">
         <div>
           <div class="flex items-center justify-between text-on-surface-variant">
-            <span class="text-[10px] font-bold uppercase tracking-wider text-error">Overdue Balance</span>
+            <span class="text-xs font-bold uppercase tracking-wider text-error">Overdue Balance</span>
             <router-link to="/app/financials" class="btn-circle-action-light" title="View Overdue Accounts">
               <span class="material-symbols-outlined text-[18px]">north_east</span>
             </router-link>
@@ -204,7 +204,7 @@ const activeRosterTenants = computed(() => {
             <span class="text-3xl font-bold font-data-mono text-error">
               K{{ occupancyStats.overdueRent.toLocaleString() }}
             </span>
-            <span class="badge-pill bg-error-container text-error text-[10px]">
+            <span class="badge-pill bg-error-container text-error text-xs">
               {{ occupancyStats.overdueTenantCount }} {{ occupancyStats.overdueTenantCount === 1 ? 'Tenant' : 'Tenants' }} Overdue
             </span>
           </div>
@@ -213,7 +213,7 @@ const activeRosterTenants = computed(() => {
           <span class="text-error font-medium">WhatsApp escalations queued</span>
           <button 
             @click="sendReminder({ name: 'All Overdue Tenants', phone: '+260 97 0000000', bed_label: 'Multiple', balanceDue: 3700 })"
-            class="text-error hover:underline text-[11px] font-bold"
+            class="text-error hover:underline text-xs font-bold"
           >
             Dispatch &rarr;
           </button>
@@ -224,7 +224,7 @@ const activeRosterTenants = computed(() => {
       <div class="card-bento p-5 flex flex-col justify-between group">
         <div>
           <div class="flex items-center justify-between text-on-surface-variant">
-            <span class="text-[10px] font-bold uppercase tracking-wider text-on-surface-muted">Active Repairs</span>
+            <span class="text-xs font-bold uppercase tracking-wider text-on-surface-muted">Active Repairs</span>
             <router-link to="/app/maintenance" class="btn-circle-action-light" title="View Tickets">
               <span class="material-symbols-outlined text-[18px]">north_east</span>
             </router-link>
@@ -233,7 +233,7 @@ const activeRosterTenants = computed(() => {
             <span class="text-3xl font-bold font-data-mono text-on-surface">
               {{ state.reports.filter(r => r.status !== 'resolved').length }}
             </span>
-            <span class="badge-pill bg-tertiary-container text-tertiary text-[10px]">
+            <span class="badge-pill bg-tertiary-container text-tertiary text-xs">
               Priority Queue
             </span>
           </div>
@@ -242,7 +242,7 @@ const activeRosterTenants = computed(() => {
           <span class="truncate">
             {{ topPriorityReport ? `Priority #1: ${topPriorityReport.category}` : 'No open tickets' }}
           </span>
-          <router-link to="/app/maintenance" class="text-primary hover:underline text-[11px] font-semibold">Tickets &rarr;</router-link>
+          <router-link to="/app/maintenance" class="text-primary hover:underline text-xs font-semibold">Tickets &rarr;</router-link>
         </div>
       </div>
     </div>
@@ -265,31 +265,31 @@ const activeRosterTenants = computed(() => {
       <div class="card-bento p-5 flex flex-col justify-between">
         <div>
           <div class="flex items-center justify-between pb-3 border-b border-border-card">
-            <span class="text-[10px] font-bold uppercase tracking-wider text-on-surface-muted">Overdue Chaser</span>
-            <span class="badge-pill bg-error-container text-error text-[10px]">
+            <span class="text-xs font-bold uppercase tracking-wider text-on-surface-muted">Overdue Chaser</span>
+            <span class="badge-pill bg-error-container text-error text-xs font-semibold">
               Urgent Alert
             </span>
           </div>
 
           <div class="mt-4 space-y-3">
             <div>
-              <p class="text-xs font-bold text-on-surface">{{ primaryOverdueTenant.name }}</p>
-              <p class="text-[11px] text-on-surface-variant">{{ primaryOverdueTenant.bedLabel }} &bull; Mukuba House</p>
+              <p class="text-sm font-bold text-on-surface">{{ primaryOverdueTenant.name }}</p>
+              <p class="text-xs text-on-surface-variant mt-0.5">{{ primaryOverdueTenant.bedLabel }} &bull; Mukuba House</p>
             </div>
 
             <div class="p-3 bg-surface-dim rounded-xl border border-border-card space-y-1.5">
               <div class="flex items-center justify-between text-xs">
-                <span class="text-on-surface-variant">Outstanding Rent:</span>
+                <span class="text-on-surface-variant font-medium">Outstanding Rent:</span>
                 <span class="font-data-mono font-bold text-error">K{{ primaryOverdueTenant.balanceDue.toLocaleString() }}</span>
               </div>
-              <div class="flex items-center justify-between text-[11px] text-on-surface-muted">
+              <div class="flex items-center justify-between text-xs text-on-surface-muted">
                 <span>Grace Period Expired:</span>
                 <span class="font-semibold text-error">{{ primaryOverdueTenant.daysOverdue }} days ago</span>
               </div>
             </div>
 
-            <p class="text-[11px] text-on-surface-variant leading-relaxed">
-              Rules-based template configured to disburse MoMo payment link to <span class="font-mono">{{ primaryOverdueTenant.phone }}</span>.
+            <p class="text-xs text-on-surface-variant leading-relaxed">
+              Rules-based template configured to disburse MoMo payment link to <span class="font-mono font-medium">{{ primaryOverdueTenant.phone }}</span>.
             </p>
           </div>
         </div>
@@ -297,7 +297,7 @@ const activeRosterTenants = computed(() => {
         <div class="pt-4 mt-4 border-t border-border-card">
           <button 
             @click="sendReminder(primaryOverdueTenant)"
-            class="btn-pill-primary w-full justify-center"
+            class="btn-pill-primary w-full justify-center text-xs sm:text-sm"
           >
             <span class="material-symbols-outlined text-[16px]">send</span>
             <span>Send WhatsApp Chaser</span>
@@ -309,8 +309,8 @@ const activeRosterTenants = computed(() => {
       <div class="card-bento p-5 flex flex-col justify-between">
         <div>
           <div class="flex items-center justify-between pb-3 border-b border-border-card">
-            <span class="text-[10px] font-bold uppercase tracking-wider text-on-surface-muted">Recent Collections</span>
-            <router-link to="/app/financials" class="text-primary hover:underline text-[11px] font-semibold">Ledger &rarr;</router-link>
+            <span class="text-xs font-bold uppercase tracking-wider text-on-surface-muted">Recent Collections</span>
+            <router-link to="/app/financials" class="text-primary hover:underline text-xs font-semibold">Ledger &rarr;</router-link>
           </div>
 
           <div class="mt-3.5 space-y-2.5">
@@ -335,19 +335,19 @@ const activeRosterTenants = computed(() => {
                 </div>
                 <div class="min-w-0">
                   <p class="text-xs font-semibold text-on-surface truncate leading-tight">{{ payment.tenant_name }}</p>
-                  <p class="text-[10px] text-on-surface-variant truncate">{{ payment.bed_label }} &bull; {{ payment.method_label || 'MoMo' }}</p>
+                  <p class="text-xs text-on-surface-variant truncate mt-0.5">{{ payment.bed_label }} &bull; {{ payment.method_label || 'MoMo' }}</p>
                 </div>
               </div>
               <div class="text-right shrink-0 pl-2">
                 <p class="font-data-mono font-bold text-xs text-primary leading-tight">K{{ payment.amount?.toLocaleString() }}</p>
-                <p class="text-[9px] text-on-surface-muted font-mono">{{ payment.receipt_number }}</p>
+                <p class="text-xs text-on-surface-muted font-mono">{{ payment.receipt_number }}</p>
               </div>
             </div>
           </div>
         </div>
 
         <div class="pt-3 border-t border-border-card mt-2 text-center">
-          <p class="text-[10px] text-on-surface-muted font-medium">All collections reconciled against Lenco API</p>
+          <p class="text-xs text-on-surface-muted font-medium">All collections reconciled against Lenco API</p>
         </div>
       </div>
     </div>
@@ -361,11 +361,11 @@ const activeRosterTenants = computed(() => {
         <div>
           <div class="flex items-center justify-between pb-3 border-b border-border-card">
             <div>
-              <h3 class="font-bold text-sm text-on-surface">Active Tenant Roster</h3>
-              <p class="text-[11px] text-on-surface-variant">Allocated bed spaces and verification status</p>
+              <h3 class="font-bold text-base text-on-surface">Active Tenant Roster</h3>
+              <p class="text-xs text-on-surface-variant">Allocated bed spaces and verification status</p>
             </div>
-            <router-link to="/app/rooms" class="btn-pill-outline text-[11px] py-1 px-3">
-              <span class="material-symbols-outlined text-[14px]">person_add</span>
+            <router-link to="/app/rooms" class="btn-pill-outline text-xs py-1.5 px-3">
+              <span class="material-symbols-outlined text-[15px]">person_add</span>
               <span>Onboard Tenant</span>
             </router-link>
           </div>
@@ -381,17 +381,17 @@ const activeRosterTenants = computed(() => {
                   {{ getInitials(tenant.name) }}
                 </div>
                 <div class="min-w-0">
-                  <p class="text-xs font-bold text-on-surface leading-tight truncate">{{ tenant.name }}</p>
-                  <p class="text-[10px] text-on-surface-variant truncate">{{ tenant.phone }} &bull; ID: {{ formatNRC(tenant.id_number) }}</p>
+                  <p class="text-sm font-bold text-on-surface leading-tight truncate">{{ tenant.name }}</p>
+                  <p class="text-xs text-on-surface-variant truncate mt-0.5">{{ tenant.phone }} &bull; ID: {{ formatNRC(tenant.id_number) }}</p>
                 </div>
               </div>
 
               <div class="flex items-center gap-2 shrink-0">
-                <span class="badge-pill bg-surface-dim text-on-surface-variant border border-border-card text-[10px]">
+                <span class="badge-pill bg-surface-dim text-on-surface-variant border border-border-card text-xs">
                   {{ tenant.bed_label || 'Assigned' }}
                 </span>
                 <span 
-                  class="badge-pill text-[10px]"
+                  class="badge-pill text-xs"
                   :class="{
                     'bg-primary-container text-primary border border-primary/20': tenant.status === 'active',
                     'bg-error-container text-error border border-error/20': tenant.status === 'overdue',
@@ -407,7 +407,7 @@ const activeRosterTenants = computed(() => {
 
         <div class="pt-3 border-t border-border-card mt-3 flex items-center justify-between text-xs text-on-surface-variant">
           <span>Showing {{ Math.min(4, state.tenants.length) }} of {{ state.tenants.length }} tenants</span>
-          <router-link to="/app/tenants" class="text-primary hover:underline font-semibold text-[11px]">View All Tenants &rarr;</router-link>
+          <router-link to="/app/tenants" class="text-primary hover:underline font-semibold text-xs">View All Tenants &rarr;</router-link>
         </div>
       </div>
 
@@ -415,8 +415,8 @@ const activeRosterTenants = computed(() => {
       <div class="card-bento p-5 flex flex-col justify-between">
         <div>
           <div class="flex items-center justify-between pb-3 border-b border-border-card">
-            <span class="text-[10px] font-bold uppercase tracking-wider text-on-surface-muted">Semester 1 Progress</span>
-            <span class="badge-pill bg-primary-container text-primary text-[10px]">Term 2026</span>
+            <span class="text-xs font-bold uppercase tracking-wider text-on-surface-muted">Semester 1 Progress</span>
+            <span class="badge-pill bg-primary-container text-primary text-xs font-semibold">Term 2026</span>
           </div>
 
           <!-- Half-Donut SVG Gauge Visual -->
@@ -447,18 +447,18 @@ const activeRosterTenants = computed(() => {
                 <span class="text-2xl font-bold font-data-mono text-on-surface leading-none">
                   {{ termProgress.hasData ? `${termProgress.percentage}%` : '—' }}
                 </span>
-                <span class="text-[10px] text-on-surface-variant font-medium mt-0.5">
+                <span class="text-xs text-on-surface-variant font-medium mt-0.5">
                   {{ termProgress.hasData ? 'Term Elapsed' : 'No Active Term' }}
                 </span>
               </div>
             </div>
-            <p class="text-[11px] text-on-surface-variant mt-2 font-medium">
+            <p class="text-xs text-on-surface-variant mt-2 font-medium">
               {{ termProgress.hasData ? `${termProgress.daysElapsed} of ${termProgress.totalDays} Days Completed` : 'No active tenancies with lease dates' }}
             </p>
           </div>
         </div>
 
-        <div class="pt-3 border-t border-border-card text-[10px] flex items-center justify-center gap-4 text-on-surface-variant">
+        <div class="pt-3 border-t border-border-card text-xs flex items-center justify-center gap-4 text-on-surface-variant">
           <span class="flex items-center gap-1.5 font-medium">
             <span class="w-2.5 h-2.5 rounded-full bg-primary"></span>
             Active Lease Term
@@ -474,8 +474,8 @@ const activeRosterTenants = computed(() => {
       <div class="card-bento-hero bg-topo-dark p-5 flex flex-col justify-between text-white">
         <div>
           <div class="flex items-center justify-between pb-3 border-b border-white/15">
-            <span class="text-[10px] font-bold uppercase tracking-wider text-white/70">Lenco Terminal</span>
-            <span class="badge-pill bg-white/15 text-white text-[10px] border border-white/20">
+            <span class="text-xs font-bold uppercase tracking-wider text-white/80">Lenco Terminal</span>
+            <span class="badge-pill bg-white/15 text-white text-xs border border-white/20">
               <span class="w-1.5 h-1.5 rounded-full bg-primary-accent animate-pulse"></span>
               Synchronized
             </span>
@@ -483,11 +483,11 @@ const activeRosterTenants = computed(() => {
 
           <!-- Digital Clock Display in Monospace -->
           <div class="my-5 text-center">
-            <p class="text-xs uppercase tracking-widest text-white/60 mb-1 font-semibold">Lusaka Local Time</p>
+            <p class="text-xs uppercase tracking-widest text-white/70 mb-1 font-semibold">Lusaka Local Time</p>
             <div class="text-3xl font-extrabold font-data-mono tracking-wider text-white drop-shadow-sm">
               {{ currentTime }}
             </div>
-            <p class="text-[10px] text-white/60 mt-1.5">Next WhatsApp Sweep: 08:00 AM</p>
+            <p class="text-xs text-white/70 mt-1.5">Next WhatsApp Sweep: 08:00 AM</p>
           </div>
         </div>
 
@@ -495,9 +495,9 @@ const activeRosterTenants = computed(() => {
         <div class="pt-3 border-t border-white/15 flex items-center gap-2">
           <button 
             @click="openPaymentModal"
-            class="flex-1 py-2 rounded-full bg-white text-hero-dark text-xs font-bold hover:bg-white/90 transition-colors shadow-sm flex items-center justify-center gap-1.5"
+            class="flex-1 py-2 rounded-full bg-white text-hero-dark text-xs sm:text-sm font-bold hover:bg-white/90 transition-colors shadow-sm flex items-center justify-center gap-1.5 cursor-pointer"
           >
-            <span class="material-symbols-outlined text-[15px]">add_card</span>
+            <span class="material-symbols-outlined text-[16px]">add_card</span>
             <span>Record Cash</span>
           </button>
           <router-link 
