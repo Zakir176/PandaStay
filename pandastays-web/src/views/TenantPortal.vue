@@ -113,18 +113,18 @@ const submitReport = () => {
           </div>
           <div class="space-y-1">
             <div class="flex items-center gap-2">
-              <span class="badge-pill bg-primary/10 text-primary border border-primary/20 text-[10px] font-bold">
+              <span class="badge-pill bg-primary/10 text-primary border border-primary/20 text-xs font-bold">
                 Your Allocated Bed
               </span>
-              <span class="badge-pill bg-surface-dim text-on-surface-variant border border-border-card text-[10px]">
+              <span class="badge-pill bg-surface-dim text-on-surface-variant border border-border-card text-xs">
                 Active Lease
               </span>
             </div>
             <h2 class="text-xl font-bold text-on-surface">{{ bed.label }}</h2>
-            <p class="text-xs text-on-surface-variant font-data-mono">
+            <p class="text-xs sm:text-sm text-on-surface-variant font-data-mono">
               Room {{ tenant.room_number || '101' }} &bull; {{ state.currentProperty?.address || 'Plot 402, Great East Road' }}
             </p>
-            <p class="text-[11px] text-on-surface-variant">
+            <p class="text-xs text-on-surface-variant">
               Registered Phone: <span class="font-data-mono font-medium text-on-surface">{{ tenant.phone }}</span>
             </p>
           </div>
@@ -132,16 +132,16 @@ const submitReport = () => {
 
         <div class="flex flex-row md:flex-col items-center md:items-end justify-between md:justify-center border-t md:border-t-0 md:border-l border-border-card pt-4 md:pt-0 md:pl-8 gap-3">
           <div class="md:text-right">
-            <span class="text-[10px] uppercase font-bold text-on-surface-muted tracking-wider">Agreed Monthly Rent</span>
+            <span class="text-xs uppercase font-bold text-on-surface-muted tracking-wider">Agreed Monthly Rent</span>
             <p class="text-2xl font-bold font-data-mono text-primary">
               ZMW {{ Number(bed.rent_amount || 2500).toLocaleString() }}
             </p>
-            <p class="text-[10px] text-on-surface-variant">Billed monthly via Mobile Money</p>
+            <p class="text-xs text-on-surface-variant">Billed monthly via Mobile Money</p>
           </div>
 
           <router-link
             to="/tenant/checkout"
-            class="btn-pill-primary py-2 px-4 text-xs font-bold shadow-xs"
+            class="btn-pill-primary py-2 px-4 text-xs sm:text-sm font-bold shadow-xs"
           >
             <span class="material-symbols-outlined text-[16px]">qr_code_2</span>
             <span>Pay with MoMo</span>
@@ -155,13 +155,13 @@ const submitReport = () => {
       <!-- Rent Balance -->
       <div class="card-bento p-4.5 bg-surface border-border-card">
         <div class="flex items-center justify-between">
-          <p class="text-[10px] font-bold uppercase tracking-wider text-on-surface-muted">Current Rent Status</p>
+          <p class="text-xs font-bold uppercase tracking-wider text-on-surface-muted">Current Rent Status</p>
           <span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
         </div>
         <p class="text-2xl font-bold font-data-mono text-primary mt-1.5">
           {{ bed?.paymentStatus === 'paid' ? 'Up to date' : 'ZMW 0 Due' }}
         </p>
-        <p class="text-[11px] text-on-surface-variant mt-0.5">
+        <p class="text-xs text-on-surface-variant mt-0.5">
           Next cycle due Nov 1, 2026
         </p>
       </div>
@@ -169,21 +169,21 @@ const submitReport = () => {
       <!-- Deposit Escrow -->
       <div class="card-bento p-4.5 bg-surface border-border-card">
         <div class="flex items-center justify-between">
-          <p class="text-[10px] font-bold uppercase tracking-wider text-on-surface-muted">Security Deposit</p>
+          <p class="text-xs font-bold uppercase tracking-wider text-on-surface-muted">Security Deposit</p>
           <span class="material-symbols-outlined text-primary text-[18px]">verified_user</span>
         </div>
         <p class="text-2xl font-bold font-data-mono text-on-surface mt-1.5">ZMW 1,250</p>
-        <p class="text-[11px] text-primary font-medium mt-0.5">Held in escrow &bull; Refundable</p>
+        <p class="text-xs text-primary font-medium mt-0.5">Held in escrow &bull; Refundable</p>
       </div>
 
       <!-- Maintenance -->
       <div class="card-bento p-4.5 bg-surface border-border-card">
         <div class="flex items-center justify-between">
-          <p class="text-[10px] font-bold uppercase tracking-wider text-on-surface-muted">Support Tickets</p>
+          <p class="text-xs font-bold uppercase tracking-wider text-on-surface-muted">Support Tickets</p>
           <span class="material-symbols-outlined text-primary text-[18px]">handyman</span>
         </div>
         <p class="text-2xl font-bold font-data-mono text-on-surface mt-1.5">{{ myReports.length }}</p>
-        <p class="text-[11px] text-on-surface-variant mt-0.5">
+        <p class="text-xs text-on-surface-variant mt-0.5">
           {{ myReports.filter(r => r.status === 'open').length }} open tickets pending
         </p>
       </div>
@@ -211,10 +211,10 @@ const submitReport = () => {
 
         <div class="space-y-3">
           <div>
-            <label class="block text-[11px] font-bold text-on-surface-variant uppercase mb-1">Issue Category</label>
+            <label class="block text-xs font-bold text-on-surface-variant uppercase mb-1">Issue Category</label>
             <select 
               v-model="reportForm.category"
-              class="w-full px-3.5 py-2 text-xs rounded-xl border border-border-card bg-surface-dim/50 text-on-surface focus:border-primary focus:outline-none transition-all"
+              class="w-full px-3.5 py-2 text-sm rounded-xl border border-border-card bg-surface-dim/50 text-on-surface focus:border-primary focus:outline-none transition-all"
             >
               <option value="Plumbing">Plumbing (Tap, Toilet, Shower)</option>
               <option value="Electrical">Electrical (Lights, Socket, Geyser)</option>
@@ -225,19 +225,19 @@ const submitReport = () => {
           </div>
 
           <div>
-            <label class="block text-[11px] font-bold text-on-surface-variant uppercase mb-1">Description</label>
+            <label class="block text-xs font-bold text-on-surface-variant uppercase mb-1">Description</label>
             <textarea 
               v-model="reportForm.description"
               rows="2" 
               placeholder="e.g. Bathroom cold water tap is dripping..."
-              class="w-full px-3.5 py-2 text-xs rounded-xl border border-border-card bg-surface-dim/50 text-on-surface focus:border-primary focus:outline-none transition-all resize-none"
+              class="w-full px-3.5 py-2 text-sm rounded-xl border border-border-card bg-surface-dim/50 text-on-surface focus:border-primary focus:outline-none transition-all resize-none"
             ></textarea>
           </div>
 
           <button 
             @click="submitReport"
             :disabled="!reportForm.description"
-            class="btn-pill-primary w-full justify-center text-xs disabled:opacity-50"
+            class="btn-pill-primary w-full justify-center text-sm py-2.5 disabled:opacity-50"
           >
             Submit Maintenance Ticket
           </button>
@@ -245,17 +245,17 @@ const submitReport = () => {
 
         <!-- Latest tickets preview -->
         <div v-if="myReports.length > 0" class="pt-3 border-t border-border-card space-y-2">
-          <p class="text-[11px] font-bold uppercase text-on-surface-muted">Your Recent Reports:</p>
+          <p class="text-xs font-bold uppercase text-on-surface-muted">Your Recent Reports:</p>
           <div 
             v-for="rep in myReports.slice(0, 2)" 
             :key="rep.id"
-            class="p-2.5 rounded-xl bg-surface-dim/50 border border-border-card text-xs flex items-center justify-between"
+            class="p-2.5 rounded-xl bg-surface-dim/50 border border-border-card text-xs sm:text-sm flex items-center justify-between"
           >
             <div>
               <p class="font-semibold text-on-surface">{{ rep.category }}</p>
-              <p class="text-[11px] text-on-surface-variant truncate max-w-56">{{ rep.description }}</p>
+              <p class="text-xs text-on-surface-variant truncate max-w-56">{{ rep.description }}</p>
             </div>
-            <span class="badge-pill text-[10px] capitalize" :class="{
+            <span class="badge-pill text-xs capitalize" :class="{
               'bg-error/15 text-error': rep.status === 'open',
               'bg-tertiary/15 text-tertiary': rep.status === 'in_progress',
               'bg-primary/10 text-primary': rep.status === 'resolved'
@@ -274,7 +274,7 @@ const submitReport = () => {
             </h3>
             <p class="text-xs text-on-surface-variant">Verified rent collection vouchers</p>
           </div>
-          <router-link to="/tenant/payments" class="text-xs text-primary font-semibold hover:underline">
+          <router-link to="/tenant/payments" class="text-xs sm:text-sm text-primary font-semibold hover:underline">
             Full Ledger &rarr;
           </router-link>
         </div>
@@ -283,13 +283,13 @@ const submitReport = () => {
           <div 
             v-for="p in myPayments.slice(0, 3)" 
             :key="p.id"
-            class="p-3 bg-surface-dim/40 rounded-xl border border-border-card text-xs space-y-1"
+            class="p-3 bg-surface-dim/40 rounded-xl border border-border-card text-xs sm:text-sm space-y-1"
           >
             <div class="flex justify-between items-center">
-              <span class="font-bold font-data-mono text-primary">{{ p.receipt_number }}</span>
-              <span class="text-on-surface-variant text-[10px]">{{ p.paid_at }}</span>
+              <span class="font-bold font-data-mono text-primary">#{{ p.receipt_number }}</span>
+              <span class="text-on-surface-variant text-xs">{{ p.paid_at }}</span>
             </div>
-            <div class="flex justify-between text-on-surface-variant text-[11px]">
+            <div class="flex justify-between text-on-surface-variant text-xs sm:text-sm">
               <span>{{ p.method_label || 'Mobile Money' }}</span>
               <span class="font-bold font-data-mono text-on-surface">ZMW {{ Number(p.amount).toLocaleString() }}</span>
             </div>
