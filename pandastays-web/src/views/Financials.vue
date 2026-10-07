@@ -143,7 +143,8 @@ const viewReceipt = (payment) => {
         </span>
       </div>
 
-      <div class="overflow-x-auto">
+      <!-- Desktop Table View -->
+      <div class="hidden md:block overflow-x-auto">
         <table class="w-full text-left text-xs font-data-mono">
           <thead>
             <tr class="border-b border-border-card text-on-surface-muted uppercase text-[10px] font-bold bg-surface-dim/50">
@@ -189,14 +190,60 @@ const viewReceipt = (payment) => {
               <td class="py-3 px-3 text-right">
                 <button 
                   @click="viewReceipt(p)"
-                  class="btn-pill-primary py-1 px-3 text-[11px]"
+                  class="btn-pill-primary py-1 px-2.5 text-[11px] inline-flex items-center gap-1.5 shadow-2xs cursor-pointer"
                 >
-                  View Receipt
+                  <span class="material-symbols-outlined text-[14px]">qr_code_2</span>
+                  <span>QR Voucher</span>
                 </button>
               </td>
             </tr>
           </tbody>
         </table>
+      </div>
+
+      <!-- Mobile Cards View (< 768px) -->
+      <div class="block md:hidden space-y-3 font-data-mono">
+        <div 
+          v-for="p in filteredPayments" 
+          :key="p.id"
+          class="p-4 rounded-xl bg-surface-container-low border border-border-card space-y-3 shadow-2xs"
+        >
+          <div class="flex items-center justify-between gap-2">
+            <span class="font-bold text-xs text-primary">#{{ p.receipt_number }}</span>
+            <span class="badge-pill bg-surface-dim text-on-surface-variant text-[10px] border border-border-card">
+              {{ p.method_label || 'Mobile Money' }}
+            </span>
+          </div>
+
+          <div class="flex items-baseline justify-between gap-2">
+            <div>
+              <span class="text-[9px] uppercase font-bold text-on-surface-muted block">Resident Tenant</span>
+              <span class="text-xs font-semibold text-on-surface block truncate max-w-42.5">
+                {{ p.tenant_name }}
+              </span>
+              <span class="text-[11px] text-on-surface-variant">{{ p.bed_label }}</span>
+            </div>
+            <div class="text-right">
+              <span class="text-[9px] uppercase font-bold text-on-surface-muted block">Amount</span>
+              <span class="text-sm font-bold text-on-surface">
+                K{{ Number(p.amount).toLocaleString() }}
+              </span>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between text-[10px] text-on-surface-variant border-t border-border-card/60 pt-2">
+            <span>{{ p.paid_at }}</span>
+            <span class="truncate max-w-32.5">{{ p.gateway_reference }}</span>
+          </div>
+
+          <button 
+            @click="viewReceipt(p)"
+            class="w-full btn-pill-primary py-2 px-3 text-xs flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs"
+          >
+            <span class="material-symbols-outlined text-[15px]">qr_code_2</span>
+            <span>View Official QR Voucher</span>
+          </button>
+        </div>
       </div>
     </div>
 
