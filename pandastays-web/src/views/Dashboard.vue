@@ -129,13 +129,6 @@ const activeRosterTenants = computed(() => {
       </div>
 
       <div class="flex items-center gap-2.5">
-        <router-link
-          to="/tenant/portal"
-          class="btn-pill-outline"
-        >
-          <span class="material-symbols-outlined text-[16px]">visibility</span>
-          <span>Tenant View</span>
-        </router-link>
         <button 
           @click="openPaymentModal"
           class="btn-pill-primary"
