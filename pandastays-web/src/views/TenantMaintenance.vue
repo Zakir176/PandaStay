@@ -101,10 +101,10 @@ const handleSubmit = async () => {
 
         <form @submit.prevent="handleSubmit" class="space-y-3.5">
           <div>
-            <label class="block text-[11px] font-bold text-on-surface-variant uppercase mb-1">Issue Category</label>
+            <label class="block text-xs font-bold text-on-surface-variant uppercase mb-1">Issue Category</label>
             <select 
               v-model="reportForm.category"
-              class="w-full px-3.5 py-2 text-xs rounded-xl border border-border-card bg-surface-dim/50 text-on-surface focus:border-primary focus:outline-none transition-all"
+              class="w-full px-3.5 py-2 text-sm rounded-xl border border-border-card bg-surface-dim/50 text-on-surface focus:border-primary focus:outline-none transition-all"
             >
               <option value="Plumbing">Plumbing (Tap, Toilet, Shower, Drainage)</option>
               <option value="Electrical">Electrical (Lights, Socket, Geyser)</option>
@@ -116,10 +116,10 @@ const handleSubmit = async () => {
           </div>
 
           <div>
-            <label class="block text-[11px] font-bold text-on-surface-variant uppercase mb-1">Severity / Urgency</label>
+            <label class="block text-xs font-bold text-on-surface-variant uppercase mb-1">Severity / Urgency</label>
             <select 
               v-model="reportForm.urgency"
-              class="w-full px-3.5 py-2 text-xs rounded-xl border border-border-card bg-surface-dim/50 text-on-surface focus:border-primary focus:outline-none transition-all"
+              class="w-full px-3.5 py-2 text-sm rounded-xl border border-border-card bg-surface-dim/50 text-on-surface focus:border-primary focus:outline-none transition-all"
             >
               <option value="Normal">Normal (Can wait 24-48 hours)</option>
               <option value="Medium">Medium (Affects daily routine)</option>
@@ -128,12 +128,12 @@ const handleSubmit = async () => {
           </div>
 
           <div>
-            <label class="block text-[11px] font-bold text-on-surface-variant uppercase mb-1">Detailed Description</label>
+            <label class="block text-xs font-bold text-on-surface-variant uppercase mb-1">Detailed Description</label>
             <textarea 
               v-model="reportForm.description"
               rows="4" 
               placeholder="e.g. The cold water tap in our shared bathroom has been leaking steadily since yesterday morning..."
-              class="w-full px-3.5 py-2 text-xs rounded-xl border border-border-card bg-surface-dim/50 text-on-surface focus:border-primary focus:outline-none transition-all resize-none"
+              class="w-full px-3.5 py-2 text-sm rounded-xl border border-border-card bg-surface-dim/50 text-on-surface focus:border-primary focus:outline-none transition-all resize-none"
               required
             ></textarea>
           </div>
@@ -141,7 +141,7 @@ const handleSubmit = async () => {
           <button 
             type="submit"
             :disabled="!reportForm.description || isSubmitting"
-            class="btn-pill-primary w-full justify-center text-xs disabled:opacity-50 flex items-center gap-1.5"
+            class="btn-pill-primary w-full justify-center text-sm py-2.5 disabled:opacity-50 flex items-center gap-1.5"
           >
             <span v-if="isSubmitting" class="material-symbols-outlined animate-spin text-[16px]">sync</span>
             <span v-else class="material-symbols-outlined text-[16px]">send</span>
@@ -160,7 +160,7 @@ const handleSubmit = async () => {
             </h3>
             <p class="text-xs text-on-surface-variant">Live updates as the landlord or maintenance team takes action.</p>
           </div>
-          <span class="badge-pill bg-primary/10 text-primary border border-primary/20 text-[10px] font-data-mono">
+          <span class="badge-pill bg-primary/10 text-primary border border-primary/20 text-xs font-data-mono">
             {{ myReports.length }} Logged
           </span>
         </div>
@@ -173,14 +173,14 @@ const handleSubmit = async () => {
           >
             <div class="flex items-center justify-between gap-3">
               <div class="flex items-center gap-2">
-                <span class="font-bold text-xs text-on-surface">{{ ticket.category }}</span>
-                <span class="badge-pill bg-surface-dim text-on-surface-variant border border-border-card text-[9px]">
+                <span class="font-bold text-sm text-on-surface">{{ ticket.category }}</span>
+                <span class="badge-pill bg-surface-dim text-on-surface-variant border border-border-card text-xs">
                   Room {{ ticket.room_number || tenant.room_number }}
                 </span>
               </div>
 
               <!-- Status Badge -->
-              <span class="badge-pill text-[10px] capitalize font-bold" :class="{
+              <span class="badge-pill text-xs capitalize font-bold" :class="{
                 'bg-error/15 text-error border border-error/20': ticket.status === 'open',
                 'bg-tertiary/15 text-tertiary border border-tertiary/20': ticket.status === 'in_progress',
                 'bg-primary/10 text-primary border border-primary/20': ticket.status === 'resolved'
@@ -194,31 +194,31 @@ const handleSubmit = async () => {
               </span>
             </div>
 
-            <p class="text-xs text-on-surface-variant leading-relaxed">
+            <p class="text-sm text-on-surface-variant leading-relaxed">
               {{ ticket.description }}
             </p>
 
-            <div class="flex items-center justify-between text-[10px] text-on-surface-muted pt-2 border-t border-border-card/60">
+            <div class="flex items-center justify-between text-xs text-on-surface-muted pt-2 border-t border-border-card/60">
               <span>Submitted {{ ticket.created_at || 'Recently' }}</span>
               <span v-if="ticket.status === 'open'" class="text-error font-semibold flex items-center gap-1">
-                <span class="material-symbols-outlined text-[12px]">schedule</span>
+                <span class="material-symbols-outlined text-[14px]">schedule</span>
                 Awaiting Warden Review
               </span>
               <span v-else-if="ticket.status === 'in_progress'" class="text-tertiary font-semibold flex items-center gap-1">
-                <span class="material-symbols-outlined text-[12px]">build</span>
+                <span class="material-symbols-outlined text-[14px]">build</span>
                 Technician Dispatched
               </span>
               <span v-else class="text-primary font-semibold flex items-center gap-1">
-                <span class="material-symbols-outlined text-[12px]">check_circle</span>
+                <span class="material-symbols-outlined text-[14px]">check_circle</span>
                 Completed & Verified
               </span>
             </div>
           </div>
         </div>
-        <div v-else class="text-center py-12 text-on-surface-variant text-xs space-y-2">
+        <div v-else class="text-center py-12 text-on-surface-variant text-sm space-y-2">
           <span class="material-symbols-outlined text-[36px] text-on-surface-muted">task_alt</span>
           <p class="font-bold text-on-surface">No maintenance tickets logged</p>
-          <p class="text-[11px] max-w-sm mx-auto">
+          <p class="text-xs max-w-sm mx-auto">
             Everything in your room is running smoothly! If you ever experience plumbing, lighting, or furniture issues, submit a ticket using the form.
           </p>
         </div>
