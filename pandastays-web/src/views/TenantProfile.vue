@@ -94,34 +94,34 @@ const sendReminder = () => {
           </div>
           <div>
             <h3 class="font-bold text-base text-on-surface">{{ tenant?.name }}</h3>
-            <p class="text-xs text-on-surface-variant font-data-mono">{{ tenant?.phone }}</p>
-            <span class="badge-pill bg-primary/15 text-primary text-[10px] mt-1.5 inline-flex font-bold">
+            <p class="text-xs sm:text-sm text-on-surface-variant font-data-mono">{{ tenant?.phone }}</p>
+            <span class="badge-pill bg-primary/15 text-primary text-xs mt-1.5 inline-flex font-bold">
               Active Tenancy
             </span>
           </div>
         </div>
 
-        <div class="space-y-3.5 text-xs">
+        <div class="space-y-3.5 text-xs sm:text-sm">
           <div class="p-3 bg-surface-container-low rounded-xl">
-            <span class="block text-[10px] uppercase font-bold text-on-surface-variant mb-0.5">Allocated Bed-Space</span>
+            <span class="block text-xs uppercase font-bold text-on-surface-variant mb-0.5">Allocated Bed-Space</span>
             <span class="font-bold text-base text-primary">{{ tenant?.bed_label }}</span>
-            <span class="text-on-surface-variant text-[11px] block mt-0.5">Room {{ tenant?.room_number }} &bull; Mukuba House</span>
+            <span class="text-on-surface-variant text-xs block mt-0.5">Room {{ tenant?.room_number }} &bull; Mukuba House</span>
           </div>
 
           <div>
-            <span class="block text-[10px] uppercase font-bold text-on-surface-variant">Monthly Rent</span>
+            <span class="block text-xs uppercase font-bold text-on-surface-variant mb-0.5">Monthly Rent</span>
             <span class="font-data-mono font-bold text-sm text-on-surface">
               ZMW {{ Number(tenantBed?.rent_amount || 2500).toLocaleString() }}
             </span>
           </div>
 
           <div>
-            <span class="block text-[10px] uppercase font-bold text-on-surface-variant">NRC / Student Identification</span>
+            <span class="block text-xs uppercase font-bold text-on-surface-variant mb-0.5">NRC / Student Identification</span>
             <span class="font-data-mono text-on-surface">{{ tenant?.id_number || '392819/11/1' }}</span>
           </div>
 
           <div>
-            <span class="block text-[10px] uppercase font-bold text-on-surface-variant">Emergency Contact</span>
+            <span class="block text-xs uppercase font-bold text-on-surface-variant mb-0.5">Emergency Contact</span>
             <span class="font-medium text-on-surface block">{{ tenant?.emergency_contact_name }}</span>
             <span class="font-data-mono text-on-surface-variant">{{ tenant?.emergency_contact_phone }}</span>
           </div>
@@ -132,8 +132,8 @@ const sendReminder = () => {
       <div class="card-bento p-5 bg-surface-container-lowest lg:col-span-2 space-y-4">
         <div class="flex items-center justify-between border-b border-outline-variant/50 pb-3">
           <div>
-            <h3 class="font-bold text-sm text-on-surface">Tenancy Payment Ledger</h3>
-            <p class="text-xs text-on-surface-variant">Recorded payments and official receipts for {{ tenant?.name }}</p>
+            <h3 class="font-bold text-base text-on-surface">Tenancy Payment Ledger</h3>
+            <p class="text-xs sm:text-sm text-on-surface-variant">Recorded payments and official receipts for {{ tenant?.name }}</p>
           </div>
           <span class="badge-pill bg-surface-container text-on-surface-variant text-xs font-data-mono font-semibold">
             {{ tenantPayments.length }} Receipts
@@ -141,9 +141,9 @@ const sendReminder = () => {
         </div>
 
         <div v-if="tenantPayments.length > 0" class="overflow-x-auto">
-          <table class="w-full text-left text-xs font-data-mono">
+          <table class="w-full text-left text-sm font-data-mono">
             <thead>
-              <tr class="border-b border-outline-variant/60 text-[10px] uppercase font-bold text-on-surface-variant bg-surface-container-low/60">
+              <tr class="border-b border-outline-variant/60 text-xs uppercase font-bold text-on-surface-variant bg-surface-container-low/60">
                 <th class="py-2.5 px-3">Receipt No</th>
                 <th class="py-2.5 px-3">Date</th>
                 <th class="py-2.5 px-3">Channel</th>
@@ -157,10 +157,10 @@ const sendReminder = () => {
                 <td class="py-2.5 px-3 font-bold text-primary">{{ p.receipt_number }}</td>
                 <td class="py-2.5 px-3 text-on-surface-variant">{{ p.paid_at }}</td>
                 <td class="py-2.5 px-3">{{ p.method_label || 'Mobile Money' }}</td>
-                <td class="py-2.5 px-3 text-[11px] text-on-surface-variant">{{ p.gateway_reference }}</td>
+                <td class="py-2.5 px-3 text-xs text-on-surface-variant">{{ p.gateway_reference }}</td>
                 <td class="py-2.5 px-3 font-bold text-right text-on-surface">ZMW {{ Number(p.amount).toLocaleString() }}</td>
                 <td class="py-2.5 px-3 text-right">
-                  <span class="badge-pill bg-primary/15 text-primary text-[10px] font-bold">Paid</span>
+                  <span class="badge-pill bg-primary/15 text-primary text-xs font-bold">Paid</span>
                 </td>
               </tr>
             </tbody>
