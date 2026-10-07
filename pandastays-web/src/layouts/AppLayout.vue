@@ -265,48 +265,6 @@ const operationsNav = [
             Lenco MoMo Gateway: Live
           </div>
         </div>
-
-        <!-- Quick Tenant View Links -->
-        <div 
-          class="flex items-center gap-1.5"
-          :class="isSidebarCollapsed ? 'md:flex-col' : 'flex-row'"
-        >
-          <router-link 
-            to="/tenant/portal"
-            @click="closeMobileMenu"
-            :title="'Tenant Portal View'"
-            class="flex items-center justify-center gap-1 py-1.5 bg-surface-dim text-on-surface-variant hover:text-primary transition-colors rounded-lg text-[11px] font-semibold group relative"
-            :class="isSidebarCollapsed ? 'w-full md:py-2' : 'flex-1'"
-          >
-            <span class="material-symbols-outlined text-[16px]">badge</span>
-            <span v-if="!isSidebarCollapsed">Tenant View</span>
-            <!-- Tooltip -->
-            <div 
-              v-if="isSidebarCollapsed" 
-              class="hidden md:group-hover:flex absolute left-full ml-3 px-2.5 py-1.5 rounded-lg bg-surface-container-highest text-on-surface text-xs font-semibold whitespace-nowrap shadow-md z-50 pointer-events-none items-center border border-border-card"
-            >
-              Tenant View
-            </div>
-          </router-link>
-
-          <router-link 
-            to="/tenant/checkout"
-            @click="closeMobileMenu"
-            :title="'Tenant Pay Rent'"
-            class="flex items-center justify-center gap-1 py-1.5 bg-surface-dim text-on-surface-variant hover:text-primary transition-colors rounded-lg text-[11px] font-semibold group relative"
-            :class="isSidebarCollapsed ? 'w-full md:py-2' : 'flex-1'"
-          >
-            <span class="material-symbols-outlined text-[16px]">point_of_sale</span>
-            <span v-if="!isSidebarCollapsed">Pay Rent</span>
-            <!-- Tooltip -->
-            <div 
-              v-if="isSidebarCollapsed" 
-              class="hidden md:group-hover:flex absolute left-full ml-3 px-2.5 py-1.5 rounded-lg bg-surface-container-highest text-on-surface text-xs font-semibold whitespace-nowrap shadow-md z-50 pointer-events-none items-center border border-border-card"
-            >
-              Pay Rent
-            </div>
-          </router-link>
-        </div>
       </div>
     </aside>
 
@@ -446,10 +404,10 @@ const operationsNav = [
               :class="{ 'ring-2 ring-primary/30 border-primary': isProfileDropdownOpen }"
             >
               <div class="w-7 h-7 rounded-full bg-primary text-white font-bold text-xs flex items-center justify-center shadow-xs">
-                {{ getInitials(userProfile.name) }}
+                {{ getInitials(userProfile?.name) }}
               </div>
               <div class="hidden lg:flex flex-col text-left pr-1">
-                <span class="text-xs font-semibold text-on-surface leading-tight">{{ userProfile.name }}</span>
+                <span class="text-xs font-semibold text-on-surface leading-tight">{{ userProfile?.name || 'Landlord' }}</span>
                 <span class="text-[10px] text-on-surface-variant capitalize leading-none">Mukuba House</span>
               </div>
               <span class="material-symbols-outlined text-[16px] text-on-surface-muted">expand_more</span>
@@ -468,10 +426,10 @@ const operationsNav = [
               class="absolute top-full right-0 mt-2.5 w-56 bg-surface rounded-2xl shadow-2xl border border-border-card p-2 z-50 space-y-1 text-xs"
             >
               <div class="p-2 border-b border-border-card">
-                <p class="font-bold text-on-surface truncate">{{ userProfile.name }}</p>
-                <p class="font-data-mono text-[11px] text-on-surface-variant truncate">{{ userProfile.email }}</p>
+                <p class="font-bold text-on-surface truncate">{{ userProfile?.name || 'Landlord' }}</p>
+                <p class="font-data-mono text-[11px] text-on-surface-variant truncate">{{ userProfile?.email || '' }}</p>
                 <span class="badge-pill bg-primary-container text-primary text-[9px] mt-1 inline-flex uppercase tracking-wider font-bold">
-                  {{ currentRole }} Account
+                  {{ currentRole || 'landlord' }} Account
                 </span>
               </div>
 
