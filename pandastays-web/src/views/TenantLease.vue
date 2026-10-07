@@ -3,6 +3,8 @@ import { computed } from 'vue'
 import { useStore } from '../lib/store'
 import { useAuth } from '../lib/auth'
 
+import { openPrintReceipt } from '../lib/receiptPrinter.js'
+
 const { state } = useStore()
 const { userProfile, currentRole } = useAuth()
 
@@ -28,6 +30,22 @@ const bed = computed(() => {
   if (!tenant.value) return null
   return state.bedSpaces.find(b => b.tenantId === tenant.value.id || b.tenantName === tenant.value.name) || state.bedSpaces[0]
 })
+
+const handlePrintLease = async () => {
+  await openPrintReceipt({
+    receipt_number: `LSE-${tenant.value?.id_number?.slice(0, 6) || '2026-01'}`,
+    tenant_name: tenant.value?.name,
+    bed_label: bed.value?.label,
+    amount: bed.value?.rent_amount || 2500,
+    paid_at: 'Jan 5, 2026',
+    gateway_reference: 'LEASE-CONTRACT-ACTIVE',
+    method_label: 'Escrow Escrowed & Verified',
+    status: 'ACTIVE LEASE'
+  }, {
+    type: 'LEASE',
+    propertyName: state.currentProperty?.name || 'Mukuba House'
+  })
+}
 </script>
 
 <template>
@@ -45,10 +63,18 @@ const bed = computed(() => {
           Official boarding house occupancy terms, deposit escrow status, and residential guidelines.
         </p>
       </div>
+
+      <button 
+        @click="handlePrintLease"
+        class="btn-pill-primary text-xs w-full sm:w-auto justify-center"
+      >
+        <span class="material-symbols-outlined text-[16px]">download</span>
+        <span>Download Official Lease (PDF)</span>
+      </button>
     </div>
 
     <!-- Main Contract Bento Card -->
-    <div class="card-bento p-6 bg-surface border-border-card space-y-6">
+    <div class="card-bento p-4 sm:p-6 bg-surface border-border-card space-y-4 sm:space-y-6">
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border-card pb-4">
         <div>
           <span class="badge-pill bg-primary/10 text-primary border border-primary/20 text-[10px] font-bold uppercase tracking-wider">
@@ -114,7 +140,7 @@ const bed = computed(() => {
     </div>
 
     <!-- House Rules Bento Card -->
-    <div class="card-bento p-6 bg-surface border-border-card space-y-4">
+    <div class="card-bento p-4 sm:p-6 bg-surface border-border-card space-y-4">
       <div class="flex items-center gap-2 pb-3 border-b border-border-card">
         <span class="material-symbols-outlined text-primary text-[20px]">policy</span>
         <h3 class="font-bold text-base text-on-surface">Mukuba House Residential Rules</h3>
