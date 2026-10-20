@@ -5,7 +5,7 @@ import { supabase } from '../lib/supabaseClient'
  * Handles manual transaction recording and Lenco Mobile Money push integrations.
  */
 
-const API_BASE = 'http://localhost:3001/api'
+const API_BASE = (import.meta.env.VITE_API_BASE_URL || '/api').replace(/\/$/, '')
 
 export const paymentService = {
   /**
@@ -21,11 +21,14 @@ export const paymentService = {
   },
 
   /**
-   * Record a verified payment through backend service role endpoint
+   * Record a verified payment through backend service role endpoint (Landlord only)
    */
   async recordPayment({ tenancyId, amount, method = 'momo_mtn', methodLabel = 'MTN MoMo', reference }) {
-    const { data: { session } } = await supabase.auth.getSession()
+    if (!tenancyId) {
+      throw new Error('tenancyId is required to record a payment')
+    }
 
+    const { data: { session } } = await supabase.auth.getSession()
     const headers = { 'Content-Type': 'application/json' }
     if (session?.access_token) {
       headers.Authorization = `Bearer ${session.access_token}`
@@ -39,7 +42,7 @@ export const paymentService = {
         amount: Number(amount),
         method,
         method_label: methodLabel,
-        gateway_reference: reference || `MANUAL-${Date.now().toString().slice(-6)}`
+        gateway_reference: reference
       })
     })
 
@@ -51,15 +54,24 @@ export const paymentService = {
   },
 
   /**
-   * Trigger Mobile Money STK Push request via Lenco backend
+   * Trigger Mobile Money STK Push request via Lenco backend (Authenticated)
    */
-  async triggerMoMoPush({ tenancyId, tenantId, phone, amount, operator }) {
+  async triggerMoMoPush({ tenancyId, phone, amount, operator }) {
+    if (!tenancyId) {
+      throw new Error('tenancyId is required to initiate payment')
+    }
+
+    const { data: { session } } = await supabase.auth.getSession()
+    const headers = { 'Content-Type': 'application/json' }
+    if (session?.access_token) {
+      headers.Authorization = `Bearer ${session.access_token}`
+    }
+
     const res = await fetch(`${API_BASE}/payments/momo`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers,
       body: JSON.stringify({
         tenancy_id: tenancyId,
-        tenant_id: tenantId,
         phone_number: phone,
         amount: Number(amount),
         operator: operator.toLowerCase()
@@ -71,5 +83,21 @@ export const paymentService = {
       throw new Error(data.error || 'Failed to initiate Mobile Money push')
     }
     return data
+  },
+
+  /**
+   * Public receipt verification endpoint
+   */
+  async verifyReceipt(token) {
+    if (!token) return { verified: false }
+    try {
+      const res = await fetch(`${API_BASE}/receipts/verify/${encodeURIComponent(token)}`)
+      if (!res.ok) {
+        return { verified: false }
+      }
+      return await res.json()
+    } catch {
+      return { verified: false }
+    }
   }
 }
