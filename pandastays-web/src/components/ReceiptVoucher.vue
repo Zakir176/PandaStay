@@ -39,18 +39,23 @@ const formattedAmount = computed(() => {
   })
 })
 
-const digitalHash = computed(() => {
-  return generateDigitalHash(props.receipt || {})
+const verificationToken = computed(() => {
+  return props.receipt?.verification_token || ''
+})
+
+const verificationCode = computed(() => {
+  const token = verificationToken.value
+  if (token) return `TOKEN: ${token.slice(0, 8).toUpperCase()}-${token.slice(-4).toUpperCase()}`
+  return `REF: ${recordId.value}`
 })
 
 const verifyUrl = computed(() => {
   const origin = typeof window !== 'undefined' ? window.location.origin : 'https://pandastays.zm'
-  const recId = recordId.value
-  const amt = props.receipt?.amount || '0'
-  const tenant = props.receipt?.tenant_name || props.receipt?.tenant?.name || 'Resident'
-  const prop = props.propertyName || 'Mukuba House'
-  const unit = props.receipt?.bed_label || 'Bed Space'
-  return `${origin}/verify/${encodeURIComponent(recId)}?amt=${amt}&tenant=${encodeURIComponent(tenant)}&property=${encodeURIComponent(prop)}&unit=${encodeURIComponent(unit)}&status=PAID`
+  const token = verificationToken.value
+  if (token) {
+    return `${origin}/verify/${token}`
+  }
+  return `${origin}/verify/${encodeURIComponent(recordId.value)}`
 })
 
 // Generate crisp QR code
@@ -243,16 +248,16 @@ const handleDownloadPdf = async () => {
             <a :href="verifyUrl" target="_blank" class="font-data-mono text-xs text-[#0A6640] hover:underline font-semibold block break-all sm:truncate max-w-full">
               {{ verifyUrl }}
             </a>
-            <div class="font-data-mono text-xs text-on-surface-muted break-all sm:truncate" :title="digitalHash">
-              {{ digitalHash }}
+            <div class="font-data-mono text-xs text-on-surface-muted break-all sm:truncate" :title="verificationCode">
+              {{ verificationCode }}
             </div>
           </div>
         </div>
 
         <!-- Official Footer -->
         <div class="pt-1 text-center text-xs text-on-surface-muted leading-relaxed">
-          <p>Official cryptographic voucher issued by <a href="https://pandastays.zm" target="_blank" class="text-primary font-medium hover:underline">PandaStays Housing Management</a>.</p>
-          <p>&copy; 2026 PandaStays Technologies Ltd. Republic of Zambia.</p>
+          <p>Official payment voucher issued by <a href="https://pandastays.zm" target="_blank" class="text-primary font-medium hover:underline">PandaStays Housing Management</a>.</p>
+          <p>&copy; 2026 PandaStays Technologies Ltd.</p>
         </div>
 
       </div>
