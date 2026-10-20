@@ -1,5 +1,6 @@
 import { reactive, computed } from 'vue'
 import { supabase } from './supabaseClient.js'
+import { paymentService } from '../services/paymentService.js'
 
 // Clean-slate state initialized with property shell and empty inventory
 const state = reactive({
@@ -658,74 +659,39 @@ export const useStore = () => {
 
   // Record Payment — routed exclusively through backend service role endpoint (RLS rejects client direct insert)
   const recordPayment = async (paymentData) => {
-    const receiptNum = `REC-2026-${String(state.payments.length + 1).padStart(3, '0')}`
-    const refNum = paymentData.reference || `LNC-MOMO-${Date.now().toString().slice(-6)}`
-
-    let newPayment = null
-
-    try {
-      const { data: { session } } = await supabase.auth.getSession()
-
-      // Resolve tenancy_id if not directly passed in paymentData
-      let tenancyId = paymentData.tenancyId
-      if (!tenancyId && paymentData.tenantName) {
-        const matchingTenant = state.tenants.find(t => t.name === paymentData.tenantName || t.id === paymentData.tenantId)
-        tenancyId = matchingTenant?.tenancy_id
-      }
-      if (!tenancyId) {
-        const { data: tenancies } = await supabase.from('tenancies').select('id').eq('status', 'active').limit(1)
-        tenancyId = tenancies?.[0]?.id
-      }
-
-      const headers = { 'Content-Type': 'application/json' }
-      if (session?.access_token) {
-        headers.Authorization = `Bearer ${session.access_token}`
-      }
-
-      const res = await fetch('http://localhost:3001/api/payments/record', {
-        method: 'POST',
-        headers,
-        body: JSON.stringify({
-          tenancy_id: tenancyId,
-          amount: Number(paymentData.amount),
-          method: paymentData.paymentMethod || 'momo_mtn',
-          method_label: paymentData.paymentMethodLabel || 'MTN MoMo',
-          gateway_reference: refNum
-        })
-      })
-      const data = await res.json()
-      if (data.success && data.payment) {
-        const returned = Array.isArray(data.payment) ? data.payment[0] : data.payment
-        newPayment = {
-          id: returned.id,
-          tenant_name: paymentData.tenantName || 'Tenant',
-          bed_label: paymentData.bedLabel || 'Bed Space',
-          amount: Number(returned.amount),
-          paid_at: returned.paid_at?.substring(0, 16).replace('T', ' ') || '',
-          method: returned.method,
-          method_label: paymentData.paymentMethodLabel || 'MTN MoMo',
-          gateway_reference: returned.gateway_reference,
-          status: returned.status || 'success',
-          receipt_number: returned.receipt_number
-        }
-      }
-    } catch (serverErr) {
-      console.warn('Backend payment record note:', serverErr.message)
+    // Resolve tenancy_id strictly
+    let tenancyId = paymentData.tenancyId
+    if (!tenancyId && paymentData.tenantName) {
+      const matchingTenant = state.tenants.find(t => t.name === paymentData.tenantName || t.id === paymentData.tenantId)
+      tenancyId = matchingTenant?.tenancy_id
+    }
+    if (!tenancyId) {
+      throw new Error('Explicit tenancy_id is required to record a payment')
     }
 
-    if (!newPayment) {
-      newPayment = {
-        id: `pay-${Date.now()}`,
-        tenant_name: paymentData.tenantName,
-        bed_label: paymentData.bedLabel,
-        amount: Number(paymentData.amount),
-        paid_at: new Date().toISOString().replace('T', ' ').substring(0, 16),
-        method: paymentData.paymentMethod || 'momo_mtn',
-        method_label: paymentData.paymentMethodLabel || 'MTN MoMo',
-        gateway_reference: refNum,
-        status: 'success',
-        receipt_number: receiptNum
-      }
+    const refNum = paymentData.reference || `PS-MANUAL-${Date.now().toString(36)}`
+
+    const paymentResult = await paymentService.recordPayment({
+      tenancyId,
+      amount: Number(paymentData.amount),
+      method: paymentData.paymentMethod || 'momo_mtn',
+      methodLabel: paymentData.paymentMethodLabel || 'MTN MoMo',
+      reference: refNum
+    })
+
+    const returned = Array.isArray(paymentResult) ? paymentResult[0] : paymentResult
+    const newPayment = {
+      id: returned.id,
+      tenant_name: paymentData.tenantName || 'Tenant',
+      bed_label: paymentData.bedLabel || 'Bed Space',
+      amount: Number(returned.amount),
+      paid_at: returned.paid_at?.substring(0, 16).replace('T', ' ') || '',
+      method: returned.method,
+      method_label: paymentData.paymentMethodLabel || 'MTN MoMo',
+      gateway_reference: returned.gateway_reference,
+      status: returned.status || 'success',
+      receipt_number: returned.receipt_number,
+      verification_token: returned.verification_token
     }
 
     state.payments.unshift(newPayment)
