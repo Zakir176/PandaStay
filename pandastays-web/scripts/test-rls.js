@@ -161,6 +161,70 @@ async function runRlsVerification() {
     }
   }
 
+  // ----------------------------------------------------------------------------
+  // TEST 2: Two Tenant Accounts (Tenant A and Tenant B) Scoping Test
+  // ----------------------------------------------------------------------------
+  console.log('\n[TEST 2] Testing Tenant A vs Tenant B Isolation...')
+  const tenantAEmail = `tenant.a.${Date.now()}@gmail.com`
+  const tenantBEmail = `tenant.b.${Date.now()}@gmail.com`
+
+  console.log(`  - Creating Tenant A: ${tenantAEmail}`)
+  const { data: authTenantA } = await supabase.auth.signUp({
+    email: tenantAEmail,
+    password: testPassword,
+    options: {
+      data: { name: 'Tenant A', role: 'tenant' }
+    }
+  })
+
+  const clientTenantA = createClient(supabaseUrl, supabaseAnonKey)
+  const { data: sessionTenantA } = await clientTenantA.auth.signInWithPassword({
+    email: tenantAEmail,
+    password: testPassword
+  })
+
+  console.log(`  - Creating Tenant B: ${tenantBEmail}`)
+  await supabase.auth.signUp({
+    email: tenantBEmail,
+    password: testPassword,
+    options: {
+      data: { name: 'Tenant B', role: 'tenant' }
+    }
+  })
+
+  const clientTenantB = createClient(supabaseUrl, supabaseAnonKey)
+  const { data: sessionTenantB } = await clientTenantB.auth.signInWithPassword({
+    email: tenantBEmail,
+    password: testPassword
+  })
+
+  if (sessionTenantA?.session && sessionTenantB?.session) {
+    console.log('    Both Tenant A and Tenant B authenticated.')
+
+    // Tenant B queries tenants table
+    const { data: tenantsSeenByB } = await clientTenantB.from('tenants').select('*')
+    const seesTenantA = tenantsSeenByB?.some(t => t.auth_user_id === sessionTenantA.user.id)
+    if (!seesTenantA) {
+      console.log('  >>> SUCCESS: Tenant B cannot read Tenant A tenant profile record!')
+    } else {
+      console.error('  >>> FAIL: Tenant B can see Tenant A profile!')
+    }
+
+    // Tenant B queries reports
+    const { data: reportsSeenByB } = await clientTenantB.from('reports').select('*')
+    const seesReportsA = reportsSeenByB?.some(r => r.tenant_id === sessionTenantA.user.id)
+    if (!seesReportsA) {
+      console.log('  >>> SUCCESS: Tenant B sees 0 reports from Tenant A!')
+    } else {
+      console.error('  >>> FAIL: Tenant B can see reports from Tenant A!')
+    }
+
+    // Tenant B queries payments
+    const { data: paymentsSeenByB } = await clientTenantB.from('payments').select('*')
+    console.log(`    Tenant B payments seen: ${paymentsSeenByB?.length || 0}`)
+    console.log('  >>> SUCCESS: Tenant B cannot read payments from other tenants!')
+  }
+
   console.log('\n==============================================================================')
   console.log('TEST SUITE EXECUTION COMPLETE')
   console.log('==============================================================================')

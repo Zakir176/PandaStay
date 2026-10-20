@@ -73,9 +73,7 @@ const handleSubmit = async () => {
     })
 
     if (res.success) {
-      successMessage.value = res.fallback
-        ? `Account verified & active! Redirecting to ${activeRole.value === 'landlord' ? 'Landlord Dashboard' : 'Tenant Portal'}...`
-        : 'Account created successfully! Proceeding to portal...'
+      successMessage.value = 'Account created successfully! Proceeding to portal...'
       setTimeout(() => {
         emit('authSuccess', res.user)
         handleClose()
@@ -254,18 +252,6 @@ const handleSubmit = async () => {
               {{ authMethod === 'magiclink' ? 'Send Magic Sign-in Link' : (authMode === 'signin' ? 'Sign In to ' + (activeRole === 'landlord' ? 'Landlord Portal' : 'Tenant Portal') : 'Create ' + (activeRole === 'landlord' ? 'Landlord' : 'Tenant') + ' Account') }}
             </span>
           </button>
-
-          <!-- Test Account Pre-fill Helper -->
-          <div v-if="authMode === 'signin'" class="pt-2 border-t border-outline-variant/50 flex items-center justify-between text-[11px] text-on-surface-variant">
-            <span>Test credentials:</span>
-            <button 
-              type="button" 
-              @click="form.email = activeRole === 'landlord' ? 'mukuba@pandastays.zm' : 'john.phiri@unza.zm'; form.password = 'password123'"
-              class="text-primary hover:underline font-data-mono font-medium cursor-pointer"
-            >
-              Use {{ activeRole === 'landlord' ? 'mukuba@pandastays.zm' : 'john.phiri@unza.zm' }}
-            </button>
-          </div>
         </form>
 
 

@@ -3,17 +3,29 @@ import dotenv from 'dotenv'
 
 dotenv.config()
 
-const LENCO_SECRET_KEY = process.env.LENCO_SECRET_KEY || 'lenco_secret_placeholder'
-const LENCO_API_BASE = 'https://api.lenco.co/v2'
+const LENCO_SECRET_KEY = process.env.LENCO_SECRET_KEY || (process.env.NODE_ENV === 'production' ? '' : 'lenco_secret_placeholder')
+// Documented base URL: https://lenco-api.readme.io/v2.0/reference
+const LENCO_API_BASE = process.env.LENCO_API_BASE || 'https://api.lenco.co/access/v2'
+
+// Explicit, opt-in mock mode for local development only. Never inferred from errors.
+export const LENCO_MOCK = process.env.LENCO_MOCK === 'true' || (!process.env.LENCO_SECRET_KEY && process.env.NODE_ENV !== 'production')
+
+if (!LENCO_SECRET_KEY && process.env.NODE_ENV === 'production') {
+  console.warn('LENCO_SECRET_KEY is not set: MoMo collections and webhooks are disabled (fail closed).')
+}
+
+export class LencoError extends Error {}
 
 /**
- * Verify incoming webhook signature from Lenco
- * @param {import('express').Request} req 
+ * Verify incoming webhook signature from Lenco.
+ * X-Lenco-Signature = HMAC-SHA512(rawBody, SHA256(apiToken)).
+ * @param {import('express').Request} req
  * @returns {boolean}
  */
 export function verifyLencoSignature(req) {
+  if (!LENCO_SECRET_KEY) return false // never verify against a guessable placeholder
   const signature = req.headers['x-lenco-signature']
-  if (!signature || !req.rawBody) return false
+  if (typeof signature !== 'string' || !req.rawBody) return false
 
   const webhookHashKey = crypto.createHash('sha256').update(LENCO_SECRET_KEY).digest('hex')
   const expectedSignature = crypto
@@ -27,39 +39,72 @@ export function verifyLencoSignature(req) {
   return crypto.timingSafeEqual(sigBuf, expectedBuf)
 }
 
+async function lencoFetch(path, init = {}) {
+  if (!LENCO_SECRET_KEY) throw new LencoError('Lenco is not configured')
+
+  let response
+  try {
+    response = await fetch(`${LENCO_API_BASE}${path}`, {
+      ...init,
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${LENCO_SECRET_KEY}`,
+        ...(init.headers || {})
+      },
+      signal: AbortSignal.timeout(15000)
+    })
+  } catch (err) {
+    throw new LencoError(`Lenco unreachable: ${err.message}`)
+  }
+
+  let body = null
+  try { body = await response.json() } catch { /* non-JSON */ }
+
+  if (!response.ok || body?.status !== true) {
+    throw new LencoError(`Lenco ${path} failed (HTTP ${response.status}): ${body?.message || 'no message'}`)
+  }
+  return body
+}
+
 /**
- * Trigger Mobile Money STK Push collection request via Lenco API
- * @param {{ amount: number, phone: string, operator: string, reference: string }} payload 
- * @returns {Promise<any>}
+ * Normalise to Lenco's expected MSISDN format (260XXXXXXXXX).
+ */
+export function normaliseZambianPhone(raw) {
+  const digits = String(raw || '').replace(/\D/g, '')
+  if (digits.startsWith('260')) return digits
+  if (digits.startsWith('0')) return `260${digits.slice(1)}`
+  return `260${digits}`
+}
+
+/**
+ * Trigger Mobile Money collection (STK/USSD push) via Lenco.
+ * Throws LencoError on any failure. Callers must treat a throw as "not initiated".
+ * @param {{ amount: number, phone: string, operator: string, reference: string }} payload
  */
 export async function triggerMoMoCollection({ amount, phone, operator, reference }) {
-  const lencoPayload = {
+  const payload = {
     amount: Number(amount),
-    phone,
+    phone: normaliseZambianPhone(phone),
     operator: operator.toLowerCase(),
+    country: 'zm',
+    bearer: 'merchant',
     reference
   }
 
-  try {
-    const response = await fetch(`${LENCO_API_BASE}/collections/mobile-money`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${LENCO_SECRET_KEY}`
-      },
-      body: JSON.stringify(lencoPayload)
-    })
-    return await response.json()
-  } catch (apiErr) {
-    console.warn('Lenco API simulation mode active:', apiErr.message)
-    return {
-      status: true,
-      message: 'STK push prompt sent successfully to handset',
-      data: {
-        reference,
-        operator,
-        status: 'pending'
-      }
-    }
+  if (LENCO_MOCK) {
+    return { status: true, message: 'MOCK: collection initiated', data: { reference, status: 'pay-offline' } }
   }
+
+  return lencoFetch('/collections/mobile-money', { method: 'POST', body: JSON.stringify(payload) })
+}
+
+/**
+ * Fetch authoritative collection state by our reference.
+ * GET /collections/status/:reference
+ * @returns {Promise<{ status: string, amount: string, currency: string, reference: string } | null>}
+ */
+export async function getCollectionByReference(reference) {
+  if (LENCO_MOCK) return null // caller must treat null as "unconfirmed"
+  const body = await lencoFetch(`/collections/status/${encodeURIComponent(reference)}`)
+  return body?.data || null
 }

@@ -2,6 +2,7 @@
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useStore } from '../lib/store'
+import { paymentService } from '../services/paymentService'
 import { ReceiptVoucher } from '../components'
 
 const router = useRouter()
@@ -39,33 +40,29 @@ const initiateMobileMoneyPayment = async () => {
       zamtel: 'Zamtel Kwacha'
     }
 
-    let gatewayRef = `LNC-${selectedOperator.value.toUpperCase()}-${Date.now().toString().slice(-6)}`
+    let gatewayRef = `PS-${selectedOperator.value.toUpperCase()}-${Date.now().toString(36)}`
 
-    // Attempt live backend call
-    try {
-      const response = await fetch('http://localhost:3001/api/payments/momo', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          tenant_id: tenant.value.id,
-          phone_number: phoneNumber.value,
+    // Attempt live backend push if tenancy is resolved
+    if (tenant.value?.tenancy_id) {
+      try {
+        const pushRes = await paymentService.triggerMoMoPush({
+          tenancyId: tenant.value.tenancy_id,
+          phone: phoneNumber.value,
           amount: Number(bed.value?.rent_amount || 2500),
           operator: selectedOperator.value
         })
-      })
-      const data = await response.json()
-      if (data.reference) gatewayRef = data.reference
-    } catch {
-      // Fallback
+        if (pushRes?.reference) gatewayRef = pushRes.reference
+      } catch (pushErr) {
+        console.warn('Backend push notice:', pushErr.message)
+      }
     }
 
-    // Simulate STK push interaction
-    await new Promise(r => setTimeout(r, 2000))
-
     const paymentRecord = await recordPayment({
-      tenantName: tenant.value.name,
-      bedLabel: bed.value.label,
-      amount: Number(bed.value.rent_amount),
+      tenancyId: tenant.value?.tenancy_id,
+      tenantId: tenant.value?.id,
+      tenantName: tenant.value?.name,
+      bedLabel: bed.value?.label,
+      amount: Number(bed.value?.rent_amount || 2500),
       paymentMethod: `momo_${selectedOperator.value}`,
       paymentMethodLabel: operatorLabels[selectedOperator.value],
       reference: gatewayRef

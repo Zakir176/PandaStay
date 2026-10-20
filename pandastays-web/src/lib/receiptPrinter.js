@@ -38,10 +38,12 @@ export async function generateReceiptHtml(record = {}, options = {}) {
   const gatewayRef = record.gateway_reference || record.reference || `LNC-${Date.now().toString().slice(-6)}`
   const issueDate = record.paid_at || record.created_at || new Date().toISOString().replace('T', ' ').slice(0, 19) + ' CAT'
   const status = record.status || 'VERIFIED PAID'
-  const digitalHash = generateDigitalHash(record)
-
-  // Public verification URL
-  const verifyUrl = `${origin}/verify/${encodeURIComponent(recordId)}?amt=${rawAmount}&tenant=${encodeURIComponent(tenantName)}&property=${encodeURIComponent(propertyName)}&unit=${encodeURIComponent(bedLabel)}&status=PAID`
+  const verificationToken = record.verification_token || ''
+  const verificationCode = verificationToken
+    ? `TOKEN: ${verificationToken.slice(0, 8).toUpperCase()}-${verificationToken.slice(-4).toUpperCase()}`
+    : `REF: ${recordId}`
+  const verifyPath = verificationToken || encodeURIComponent(recordId)
+  const verifyUrl = `${origin}/verify/${verifyPath}`
 
   // Generate vector-crisp QR code
   let qrDataUrl = ''
@@ -636,17 +638,17 @@ export async function generateReceiptHtml(record = {}, options = {}) {
           <p class="verify-instructions">
             Scan with any smartphone camera to verify this accommodation payment directly against the PandaStays registry.
           </p>
-          <a href="${verifyUrl}" target="_blank" class="verify-link font-mono">${origin}/verify/${recordId}</a>
+          <a href="${verifyUrl}" target="_blank" class="verify-link font-mono">${verifyUrl}</a>
           <div>
-            <span class="hash-badge font-mono">${digitalHash}</span>
+            <span class="hash-badge font-mono">${verificationCode}</span>
           </div>
         </div>
       </div>
 
       <!-- Official Footer -->
       <div class="receipt-footer">
-        <p>This is an official cryptographic digital receipt issued by <a href="${origin}" class="footer-url">PandaStays Housing Management</a>.</p>
-        <p>Tamper-evident record &bull; Registered in Lusaka, Republic of Zambia &bull; &copy; 2026 PandaStays Technologies Ltd.</p>
+        <p>Official accommodation receipt issued by <a href="${origin}" class="footer-url">PandaStays Housing Management</a>.</p>
+        <p>&copy; 2026 PandaStays Technologies Ltd.</p>
       </div>
     </div>
   </div>

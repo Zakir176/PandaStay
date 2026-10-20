@@ -291,6 +291,61 @@ async function runPaymentTests() {
     console.error(`  >>> FAIL: Expected 200 and status 'success', got:`, json6)
   }
 
+  // ----------------------------------------------------------------------------
+  // CRITERION 7: POST /api/tenants/link-auth must return 404 (C1 takeover endpoint removed)
+  // ----------------------------------------------------------------------------
+  totalCount++
+  console.log('\n[CRITERION 7] POST /api/tenants/link-auth must return 404 (takeover endpoint removed)...')
+  const res7 = await fetch(`${API_BASE}/api/tenants/link-auth`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: 'victim@pandastays.zm', auth_user_id: 'attacker-id' })
+  })
+  if (res7.status === 404) {
+    console.log(`  >>> PASS: /api/tenants/link-auth returns 404 Not Found`)
+    passCount++
+  } else {
+    console.error(`  >>> FAIL: Expected 404, got ${res7.status}`)
+  }
+
+  // ----------------------------------------------------------------------------
+  // CRITERION 8: GET /api/receipts/verify/<random-uuid> must return 404 verified: false (C3)
+  // ----------------------------------------------------------------------------
+  totalCount++
+  console.log('\n[CRITERION 8] GET /api/receipts/verify/<random-uuid> must return 404 verified: false...')
+  const fakeToken = crypto.randomUUID()
+  const res8 = await fetch(`${API_BASE}/api/receipts/verify/${fakeToken}`)
+  const json8 = await res8.json().catch(() => ({}))
+  if (res8.status === 404 && json8.verified === false) {
+    console.log(`  >>> PASS: Unregistered verification token rejected with 404:`, json8)
+    passCount++
+  } else {
+    console.error(`  >>> FAIL: Expected 404 verified: false, got ${res8.status}:`, json8)
+  }
+
+  // ----------------------------------------------------------------------------
+  // CRITERION 9: POST /api/payments/momo without token must return 401 (H1)
+  // ----------------------------------------------------------------------------
+  totalCount++
+  console.log('\n[CRITERION 9] POST /api/payments/momo without Authorization token must return 401...')
+  const res9 = await fetch(`${API_BASE}/api/payments/momo`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      tenancy_id: targetTenancyId,
+      phone_number: '0977123456',
+      amount: 500,
+      operator: 'mtn'
+    })
+  })
+  const json9 = await res9.json().catch(() => ({}))
+  if (res9.status === 401) {
+    console.log(`  >>> PASS: POST /api/payments/momo rejected with 401 without bearer token:`, json9)
+    passCount++
+  } else {
+    console.error(`  >>> FAIL: Expected 401, got ${res9.status}:`, json9)
+  }
+
   testServer.close()
 
   console.log('\n==============================================================================')

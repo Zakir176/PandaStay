@@ -76,20 +76,34 @@ BEGIN
     ON CONFLICT (id) DO UPDATE SET
       name = EXCLUDED.name,
       email = EXCLUDED.email;
-  ELSIF (NEW.raw_user_meta_data->>'role') = 'tenant' THEN
-    -- Automatically link tenant record created by landlord if email matches
-    UPDATE public.tenants
-    SET auth_user_id = NEW.id
-    WHERE LOWER(email) = LOWER(NEW.email) AND auth_user_id IS NULL;
   END IF;
   RETURN NEW;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 
 DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE FUNCTION public.handle_new_landlord();
+
+-- Confirmation-gated trigger: only links tenant profile if email is confirmed
+CREATE OR REPLACE FUNCTION public.link_tenant_on_confirm()
+RETURNS TRIGGER AS $$
+BEGIN
+  IF NEW.email_confirmed_at IS NOT NULL
+     AND (TG_OP = 'INSERT' OR OLD.email_confirmed_at IS NULL)
+     AND (NEW.raw_user_meta_data->>'role') = 'tenant' THEN
+    UPDATE public.tenants SET auth_user_id = NEW.id
+    WHERE LOWER(email) = LOWER(NEW.email) AND auth_user_id IS NULL;
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
+
+DROP TRIGGER IF EXISTS on_auth_user_confirmed ON auth.users;
+CREATE TRIGGER on_auth_user_confirmed
+  AFTER INSERT OR UPDATE OF email_confirmed_at ON auth.users
+  FOR EACH ROW EXECUTE FUNCTION public.link_tenant_on_confirm();
 
 -- ------------------------------------------------------------------------------
 -- 2. Properties Table
@@ -161,15 +175,18 @@ CREATE TABLE tenancies (
 -- ------------------------------------------------------------------------------
 -- 7. Payments Table (Recorded against Tenancy with automatic receipt number)
 -- ------------------------------------------------------------------------------
+CREATE SEQUENCE IF NOT EXISTS receipt_seq;
+
 CREATE TABLE payments (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     tenancy_id UUID NOT NULL REFERENCES tenancies(id) ON DELETE CASCADE,
     amount NUMERIC(12, 2) NOT NULL,
     paid_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL,
     method payment_method_type NOT NULL DEFAULT 'momo_mtn',
-    gateway_reference VARCHAR(255),
+    gateway_reference VARCHAR(255) UNIQUE,
     status payment_status NOT NULL DEFAULT 'success',
-    receipt_number VARCHAR(100) UNIQUE NOT NULL,
+    receipt_number VARCHAR(100) UNIQUE NOT NULL DEFAULT ('REC-' || to_char(now(), 'YYYY') || '-' || lpad(nextval('receipt_seq')::text, 6, '0')),
+    verification_token UUID NOT NULL DEFAULT gen_random_uuid() UNIQUE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL
 );
 
@@ -370,3 +387,6 @@ CREATE POLICY "reminder_log_landlord_select" ON reminder_log FOR SELECT
     JOIN properties p ON p.id = r.property_id
     WHERE t.id = reminder_log.tenancy_id AND p.landlord_id = auth.uid()
   ));
+
+-- 11. Security Hardening: Revoke direct client update of lenco_subaccount_id
+REVOKE UPDATE (lenco_subaccount_id) ON landlords FROM anon, authenticated;

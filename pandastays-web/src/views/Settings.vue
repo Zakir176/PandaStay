@@ -44,7 +44,6 @@ const settingsForm = ref({
   landlordName: state.currentLandlord.name,
   email: state.currentLandlord.email,
   phone: state.currentLandlord.phone,
-  lencoSubaccount: state.currentLandlord.lenco_subaccount_id || 'sub_lenco_mukuba_981',
   whatsappDaysBefore: state.currentLandlord.whatsapp_reminder_days_before || 3,
   enableOverdueEscalation: true,
   smsFallback: false
@@ -54,7 +53,6 @@ const saveSettings = () => {
   state.currentLandlord.name = settingsForm.value.landlordName
   state.currentLandlord.email = settingsForm.value.email
   state.currentLandlord.phone = settingsForm.value.phone
-  state.currentLandlord.lenco_subaccount_id = settingsForm.value.lencoSubaccount
   state.currentLandlord.whatsapp_reminder_days_before = Number(settingsForm.value.whatsappDaysBefore)
 
   toastMessage.value = 'Settings and WhatsApp reminder rules updated successfully!'

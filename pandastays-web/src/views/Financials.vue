@@ -34,7 +34,7 @@ const viewReceipt = (payment) => {
         <div class="flex items-center gap-2 text-sm text-on-surface-variant mb-1 font-medium">
           <span>{{ state.currentProperty.name }}</span>
           <span>&bull;</span>
-          <span class="text-primary font-semibold">Lenco Sub-Account: {{ state.currentLandlord.lenco_subaccount_id || 'sub_lenco_mukuba_981' }}</span>
+          <span class="text-primary font-semibold">Lenco Sub-Account: {{ state.currentLandlord.lenco_subaccount_id || 'Pending server setup' }}</span>
         </div>
         <h2 class="text-2xl sm:text-3xl font-bold text-on-surface tracking-tight">Financial Ledger & Receipts</h2>
         <p class="text-sm text-on-surface-variant mt-1">
