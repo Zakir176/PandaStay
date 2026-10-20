@@ -1,6 +1,7 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { useStore } from '../lib/store'
+import { paymentService } from '../services/paymentService'
 
 const props = defineProps({
   isOpen: {
@@ -66,25 +67,22 @@ const submitPayment = async () => {
       zamtel: 'Zamtel Kwacha'
     }
 
-    // Try live Express backend Lenco STK push if available
-    let refNum = `LNC-MOMO-${Date.now().toString().slice(-6)}`
-    try {
-      const response = await fetch('http://localhost:3001/api/payments/momo', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          tenant_id: tenant.id,
-          phone_number: paymentForm.value.phoneNumber,
+    // Trigger Mobile Money STK push through backend service
+    let refNum = `PS-MOMO-${Date.now().toString(36)}`
+    if (tenant?.tenancy_id) {
+      try {
+        const pushRes = await paymentService.triggerMoMoPush({
+          tenancyId: tenant.tenancy_id,
+          phone: paymentForm.value.phoneNumber,
           amount: Number(paymentForm.value.amount),
           operator: paymentForm.value.operator
         })
-      })
-      const data = await response.json()
-      if (data.reference) {
-        refNum = data.reference
+        if (pushRes?.reference) {
+          refNum = pushRes.reference
+        }
+      } catch (pushErr) {
+        console.warn('STK push notice:', pushErr.message)
       }
-    } catch {
-      // Backend fallback simulation
     }
 
     // Record payment into reactive store
