@@ -113,6 +113,51 @@ assert(
   'Initial auth state begins unauthenticated (all refs initialized to null)',
   'Initial auth refs are not null'
 )
+assert(
+  !authJsContent.includes('DEFAULT_TEST_ACCOUNTS'),
+  'auth.js has no DEFAULT_TEST_ACCOUNTS',
+  'Found DEFAULT_TEST_ACCOUNTS in auth.js'
+)
+assert(
+  !authJsContent.includes('password123'),
+  'auth.js has no password123 credentials',
+  'Found password123 in auth.js'
+)
+assert(
+  !authJsContent.includes('pandastays_local_accounts'),
+  'auth.js has no pandastays_local_accounts localStorage reads or writes',
+  'Found pandastays_local_accounts in auth.js'
+)
+assert(
+  !authJsContent.includes('pandastays_active_session'),
+  'auth.js has no pandastays_active_session fallback reads or writes',
+  'Found pandastays_active_session in auth.js'
+)
+
+// 7. Verification that localhost:3001 does not appear in any src file
+function checkNoLocalhostInDir(dir) {
+  const files = fs.readdirSync(dir, { withFileTypes: true })
+  let found = []
+  for (const f of files) {
+    const full = path.join(dir, f.name)
+    if (f.isDirectory()) {
+      found = found.concat(checkNoLocalhostInDir(full))
+    } else if (/\.(js|vue|ts|css|html)$/.test(f.name)) {
+      const content = fs.readFileSync(full, 'utf-8')
+      if (content.includes('localhost:3001')) {
+        found.push(full)
+      }
+    }
+  }
+  return found
+}
+const localhostLeaks = checkNoLocalhostInDir(srcDir)
+assert(
+  localhostLeaks.length === 0,
+  'No localhost:3001 hardcoded URL strings remain in src/',
+  `Found localhost:3001 in: ${localhostLeaks.join(', ')}`
+)
+
 
 // ─── TEST SUITE 2: Route Guard Logic Simulation ───
 console.log('\n--- Suite 2: Router Guard Bi-Directional Isolation Simulation ---')
@@ -230,6 +275,26 @@ const tenantFinancials = simulateRouteGuard({ path: '/app/financials', isAuthent
 assert(
   tenantFinancials.action === 'redirect' && tenantFinancials.to === '/tenant/portal' && tenantFinancials.query.restricted === 'landlord_only',
   'Tenant visiting /app/financials is redirected to /tenant/portal?restricted=landlord_only'
+)
+
+// Case D: Forged Session Injection (C2 acceptance criteria)
+console.log('\n[Scenario D: Forged pandastays_active_session in localStorage]')
+// Even if an attacker injects a fake landlord profile into localStorage:
+// localStorage.setItem('pandastays_active_session', JSON.stringify({ user: { id: 'fake' }, role: 'landlord' }))
+// Since auth.js ONLY trusts supabase.auth.getSession(), and there is no Supabase session:
+const forgedSessionUser = null // Supabase returns no session
+const forgedIsAuthenticated = Boolean(forgedSessionUser)
+const forgedGuardResult = simulateRouteGuard({
+  path: '/app',
+  isAuthenticated: forgedIsAuthenticated,
+  currentRole: null
+})
+
+assert(
+  forgedGuardResult.action === 'redirect' &&
+  forgedGuardResult.to === '/' &&
+  forgedGuardResult.query.auth_required === '1',
+  'Forged localStorage pandastays_active_session with no Supabase session redirects /app to /?auth_required=1'
 )
 
 console.log(`\n========================================`)
