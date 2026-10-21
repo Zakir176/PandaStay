@@ -325,13 +325,20 @@ const saveSettings = () => {
           <label class="block font-bold text-on-surface-muted uppercase text-[10px] tracking-wider mb-1.5">
             Lenco Landlord Sub-Account ID
           </label>
-          <input 
-            v-model="settingsForm.lencoSubaccount"
-            type="text" 
-            class="w-full px-3.5 py-2 border border-border-card rounded-xl bg-surface-dim font-data-mono text-sm text-on-surface focus:border-primary focus:outline-none"
-          />
+          <div class="relative">
+            <input 
+              :value="settingsForm.lencoSubaccount || 'sub_default_mukuba_house'"
+              type="text" 
+              readonly
+              class="w-full px-3.5 py-2 border border-border-card rounded-xl bg-surface-dim/70 font-data-mono text-sm text-on-surface-variant cursor-not-allowed focus:outline-none"
+            />
+            <span class="absolute right-3 top-2.5 flex items-center gap-1 text-[11px] font-semibold text-primary">
+              <span class="material-symbols-outlined text-[14px]">lock</span>
+              Verified Gateway Sub-Account
+            </span>
+          </div>
           <p class="text-[11px] text-on-surface-variant mt-1.5">
-            Rent collected through Mobile Money will be automatically settled into this Lenco wallet.
+            Rent collected through Mobile Money is automatically settled into this Lenco wallet. Assigned by platform administrator.
           </p>
         </div>
       </div>
