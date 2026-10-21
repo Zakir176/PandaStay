@@ -1,10 +1,12 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { RecordPaymentModal, AuthModal } from '../components'
 import { getInitials } from '../utils/formatters'
 import { useAuth, initAuth } from '../lib/auth'
 import { currentAccent, applyTheme, ACCENT_THEMES } from '../lib/theme'
 
+const router = useRouter()
 const { userProfile, currentRole, signOut } = useAuth()
 
 const isSidebarCollapsed = ref(localStorage.getItem('pandastays_sidebar_collapsed') === 'true')
@@ -63,6 +65,7 @@ const openAuthModal = () => {
 
 const handleSignOut = async () => {
   isProfileDropdownOpen.value = false
+  router.push('/')
   await signOut()
 }
 
@@ -274,18 +277,18 @@ const operationsNav = [
       :class="isSidebarCollapsed ? 'md:ml-18 md:w-[calc(100%-72px)]' : 'md:ml-sidebar-width md:w-[calc(100%-250px)]'"
     >
       <!-- TopNavBar Header (Clean White Bento Header) -->
-      <header class="flex justify-between items-center w-full px-4 md:px-6 py-3 h-16 bg-surface border-b border-border-card sticky top-0 z-40">
+      <header class="flex justify-between items-center w-full px-3 sm:px-4 md:px-6 py-2.5 sm:py-3 h-16 bg-surface border-b border-border-card sticky top-0 z-40 gap-2">
         <!-- Left: Mobile Trigger, Desktop Collapse Toggle & Search Capsule -->
-        <div class="flex items-center gap-3 flex-1 max-w-md">
+        <div class="flex items-center gap-2 sm:gap-3 flex-1 min-w-0 max-w-xs sm:max-w-md">
           <!-- Mobile Drawer Trigger -->
-          <button @click="toggleMobileMenu" class="md:hidden text-on-surface-variant hover:text-on-surface p-1">
+          <button @click="toggleMobileMenu" class="md:hidden text-on-surface-variant hover:text-on-surface p-1 shrink-0" title="Open navigation">
             <span class="material-symbols-outlined text-[22px]">menu</span>
           </button>
 
           <!-- Desktop Sidebar Collapse Toggle Button -->
           <button 
             @click="toggleSidebarCollapse" 
-            class="hidden md:flex items-center justify-center w-8 h-8 rounded-full border border-border-card bg-surface hover:bg-surface-dim text-on-surface-variant hover:text-on-surface transition-colors"
+            class="hidden md:flex items-center justify-center w-8 h-8 rounded-full border border-border-card bg-surface hover:bg-surface-dim text-on-surface-variant hover:text-on-surface transition-colors shrink-0"
             :title="isSidebarCollapsed ? 'Expand sidebar (Ctrl+B)' : 'Collapse sidebar (Ctrl+B)'"
           >
             <span class="material-symbols-outlined text-[18px]">
@@ -294,28 +297,28 @@ const operationsNav = [
           </button>
 
           <!-- Central Capsule Search Input -->
-          <div class="relative w-full">
+          <div class="relative w-full min-w-0">
             <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[18px] text-on-surface-muted pointer-events-none">
               search
             </span>
             <input 
               v-model="searchQuery"
               type="text"
-              placeholder="Search rooms, beds, tenants..."
-              class="w-full pl-9 pr-10 py-1.5 bg-surface-dim border border-border-card rounded-full text-sm text-on-surface placeholder:text-on-surface-muted focus:outline-none focus:border-primary focus:bg-surface transition-colors"
+              placeholder="Search..."
+              class="w-full pl-9 pr-3 sm:pr-10 py-1.5 bg-surface-dim border border-border-card rounded-full text-xs sm:text-sm text-on-surface placeholder:text-on-surface-muted focus:outline-none focus:border-primary focus:bg-surface transition-colors"
             />
-            <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs font-mono font-semibold px-1.5 py-0.5 rounded bg-surface border border-border-card text-on-surface-muted pointer-events-none">
+            <span class="hidden sm:inline-block absolute right-2.5 top-1/2 -translate-y-1/2 text-xs font-mono font-semibold px-1.5 py-0.5 rounded bg-surface border border-border-card text-on-surface-muted pointer-events-none">
               ⌘K
             </span>
           </div>
         </div>
 
         <!-- Right Utility Cluster -->
-        <div class="flex items-center gap-3 pl-3">
+        <div class="flex items-center gap-1.5 sm:gap-2.5 md:gap-3 shrink-0">
           <!-- Primary CTA: Record Payment Pill Button -->
           <button 
             @click="openPaymentModal"
-            class="btn-pill-primary hidden sm:inline-flex"
+            class="btn-pill-primary hidden md:inline-flex text-xs py-1.5 px-3.5"
           >
             <span class="material-symbols-outlined text-[16px]">add_card</span>
             <span>Record Payment</span>
@@ -325,11 +328,11 @@ const operationsNav = [
           <div class="relative">
             <button 
               @click="isThemeDropdownOpen = !isThemeDropdownOpen" 
-              class="w-9 h-9 rounded-full border border-border-card bg-surface hover:bg-surface-dim text-on-surface-variant flex items-center justify-center transition-colors"
+              class="w-8 h-8 sm:w-9 sm:h-9 rounded-full border border-border-card bg-surface hover:bg-surface-dim text-on-surface-variant flex items-center justify-center transition-colors shrink-0"
               :class="{ 'ring-2 ring-primary/30 border-primary text-primary': isThemeDropdownOpen }"
               title="Change Color Theme"
             >
-              <span class="material-symbols-outlined text-[18px]">palette</span>
+              <span class="material-symbols-outlined text-[17px] sm:text-[18px]">palette</span>
             </button>
 
             <!-- Backdrop to close on click outside -->
@@ -391,26 +394,26 @@ const operationsNav = [
           </div>
 
           <!-- Notification Bell -->
-          <button class="relative w-9 h-9 rounded-full border border-border-card bg-surface hover:bg-surface-dim text-on-surface-variant flex items-center justify-center transition-colors">
-            <span class="material-symbols-outlined text-[18px]">notifications</span>
-            <span class="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-error ring-2 ring-surface"></span>
+          <button class="relative w-8 h-8 sm:w-9 sm:h-9 rounded-full border border-border-card bg-surface hover:bg-surface-dim text-on-surface-variant flex items-center justify-center transition-colors shrink-0">
+            <span class="material-symbols-outlined text-[17px] sm:text-[18px]">notifications</span>
+            <span class="absolute top-1 right-1 w-2 h-2 rounded-full bg-error ring-2 ring-surface"></span>
           </button>
 
           <!-- Landlord Profile Avatar Capsule -->
           <div class="relative">
             <button 
               @click="isProfileDropdownOpen = !isProfileDropdownOpen"
-              class="flex items-center gap-2 px-2.5 py-1.5 rounded-full border border-border-card hover:bg-surface-dim transition-colors bg-surface"
+              class="flex items-center gap-1.5 sm:gap-2 p-1 sm:px-2.5 sm:py-1.5 rounded-full border border-border-card hover:bg-surface-dim transition-colors bg-surface shrink-0"
               :class="{ 'ring-2 ring-primary/30 border-primary': isProfileDropdownOpen }"
             >
-              <div class="w-7 h-7 rounded-full bg-primary text-white font-bold text-xs flex items-center justify-center shadow-xs">
+              <div class="w-7 h-7 rounded-full bg-primary text-white font-bold text-xs flex items-center justify-center shadow-xs shrink-0">
                 {{ getInitials(userProfile?.name) }}
               </div>
               <div class="hidden lg:flex flex-col text-left pr-1">
                 <span class="text-sm font-semibold text-on-surface leading-tight">{{ userProfile?.name || 'Landlord' }}</span>
                 <span class="text-xs text-on-surface-variant capitalize leading-none">Mukuba House</span>
               </div>
-              <span class="material-symbols-outlined text-[16px] text-on-surface-muted">expand_more</span>
+              <span class="hidden sm:inline-block material-symbols-outlined text-[16px] text-on-surface-muted">expand_more</span>
             </button>
 
             <!-- Backdrop to close on click outside -->
