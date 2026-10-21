@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuth } from '../lib/auth'
 
@@ -16,11 +16,24 @@ const props = defineProps({
 
 const emit = defineEmits(['close', 'authSuccess'])
 const router = useRouter()
-const { signInWithPassword, signUp, signInWithMagicLink, isLoading, authError } = useAuth()
+const { signInWithPassword, signUp, signInWithMagicLink, isLoading, authError, currentRole } = useAuth()
 
-const activeRole = ref(props.initialRole)
+const activeRole = ref(props.initialRole || 'landlord')
 const authMode = ref('signin') // 'signin' or 'signup'
 const authMethod = ref('password') // 'password' or 'magiclink'
+
+// Keep activeRole synchronized with incoming prop whenever modal opens
+watch(() => props.initialRole, (newRole) => {
+  if (newRole) {
+    activeRole.value = newRole
+  }
+}, { immediate: true })
+
+watch(() => props.isOpen, (open) => {
+  if (open && props.initialRole) {
+    activeRole.value = props.initialRole
+  }
+})
 
 const form = ref({
   name: '',
@@ -51,16 +64,18 @@ const handleSubmit = async () => {
   if (authMode.value === 'signin') {
     const res = await signInWithPassword(form.value.email, form.value.password)
     if (res.success) {
-      successMessage.value = `Welcome back! Redirecting to ${activeRole.value === 'landlord' ? 'Landlord Dashboard' : 'Tenant Portal'}...`
+      // Determine destination strictly by verified profile role, falling back to selected tab
+      const targetRole = currentRole.value || res.user?.user_metadata?.role || activeRole.value
+      successMessage.value = `Welcome back! Redirecting to ${targetRole === 'tenant' ? 'Tenant Portal' : 'Landlord Dashboard'}...`
       setTimeout(() => {
         emit('authSuccess', res.user)
         handleClose()
-        if (activeRole.value === 'tenant') {
+        if (targetRole === 'tenant') {
           router.push('/tenant/portal')
         } else {
           router.push('/app')
         }
-      }, 1200)
+      }, 400)
     }
   } else {
     // Sign Up
@@ -73,16 +88,17 @@ const handleSubmit = async () => {
     })
 
     if (res.success) {
+      const targetRole = currentRole.value || res.user?.user_metadata?.role || activeRole.value
       successMessage.value = 'Account created successfully! Proceeding to portal...'
       setTimeout(() => {
         emit('authSuccess', res.user)
         handleClose()
-        if (activeRole.value === 'tenant') {
+        if (targetRole === 'tenant') {
           router.push('/tenant/portal')
         } else {
           router.push('/app')
         }
-      }, 1200)
+      }, 400)
     }
   }
 }

@@ -2,7 +2,7 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useStore, roomsWithBeds, occupancyStats, topPriorityReport, termProgress } from '../lib/store'
-import { BedGrid, RecordPaymentModal, AssignTenantModal } from '../components'
+import { BedGrid, RecordPaymentModal, AssignTenantModal, AnimatedNumber } from '../components'
 import { formatCurrency, getInitials, formatNRC } from '../utils/formatters'
 
 const router = useRouter()
@@ -13,12 +13,39 @@ const selectedBed = ref(null)
 const selectedRoom = ref(null)
 const isAssignModalOpen = ref(false)
 const reminderNotification = ref(null)
-const currentTime = ref(new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' }))
+
+const detectedTimeZone = ref(
+  typeof Intl !== 'undefined' ? Intl.DateTimeFormat().resolvedOptions().timeZone || 'Africa/Lusaka' : 'Africa/Lusaka'
+)
+
+const locationLabel = computed(() => {
+  try {
+    const tz = detectedTimeZone.value
+    const city = tz.split('/').pop()?.replace(/_/g, ' ') || 'Local'
+    const parts = new Intl.DateTimeFormat('en-US', { timeZoneName: 'short' }).formatToParts(new Date())
+    const tzAbbr = parts.find(p => p.type === 'timeZoneName')?.value || ''
+    return `${city} Local Time ${tzAbbr ? `(${tzAbbr})` : ''}`.trim()
+  } catch (e) {
+    return 'Local Time'
+  }
+})
+
+const getFormattedTime = () => {
+  return new Date().toLocaleTimeString(undefined, { 
+    hour: '2-digit', 
+    minute: '2-digit', 
+    second: '2-digit',
+    hour12: false
+  })
+}
+
+const currentTime = ref(getFormattedTime())
 
 let timerInterval = null
 onMounted(() => {
+  currentTime.value = getFormattedTime()
   timerInterval = setInterval(() => {
-    currentTime.value = new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+    currentTime.value = getFormattedTime()
   }, 1000)
 })
 
@@ -115,7 +142,7 @@ const activeRosterTenants = computed(() => {
     />
 
     <!-- Dashboard Property Banner -->
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 animate-bento-in">
       <div>
         <div class="flex items-center gap-2 text-xs text-on-surface-variant font-medium mb-1">
           <span class="font-semibold text-primary">Lusaka Northmead</span>
@@ -131,7 +158,7 @@ const activeRosterTenants = computed(() => {
       <div class="flex items-center gap-2.5">
         <button 
           @click="openPaymentModal"
-          class="btn-pill-primary"
+          class="btn-pill-primary transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
         >
           <span class="material-symbols-outlined text-[16px]">add_card</span>
           <span>Record Payment</span>
@@ -144,7 +171,7 @@ const activeRosterTenants = computed(() => {
     <!-- ==================================================================== -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
       <!-- 1. Hero Inverted Card: Total Rent Collected -->
-      <div class="card-bento-hero p-5 flex flex-col justify-between group">
+      <div class="card-bento-hero p-5 flex flex-col justify-between group animate-bento-in">
         <div>
           <div class="flex items-center justify-between text-white/80">
             <span class="text-xs font-bold uppercase tracking-wider">Total Revenue</span>
@@ -154,7 +181,7 @@ const activeRosterTenants = computed(() => {
           </div>
           <div class="mt-3">
             <span class="text-3xl font-bold font-data-mono text-white tracking-tight">
-              K{{ occupancyStats.totalRentCollected.toLocaleString() }}
+              <AnimatedNumber :value="occupancyStats.totalRentCollected" prefix="K" :duration="1400" />
             </span>
           </div>
         </div>
@@ -168,7 +195,7 @@ const activeRosterTenants = computed(() => {
       </div>
 
       <!-- 2. Standard Bento Card: Occupancy Rate -->
-      <div class="card-bento p-5 flex flex-col justify-between group">
+      <div class="card-bento p-5 flex flex-col justify-between group animate-bento-in animate-delay-1">
         <div>
           <div class="flex items-center justify-between text-on-surface-variant">
             <span class="text-xs font-bold uppercase tracking-wider text-on-surface-muted">Occupancy Rate</span>
@@ -178,21 +205,23 @@ const activeRosterTenants = computed(() => {
           </div>
           <div class="flex items-baseline gap-2.5 mt-3">
             <span class="text-3xl font-bold font-data-mono text-on-surface">
-              {{ occupancyStats.percentage }}%
+              <AnimatedNumber :value="occupancyStats.percentage" suffix="%" :duration="1200" />
             </span>
-            <span class="badge-pill bg-primary-container text-primary text-xs">
-              {{ occupancyStats.occupiedBeds }}/{{ occupancyStats.totalBeds }} Beds
+            <span class="badge-pill bg-primary-container text-primary text-xs font-semibold">
+              <AnimatedNumber :value="occupancyStats.occupiedBeds" :duration="1000" />/{{ occupancyStats.totalBeds }} Beds
             </span>
           </div>
         </div>
         <div class="mt-4 pt-3 border-t border-border-card flex items-center justify-between text-xs text-on-surface-variant">
-          <span>{{ occupancyStats.vacantBeds }} vacant bed space available</span>
+          <span>
+            <AnimatedNumber :value="occupancyStats.vacantBeds" :duration="900" /> vacant bed space available
+          </span>
           <router-link to="/app/rooms" class="text-primary hover:underline text-xs font-semibold">Assign &rarr;</router-link>
         </div>
       </div>
 
       <!-- 3. Standard Bento Card: Overdue Rent -->
-      <div class="card-bento p-5 flex flex-col justify-between group">
+      <div class="card-bento p-5 flex flex-col justify-between group animate-bento-in animate-delay-2">
         <div>
           <div class="flex items-center justify-between text-on-surface-variant">
             <span class="text-xs font-bold uppercase tracking-wider text-error">Overdue Balance</span>
@@ -202,10 +231,10 @@ const activeRosterTenants = computed(() => {
           </div>
           <div class="flex items-baseline gap-2.5 mt-3">
             <span class="text-3xl font-bold font-data-mono text-error">
-              K{{ occupancyStats.overdueRent.toLocaleString() }}
+              <AnimatedNumber :value="occupancyStats.overdueRent" prefix="K" :duration="1300" />
             </span>
-            <span class="badge-pill bg-error-container text-error text-xs">
-              {{ occupancyStats.overdueTenantCount }} {{ occupancyStats.overdueTenantCount === 1 ? 'Tenant' : 'Tenants' }} Overdue
+            <span class="badge-pill bg-error-container text-error text-xs font-semibold">
+              <AnimatedNumber :value="occupancyStats.overdueTenantCount" :duration="800" /> {{ occupancyStats.overdueTenantCount === 1 ? 'Tenant' : 'Tenants' }} Overdue
             </span>
           </div>
         </div>
@@ -222,7 +251,7 @@ const activeRosterTenants = computed(() => {
       </div>
 
       <!-- 4. Standard Bento Card: Maintenance Reports -->
-      <div class="card-bento p-5 flex flex-col justify-between group">
+      <div class="card-bento p-5 flex flex-col justify-between group animate-bento-in animate-delay-3">
         <div>
           <div class="flex items-center justify-between text-on-surface-variant">
             <span class="text-xs font-bold uppercase tracking-wider text-on-surface-muted">Active Repairs</span>
@@ -232,9 +261,9 @@ const activeRosterTenants = computed(() => {
           </div>
           <div class="flex items-baseline gap-2.5 mt-3">
             <span class="text-3xl font-bold font-data-mono text-on-surface">
-              {{ state.reports.filter(r => r.status !== 'resolved').length }}
+              <AnimatedNumber :value="state.reports.filter(r => r.status !== 'resolved').length" :duration="900" />
             </span>
-            <span class="badge-pill bg-tertiary-container text-tertiary text-xs">
+            <span class="badge-pill bg-tertiary-container text-tertiary text-xs font-semibold">
               Priority Queue
             </span>
           </div>
@@ -253,7 +282,7 @@ const activeRosterTenants = computed(() => {
     <!-- ==================================================================== -->
     <div class="grid grid-cols-1 lg:grid-cols-4 gap-4">
       <!-- Col 1 (Span 2): Centerpiece Architectural Bed-Grid Floorplan -->
-      <div class="card-bento overflow-visible! p-5 lg:col-span-2 flex flex-col justify-between">
+      <div class="card-bento overflow-visible! p-5 lg:col-span-2 flex flex-col justify-between animate-bento-in animate-delay-4">
         <BedGrid 
           :rooms="roomsWithBeds" 
           title="Architectural Bed-Space Floorplan" 
@@ -263,7 +292,7 @@ const activeRosterTenants = computed(() => {
       </div>
 
       <!-- Col 2 (Span 1): Overdue Rent Chaser Spotlight (Modeled on Fernly Reminders) -->
-      <div class="card-bento p-5 flex flex-col justify-between">
+      <div class="card-bento p-5 flex flex-col justify-between animate-bento-in animate-delay-5">
         <div>
           <div class="flex items-center justify-between pb-3 border-b border-border-card">
             <span class="text-xs font-bold uppercase tracking-wider text-on-surface-muted">Overdue Chaser</span>
@@ -281,7 +310,9 @@ const activeRosterTenants = computed(() => {
             <div class="p-3 bg-surface-dim rounded-xl border border-border-card space-y-1.5">
               <div class="flex items-center justify-between text-xs">
                 <span class="text-on-surface-variant font-medium">Outstanding Rent:</span>
-                <span class="font-data-mono font-bold text-error">K{{ primaryOverdueTenant.balanceDue.toLocaleString() }}</span>
+                <span class="font-data-mono font-bold text-error">
+                  <AnimatedNumber :value="primaryOverdueTenant.balanceDue" prefix="K" :duration="1200" />
+                </span>
               </div>
               <div class="flex items-center justify-between text-xs text-on-surface-muted">
                 <span>Grace Period Expired:</span>
@@ -298,7 +329,7 @@ const activeRosterTenants = computed(() => {
         <div class="pt-4 mt-4 border-t border-border-card">
           <button 
             @click="sendReminder(primaryOverdueTenant)"
-            class="btn-pill-primary w-full justify-center text-xs sm:text-sm"
+            class="btn-pill-primary w-full justify-center text-xs sm:text-sm transition-all duration-200 hover:scale-[1.01] active:scale-[0.99]"
           >
             <span class="material-symbols-outlined text-[16px]">send</span>
             <span>Send WhatsApp Chaser</span>
@@ -307,7 +338,7 @@ const activeRosterTenants = computed(() => {
       </div>
 
       <!-- Col 3 (Span 1): Recent Lenco MoMo Collections Feed (Modeled on Fernly Project List) -->
-      <div class="card-bento p-5 flex flex-col justify-between">
+      <div class="card-bento p-5 flex flex-col justify-between animate-bento-in animate-delay-6">
         <div>
           <div class="flex items-center justify-between pb-3 border-b border-border-card">
             <span class="text-xs font-bold uppercase tracking-wider text-on-surface-muted">Recent Collections</span>
@@ -358,7 +389,7 @@ const activeRosterTenants = computed(() => {
     <!-- ==================================================================== -->
     <div class="grid grid-cols-1 lg:grid-cols-4 gap-4">
       <!-- Col 1 (Span 2): Tenants & Bed Occupants Table (Modeled on Fernly Team Card) -->
-      <div class="card-bento p-5 lg:col-span-2 flex flex-col justify-between">
+      <div class="card-bento p-5 lg:col-span-2 flex flex-col justify-between animate-bento-in animate-delay-5">
         <div>
           <div class="flex items-center justify-between pb-3 border-b border-border-card">
             <div>
@@ -413,7 +444,7 @@ const activeRosterTenants = computed(() => {
       </div>
 
       <!-- Col 2 (Span 1): Semester Term Progress Radial Half-Donut Gauge (Modeled on Fernly Gauge) -->
-      <div class="card-bento p-5 flex flex-col justify-between">
+      <div class="card-bento p-5 flex flex-col justify-between animate-bento-in animate-delay-6">
         <div>
           <div class="flex items-center justify-between pb-3 border-b border-border-card">
             <span class="text-xs font-bold uppercase tracking-wider text-on-surface-muted">Semester 1 Progress</span>
@@ -440,13 +471,15 @@ const activeRosterTenants = computed(() => {
                   stroke-width="12"
                   stroke-linecap="round"
                   stroke-dasharray="125.66"
+                  class="gauge-progress-arc"
                   :stroke-dashoffset="125.66 * (1 - termProgress.percentage / 100)"
                 />
               </svg>
               <!-- Center Display Percentage -->
               <div class="absolute bottom-0 flex flex-col items-center text-center">
                 <span class="text-2xl font-bold font-data-mono text-on-surface leading-none">
-                  {{ termProgress.hasData ? `${termProgress.percentage}%` : '—' }}
+                  <AnimatedNumber v-if="termProgress.hasData" :value="termProgress.percentage" suffix="%" :duration="1400" />
+                  <span v-else>—</span>
                 </span>
                 <span class="text-xs text-on-surface-variant font-medium mt-0.5">
                   {{ termProgress.hasData ? 'Term Elapsed' : 'No Active Term' }}
@@ -454,7 +487,10 @@ const activeRosterTenants = computed(() => {
               </div>
             </div>
             <p class="text-xs text-on-surface-variant mt-2 font-medium">
-              {{ termProgress.hasData ? `${termProgress.daysElapsed} of ${termProgress.totalDays} Days Completed` : 'No active tenancies with lease dates' }}
+              <span v-if="termProgress.hasData">
+                <AnimatedNumber :value="termProgress.daysElapsed" :duration="1200" /> of {{ termProgress.totalDays }} Days Completed
+              </span>
+              <span v-else>No active tenancies with lease dates</span>
             </p>
           </div>
         </div>
@@ -472,7 +508,7 @@ const activeRosterTenants = computed(() => {
       </div>
 
       <!-- Col 3 (Span 1): Lenco Terminal & Real-time Clock (Modeled on Fernly Time Tracker) -->
-      <div class="card-bento-hero bg-topo-dark p-5 flex flex-col justify-between text-white">
+      <div class="card-bento-hero bg-topo-dark p-5 flex flex-col justify-between text-white animate-bento-in animate-delay-7">
         <div>
           <div class="flex items-center justify-between pb-3 border-b border-white/15">
             <span class="text-xs font-bold uppercase tracking-wider text-white/80">Lenco Terminal</span>
@@ -484,7 +520,7 @@ const activeRosterTenants = computed(() => {
 
           <!-- Digital Clock Display in Monospace -->
           <div class="my-5 text-center">
-            <p class="text-xs uppercase tracking-widest text-white/70 mb-1 font-semibold">Lusaka Local Time</p>
+            <p class="text-xs uppercase tracking-widest text-white/70 mb-1 font-semibold">{{ locationLabel }}</p>
             <div class="text-3xl font-extrabold font-data-mono tracking-wider text-white drop-shadow-sm">
               {{ currentTime }}
             </div>
