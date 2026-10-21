@@ -20,9 +20,58 @@ const loadProfile = async (user) => {
   }
 
   try {
-    const metaRole = user.user_metadata?.role || 'landlord'
+    const metaRole = user.user_metadata?.role
 
-    // First check if user is a registered landlord in the database
+    // 1. If metadata explicitly declares tenant, prioritize tenant lookup
+    if (metaRole === 'tenant') {
+      try {
+        await supabase.rpc('link_tenant_profile')
+      } catch {}
+
+      const { data: tenantRows } = await supabase
+        .from('tenants')
+        .select('*')
+        .eq('auth_user_id', user.id)
+
+      if (tenantRows && tenantRows.length > 0) {
+        currentRole.value = 'tenant'
+        userProfile.value = { 
+          ...tenantRows[0], 
+          role: 'tenant',
+          tenantRecords: tenantRows
+        }
+        return
+      }
+
+      // Check if tenant row exists by matching email
+      const { data: emailMatches } = await supabase
+        .from('tenants')
+        .select('*')
+        .ilike('email', user.email)
+
+      if (emailMatches && emailMatches.length > 0) {
+        currentRole.value = 'tenant'
+        userProfile.value = {
+          ...emailMatches[0],
+          role: 'tenant',
+          tenantRecords: emailMatches
+        }
+        return
+      }
+
+      // Settle fallback tenant profile from metadata
+      currentRole.value = 'tenant'
+      userProfile.value = {
+        id: user.id,
+        name: user.user_metadata?.name || user.email?.split('@')[0] || 'Student Tenant',
+        email: user.email,
+        phone: user.user_metadata?.phone || '+260 97 0000000',
+        role: 'tenant'
+      }
+      return
+    }
+
+    // 2. Check if user is a registered landlord in the database
     const { data: landlord } = await supabase
       .from('landlords')
       .select('*')
@@ -35,12 +84,10 @@ const loadProfile = async (user) => {
       return
     }
 
-    // Next check if user is linked to one or more tenant records (supports multi-landlord tenancies)
+    // 3. Next check if user is linked to one or more tenant records
     try {
       await supabase.rpc('link_tenant_profile')
-    } catch {
-      // link_tenant_profile RPC is optional / executed if migration is active
-    }
+    } catch {}
 
     const { data: tenantRows } = await supabase
       .from('tenants')
@@ -57,14 +104,31 @@ const loadProfile = async (user) => {
       return
     }
 
-    // Fallback: derive role from validated user metadata while database record settles
-    currentRole.value = metaRole
+    // Check if tenant row exists by email match
+    const { data: emailMatches } = await supabase
+      .from('tenants')
+      .select('*')
+      .ilike('email', user.email)
+
+    if (emailMatches && emailMatches.length > 0) {
+      currentRole.value = 'tenant'
+      userProfile.value = {
+        ...emailMatches[0],
+        role: 'tenant',
+        tenantRecords: emailMatches
+      }
+      return
+    }
+
+    // Fallback: derive role from user metadata or landlord default
+    const resolvedRole = metaRole || 'landlord'
+    currentRole.value = resolvedRole
     userProfile.value = {
       id: user.id,
       name: user.user_metadata?.name || user.email?.split('@')[0] || 'User',
       email: user.email,
       phone: user.user_metadata?.phone || '+260 97 0000000',
-      role: metaRole
+      role: resolvedRole
     }
   } catch (err) {
     console.warn('Error loading profile from DB:', err)
@@ -210,15 +274,16 @@ export const useAuth = () => {
 
   // 4. Sign Out
   const signOut = async () => {
+    // Clear in-memory auth state immediately for instant UI response
+    currentUser.value = null
+    currentRole.value = null
+    userProfile.value = null
     isLoading.value = true
     try {
       await supabase.auth.signOut().catch(() => {})
     } catch (err) {
       console.warn('Sign out warning:', err)
     } finally {
-      currentUser.value = null
-      currentRole.value = null
-      userProfile.value = null
       isLoading.value = false
     }
   }
