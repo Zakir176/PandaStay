@@ -3,6 +3,7 @@ import { ref, computed } from 'vue'
 import { useStore, occupancyStats } from '../lib/store'
 import RecordPaymentModal from '../components/RecordPaymentModal.vue'
 import ReceiptVoucherModal from '../components/ReceiptVoucherModal.vue'
+import AnimatedNumber from '../components/AnimatedNumber.vue'
 
 const { state } = useStore()
 
@@ -29,7 +30,7 @@ const viewReceipt = (payment) => {
     />
 
     <!-- Header -->
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 animate-bento-in">
       <div>
         <div class="flex items-center gap-2 text-sm text-on-surface-variant mb-1 font-medium">
           <span>{{ state.currentProperty.name }}</span>
@@ -45,7 +46,7 @@ const viewReceipt = (payment) => {
       <div class="flex items-center gap-3">
         <button 
           @click="isPaymentModalOpen = true"
-          class="btn-pill-primary text-xs sm:text-sm"
+          class="btn-pill-primary text-xs sm:text-sm transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
         >
           <span class="material-symbols-outlined text-[18px]">add_card</span>
           <span>Record New Payment</span>
@@ -55,15 +56,15 @@ const viewReceipt = (payment) => {
 
     <!-- Summary Metrics Cards (Bento 3-Column Row) -->
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-      <div class="card-bento p-5 bg-surface border-t-3 border-t-primary flex flex-col justify-between">
+      <div class="card-bento p-5 bg-surface border-t-3 border-t-primary flex flex-col justify-between animate-bento-in animate-delay-1">
         <div>
           <div class="flex items-center justify-between text-on-surface-variant">
             <span class="text-xs font-bold uppercase tracking-wider text-on-surface-muted">Total Rent Collected</span>
-            <span class="badge-pill bg-primary-container text-primary text-xs">Active Term</span>
+            <span class="badge-pill bg-primary-container text-primary text-xs font-semibold">Active Term</span>
           </div>
           <div class="mt-2.5">
             <span class="text-3xl font-bold font-data-mono text-primary">
-              ZMW {{ occupancyStats.totalRentCollected.toLocaleString() }}
+              <AnimatedNumber :value="occupancyStats.totalRentCollected" prefix="ZMW " :duration="1400" />
             </span>
           </div>
         </div>
@@ -72,15 +73,15 @@ const viewReceipt = (payment) => {
         </p>
       </div>
 
-      <div class="card-bento p-5 bg-surface border-t-3 border-t-error flex flex-col justify-between">
+      <div class="card-bento p-5 bg-surface border-t-3 border-t-error flex flex-col justify-between animate-bento-in animate-delay-2">
         <div>
           <div class="flex items-center justify-between text-on-surface-variant">
             <span class="text-xs font-bold uppercase tracking-wider text-error">Outstanding Balance</span>
-            <span class="badge-pill bg-error-container text-error text-xs">Overdue/Partial</span>
+            <span class="badge-pill bg-error-container text-error text-xs font-semibold">Overdue/Partial</span>
           </div>
           <div class="mt-2.5">
             <span class="text-3xl font-bold font-data-mono text-error">
-              ZMW {{ occupancyStats.overdueRent.toLocaleString() }}
+              <AnimatedNumber :value="occupancyStats.overdueRent" prefix="ZMW " :duration="1300" />
             </span>
           </div>
         </div>
@@ -89,15 +90,15 @@ const viewReceipt = (payment) => {
         </p>
       </div>
 
-      <div class="card-bento p-5 bg-surface flex flex-col justify-between">
+      <div class="card-bento p-5 bg-surface flex flex-col justify-between animate-bento-in animate-delay-3">
         <div>
           <div class="flex items-center justify-between text-on-surface-variant">
             <span class="text-xs font-bold uppercase tracking-wider text-on-surface-muted">Total Transactions</span>
-            <span class="badge-pill bg-surface-dim text-on-surface-variant text-xs">Audit Trail</span>
+            <span class="badge-pill bg-surface-dim text-on-surface-variant text-xs font-semibold">Audit Trail</span>
           </div>
           <div class="mt-2.5">
             <span class="text-3xl font-bold font-data-mono text-on-surface">
-              {{ state.payments.length }} Receipts
+              <AnimatedNumber :value="state.payments.length" suffix=" Receipts" :duration="1000" />
             </span>
           </div>
         </div>
@@ -108,7 +109,7 @@ const viewReceipt = (payment) => {
     </div>
 
     <!-- Filter Bar (Bento Capsule Strip) -->
-    <div class="flex flex-wrap items-center justify-between gap-3 bg-surface p-3.5 card-bento">
+    <div class="flex flex-wrap items-center justify-between gap-3 bg-surface p-3.5 card-bento animate-bento-in animate-delay-4">
       <div class="flex items-center gap-2">
         <span class="text-xs font-bold text-on-surface-muted uppercase tracking-wider mr-1">Method:</span>
         <button 
