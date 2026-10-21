@@ -110,7 +110,7 @@ const handleDownloadPdf = async () => {
 </script>
 
 <template>
-  <div class="receipt-executive-wrapper w-full max-w-145 mx-auto text-left px-1 sm:px-0">
+  <div class="receipt-executive-wrapper w-full max-w-xl mx-auto text-left px-1 sm:px-0">
     
     <!-- Top Success State Header with Bouncing Success Badge -->
     <div class="text-center pb-3 pt-1">
@@ -243,12 +243,12 @@ const handleDownloadPdf = async () => {
         </div>
 
         <!-- Dedicated "Scan to Verify" Card -->
-        <div class="p-3.5 sm:p-4 rounded-xl bg-surface-container border border-border-card flex flex-col sm:flex-row items-center sm:items-start text-center sm:text-left gap-3.5 sm:gap-4">
-          <div class="shrink-0 w-24 h-24 sm:w-22 sm:h-22 bg-white p-1 rounded-lg border border-border-card flex items-center justify-center mx-auto sm:mx-0">
+        <div class="p-3.5 sm:p-4 rounded-xl bg-surface-container border border-border-card flex flex-col sm:flex-row items-center sm:items-start text-center sm:text-left gap-3.5 sm:gap-4 overflow-hidden w-full">
+          <div class="shrink-0 w-20 h-20 sm:w-22 sm:h-22 bg-white p-1 rounded-lg border border-border-card flex items-center justify-center mx-auto sm:mx-0 shadow-2xs">
             <img v-if="qrDataUrl" :src="qrDataUrl" alt="Scannable Verification QR Code" class="w-full h-full object-contain" />
             <span v-else class="material-symbols-outlined animate-spin text-primary">sync</span>
           </div>
-          <div class="flex-1 space-y-1 w-full">
+          <div class="flex-1 space-y-1.5 w-full min-w-0 overflow-hidden">
             <div class="flex items-center justify-center sm:justify-start gap-1.5 text-sm font-bold text-[#0A6640]">
               <span class="material-symbols-outlined text-[18px]">qr_code_scanner</span>
               <span>Scan to Verify</span>
@@ -256,11 +256,18 @@ const handleDownloadPdf = async () => {
             <p class="text-xs sm:text-sm text-on-surface-variant leading-relaxed">
               Scan with any mobile camera to verify this accommodation payment directly against the PandaStays registry.
             </p>
-            <a :href="verifyUrl" target="_blank" class="font-data-mono text-xs text-[#0A6640] hover:underline font-semibold block break-all sm:truncate max-w-full">
-              {{ verifyUrl }}
-            </a>
-            <div class="font-data-mono text-xs text-on-surface-muted break-all sm:truncate" :title="verificationCode">
-              {{ verificationCode }}
+            <div class="bg-surface p-2 rounded-lg border border-border-card/80 space-y-0.5">
+              <a 
+                :href="verifyUrl" 
+                target="_blank" 
+                class="font-data-mono text-xs text-[#0A6640] hover:underline font-semibold block truncate"
+                :title="verifyUrl"
+              >
+                {{ verifyUrl }}
+              </a>
+              <div class="font-data-mono text-[11px] text-on-surface-muted truncate" :title="verificationCode">
+                {{ verificationCode }}
+              </div>
             </div>
           </div>
         </div>
