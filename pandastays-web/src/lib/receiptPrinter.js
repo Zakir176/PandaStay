@@ -37,7 +37,13 @@ export async function generateReceiptHtml(record = {}, options = {}) {
   const paymentMethod = record.method_label || record.payment_method_label || 'MTN Mobile Money'
   const gatewayRef = record.gateway_reference || record.reference || `LNC-${Date.now().toString().slice(-6)}`
   const issueDate = record.paid_at || record.created_at || new Date().toISOString().replace('T', ' ').slice(0, 19) + ' CAT'
-  const status = record.status || 'VERIFIED PAID'
+  const rawStatus = (record.status || '').toLowerCase()
+  const isPaid = rawStatus === 'success'
+  const status = isPaid ? 'VERIFIED PAID' : (rawStatus ? rawStatus.toUpperCase().replace('_', ' ') : 'UNVERIFIED')
+  const statusBg = isPaid ? 'rgba(16, 185, 129, 0.2)' : 'rgba(234, 179, 8, 0.2)'
+  const statusBorder = isPaid ? 'rgba(16, 185, 129, 0.4)' : 'rgba(234, 179, 8, 0.4)'
+  const statusColor = isPaid ? '#A7F3D0' : '#FEF08A'
+  const dotColor = isPaid ? '#34D399' : '#FACC15'
   const verificationToken = record.verification_token || ''
   const verificationCode = verificationToken
     ? `TOKEN: ${verificationToken.slice(0, 8).toUpperCase()}-${verificationToken.slice(-4).toUpperCase()}`
@@ -564,8 +570,8 @@ export async function generateReceiptHtml(record = {}, options = {}) {
             <div class="brand-kicker">PandaStays &bull; Student Housing PropTech</div>
           </div>
         </div>
-        <div class="status-pill">
-          <span class="status-dot"></span>
+        <div class="status-pill" style="background: ${statusBg}; border-color: ${statusBorder}; color: ${statusColor};">
+          <span class="status-dot" style="background: ${dotColor}; box-shadow: 0 0 6px ${dotColor};"></span>
           <span>${status}</span>
         </div>
       </div>
