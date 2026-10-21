@@ -3,9 +3,9 @@ import { spawn } from 'child_process'
 import { verifyLencoSignature } from '../server/services/lenco.js'
 import { generateReceiptHtml } from '../src/lib/receiptPrinter.js'
 
-async function runRound4Tests() {
+async function runSecurityTests() {
   console.log('==============================================================================')
-  console.log('PANDASTAYS REVIEW ROUND 4 SPECIFICATION & ACCEPTANCE VERIFICATION')
+  console.log('PANDASTAYS SYSTEM SECURITY & ACCEPTANCE VERIFICATION')
   console.log('==============================================================================\n')
 
   let passCount = 0
@@ -167,7 +167,7 @@ async function runRound4Tests() {
   }
 
   console.log('\n==============================================================================')
-  console.log(`RESULT: ${passCount}/${totalCount} ROUND 4 VERIFICATION TESTS PASSED`)
+  console.log(`RESULT: ${passCount}/${totalCount} SECURITY VERIFICATION TESTS PASSED`)
   console.log('==============================================================================')
 
   if (passCount === totalCount) {
@@ -177,4 +177,4 @@ async function runRound4Tests() {
   }
 }
 
-runRound4Tests()
+runSecurityTests()

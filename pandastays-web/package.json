@@ -11,7 +11,8 @@
     "test:supabase": "node scripts/test-supabase.js",
     "test:rls": "node scripts/test-rls.js",
     "test:payments": "node scripts/test-payments.js",
-    "test:roles": "node scripts/test-role-isolation.js"
+    "test:roles": "node scripts/test-role-isolation.js",
+    "test:security": "node scripts/test-security.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.112.0",
