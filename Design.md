@@ -1,163 +1,142 @@
----
-name: PandaStays Terminal
-colors:
-  surface: '#f8f9ff'
-  surface-dim: '#cbdbf5'
-  surface-bright: '#f8f9ff'
-  surface-container-lowest: '#ffffff'
-  surface-container-low: '#eff4ff'
-  surface-container: '#e5eeff'
-  surface-container-high: '#dce9ff'
-  surface-container-highest: '#d3e4fe'
-  on-surface: '#0b1c30'
-  on-surface-variant: '#3c4a42'
-  inverse-surface: '#213145'
-  inverse-on-surface: '#eaf1ff'
-  outline: '#6c7a71'
-  outline-variant: '#bbcabf'
-  surface-tint: '#006c49'
-  primary: '#006c49'
-  on-primary: '#ffffff'
-  primary-container: '#10b981'
-  on-primary-container: '#00422b'
-  inverse-primary: '#4edea3'
-  secondary: '#545f73'
-  on-secondary: '#ffffff'
-  secondary-container: '#d5e0f8'
-  on-secondary-container: '#586377'
-  tertiary: '#855300'
-  on-tertiary: '#ffffff'
-  tertiary-container: '#e29100'
-  on-tertiary-container: '#523200'
-  error: '#ba1a1a'
-  on-error: '#ffffff'
-  error-container: '#ffdad6'
-  on-error-container: '#93000a'
-  primary-fixed: '#6ffbbe'
-  primary-fixed-dim: '#4edea3'
-  on-primary-fixed: '#002113'
-  on-primary-fixed-variant: '#005236'
-  secondary-fixed: '#d8e3fb'
-  secondary-fixed-dim: '#bcc7de'
-  on-secondary-fixed: '#111c2d'
-  on-secondary-fixed-variant: '#3c475a'
-  tertiary-fixed: '#ffddb8'
-  tertiary-fixed-dim: '#ffb95f'
-  on-tertiary-fixed: '#2a1700'
-  on-tertiary-fixed-variant: '#653e00'
-  background: '#f8f9ff'
-  on-background: '#0b1c30'
-  surface-variant: '#d3e4fe'
-typography:
-  display-lg:
-    fontFamily: Inter
-    fontSize: 32px
-    fontWeight: '700'
-    lineHeight: 40px
-    letterSpacing: -0.02em
-  headline-md:
-    fontFamily: Inter
-    fontSize: 24px
-    fontWeight: '600'
-    lineHeight: 32px
-    letterSpacing: -0.01em
-  title-sm:
-    fontFamily: Inter
-    fontSize: 18px
-    fontWeight: '600'
-    lineHeight: 24px
-  body-md:
-    fontFamily: Inter
-    fontSize: 14px
-    fontWeight: '400'
-    lineHeight: 20px
-  body-sm:
-    fontFamily: Inter
-    fontSize: 13px
-    fontWeight: '400'
-    lineHeight: 18px
-  label-caps:
-    fontFamily: Inter
-    fontSize: 11px
-    fontWeight: '700'
-    lineHeight: 16px
-    letterSpacing: 0.05em
-  data-mono:
-    fontFamily: JetBrains Mono
-    fontSize: 13px
-    fontWeight: '500'
-    lineHeight: 16px
-rounded:
-  sm: 0.125rem
-  DEFAULT: 0.25rem
-  md: 0.375rem
-  lg: 0.5rem
-  xl: 0.75rem
-  full: 9999px
-spacing:
-  container-max: 1440px
-  gutter: 1rem
-  sidebar-width: 260px
-  stack-compact: 0.5rem
-  stack-default: 1.5rem
-  page-margin-mb: 1rem
-  page-margin-dt: 2rem
+# PandaStays Design System Specification
+## Tactile Bento Grid System for Zambian PropTech
+
+**Design System Version:** 2.0.0 (Production Bento Release)  
+**Target Brand:** PandaStays — Student Housing & Boarding PropTech  
+**Design Philosophy:** Tactile Bento Information Architecture, High Contrast Utility & Visual Excellence  
+
 ---
 
-## Brand & Style
-The design system focuses on **Professional Trust and Operational Efficiency**. It is tailored for the Zambian real estate market, specifically for high-frequency boarding house management where clarity regarding payment status is paramount.
+## 1. Design Principles & Brand Identity
 
-The design style is **Corporate Modern with a Functional Edge**. It prioritizes legibility and information density over decorative flair. The interface utilizes a "Utility-First" approach: heavy whitespace is replaced by systematic padding to allow more data on screen, while high-contrast status indicators ensure landlords can identify arrears or partial payments at a glance. The emotional response should be one of control, reliability, and precision.
+The PandaStays design system combines the structured density of modern **Bento Grids** with architectural tactile signatures tailored for high-frequency Zambian student boarding house operations:
 
-## Colors
-The palette is rooted in fiscal stability and clarity:
-- **Primary (Emerald Green):** Reserved for "Paid" statuses, primary action buttons, and growth indicators. It symbolizes financial health.
-- **Secondary (Slate Navy):** Used for all structural elements including sidebars, top navigation, and primary headings. It provides a grounded, authoritative frame.
-- **Accent (Yellow):** A critical functional color for "Partial" payments and "Pending" alerts. It commands attention without the alarm of red.
-- **Neutral (Slate):** Used for secondary text, icons, and borders to maintain a clean, organized hierarchy.
-- **Background:** A very light slate tint (#f8fafc) is used to reduce screen glare during long sessions of data entry.
+1. **The Bed-Space as the Central Visual Motif:** The individual bed silhouette — not abstract bar charts or generic avatars — is the core visual identifier across all floorplans and occupancy widgets.
+2. **High-Contrast Hero Inversion:** Tactical use of rich, inverted dark cards (`#0B2416` with `#34A864` electric accents) to anchor primary executive KPIs (Total Revenue, Lenco Terminal) against clean, organic light surfaces (`#F4F6F4`).
+3. **Capsule Pill Geometry:** Compact rounded-full pills for high-density badges, status chips, and action buttons to establish clean visual hierarchy over boxy cards.
+4. **Architectural Tactile Textures:** Functional diagonal hatch patterns (`bg-hatch-diagonal`) and topographic contour waves (`bg-topo-dark`) symbolizing architectural floorplans and terrain without decorative clutter.
+5. **Fluid Micro-Interactions & Motion:** Decelerated cubic-bezier entrance animations (`bentoFadeUp`) and 60fps/120fps ease-out number counters that bring live metrics to life without causing layout shifts.
 
-## Typography
-This design system employs **Inter** for its neutral, highly legible grotesque characteristics, making it ideal for dense dashboards. **JetBrains Mono** is introduced specifically for financial figures and unit numbers to ensure character alignment in data grids (tabular lining).
+---
 
-- **Hierarchy:** Use `display-lg` for dashboard overviews (e.g., Total Revenue).
-- **Data Grids:** Use `body-sm` for table rows to maximize information density.
-- **Financials:** All currency values (ZMW) should use `data-mono` for better scannability when stacked vertically.
-- **Labels:** Use `label-caps` for table headers and section overlines.
+## 2. Color Tokens & Theme Palettes
 
-## Layout & Spacing
-The layout follows a **Fixed-Fluid Hybrid** model. The sidebar remains fixed at 260px, while the main content area utilizes a fluid 12-column grid.
+### 2.1 Refined Core Palette (CSS Custom Properties in `style.css`)
 
-- **Grid:** 16px (1rem) gutters between columns.
-- **Density:** The system uses a "Compact" rhythm for data-heavy views. Vertical padding in tables is set to 12px to allow more rows per fold.
-- **Responsive Behavior:** 
-  - **Desktop:** 12 columns, 32px margins. 
-  - **Tablet:** 6 columns, 24px margins, sidebar collapses to icons.
-  - **Mobile:** 4 columns, 16px margins, sidebar moves to a bottom navigation bar or hamburger menu.
-- **Slide-overs:** Interaction panels emerge from the right, occupying 400px of the screen width, overlaying content with a 40% opacity Slate Navy backdrop.
+```css
+@theme {
+  /* PandaStays Refined Bento Palette */
+  --color-primary: #144D2F;                 /* Deep Forest Emerald */
+  --color-primary-hover: #0F3D24;
+  --color-primary-accent: #34A864;          /* Electric Mint Accent */
+  --color-primary-container: #E6F3EB;       /* Soft Mint Container */
+  --color-on-primary: #FFFFFF;
+  --color-on-primary-container: #082515;
 
-## Elevation & Depth
-To maintain a high-trust, professional look, the design system avoids heavy shadows in favor of **Tonal Layering and Low-Contrast Outlines**.
+  --color-hero-dark: #0B2416;               /* Inverted Hero Card Background */
+  --color-hero-topo: #183C28;
 
-- **Level 0 (Background):** #f8fafc.
-- **Level 1 (Cards/Surface):** White (#ffffff) with a 1px solid border (#e2e8f0). No shadow.
-- **Level 2 (Dropdowns/Modals):** White with a soft, 15% opacity Slate Navy shadow (0px 10px 15px -3px) to indicate temporary overlay.
-- **Level 3 (Active Slide-overs):** White with a 1px border and a wide 20% opacity shadow to create a distinct separation from the dashboard behind it.
-- **Interactive States:** Buttons use a subtle inner-shadow on 'press' to simulate a physical click, reinforcing a tactile, "built-to-last" software feel.
+  --color-secondary: #4A5160;               /* Warm Charcoal Navy */
+  --color-secondary-container: #EAECEF;
+  --color-on-secondary: #FFFFFF;
+  --color-on-secondary-container: #22262E;
 
-## Shapes
-The shape language is **Soft and Precise**. 
-- **Standard Elements:** Buttons, input fields, and cards use a 0.25rem (4px) radius. This provides a modern feel without looking overly casual or "bubbly."
-- **Status Badges:** Use a slightly higher radius (rounded-lg / 8px) to distinguish them from interactive buttons.
-- **Search Bars:** Utilize a fully rounded (pill-shaped) profile to differentiate global navigation tools from data-entry fields.
+  --color-tertiary: #B47818;                /* Warm Ochre (Partial/Pending) */
+  --color-tertiary-container: #FDF4E6;
+  --color-tertiary-accent: #D99528;
+  --color-on-tertiary: #FFFFFF;
+  --color-on-tertiary-container: #492E08;
 
-## Components
-- **Summary Cards:** Top-of-page metrics. Must include a `data-mono` value, a `label-caps` title, and a small trend indicator (Emerald for up, Red for down).
-- **Status Badges:** 
-  - *Paid:* Primary Green background (10% opacity) with Primary Green text.
-  - *Partial:* Yellow background (10% opacity) with Dark Yellow text.
-  - *Overdue:* Red background (10% opacity) with Red text.
-- **Data Grids:** Rows must have a subtle hover state (#f1f5f9). Use 1px Slate Navy outlines for the primary action button within a row.
-- **Slide-over Panels:** Used for "Tenant Details" or "Add Payment." Must include a sticky header with a "Close" icon and a sticky footer containing primary/secondary actions.
-- **Input Fields:** Use 1px Slate borders. On focus, the border transitions to Primary Emerald with a 2px outer glow of 10% opacity Emerald.
-- **Dense List Items:** For room-by-room views, use a vertical stack with condensed `body-sm` text and a right-aligned chevron for drill-down.
+  --color-error: #C43242;                   /* Brick Red (Overdue/Urgent) */
+  --color-error-container: #FDECEE;
+  --color-on-error: #FFFFFF;
+  --color-on-error-container: #4E1810;
+
+  /* Clean Organic Bento Surface Tokens */
+  --color-background: #F4F6F4;              /* Soft Warm Canvas */
+  --color-surface: #FFFFFF;                 /* Clean White Card Surface */
+  --color-surface-dim: #EDF1ED;
+  --color-surface-container: #F4F6F4;
+  --color-surface-container-low: #F8FAF8;
+  --color-surface-container-high: #E6ECE6;
+  --color-border-card: #E2E7E2;             /* Subtle Bento Outline */
+  --color-outline: #D0D8D0;
+
+  --color-on-surface: #0C1A12;              /* Near-Black Text */
+  --color-on-surface-variant: #5C6A61;      /* Secondary Label Text */
+  --color-on-surface-muted: #9AA79F;        /* Data Table Caps Text */
+}
+```
+
+### 2.2 Curated Color Themes (`src/lib/theme.js`)
+PandaStays provides 6 dynamic HSL-tuned accent schemes that adjust primary, hover, and container variables at runtime:
+
+| Theme Name | Primary Hex | Description |
+| :--- | :--- | :--- |
+| **Forest** (Default) | `#144D2F` | Deep Zambian forest emerald with electric mint accents. |
+| **Savanna** | `#855300` | Warm golden ochre inspired by the African savanna. |
+| **Midnight** | `#1A365D` | Executive slate navy tailored for corporate landlords. |
+| **Kafue** | `#006874` | Deep river teal symbolizing the Kafue basin. |
+| **Copper** | `#9C4124` | Rich copper terracotta celebrating Zambia's copper heritage. |
+| **Jacaranda** | `#5B3E8C` | Royal violet reflecting blooming Lusaka jacarandas. |
+
+---
+
+## 3. Typography System
+
+The typography pairs an authoritative, human-centered grotesque with a dedicated high-precision monospace for financial figures:
+
+| Role | Font Family | Usage |
+| :--- | :--- | :--- |
+| **Headings & Body UI** | `IBM Plex Sans`, -apple-system, sans-serif | Page titles, navigation labels, tenant names, body text. |
+| **Tabular Numbers & Data**| `JetBrains Mono`, monospace | Kwacha currency figures, receipt numbers, clock displays, NRC IDs. |
+
+### Typography Scale
+- **Display Overview (`text-3xl font-bold font-data-mono`):** `30px / 36px` — Primary KPI cards (`K12,700`, `90%`).
+- **Section Headline (`text-2xl font-bold tracking-tight`):** `24px / 32px` — Property headers, page titles.
+- **Card Title (`text-base font-bold text-on-surface`):** `16px / 24px` — Bento module headers (`Active Tenant Roster`).
+- **Data Subtext (`text-xs sm:text-sm text-on-surface-variant`):** `12px / 16px` — Descriptive secondary copy.
+- **Metric Overline (`text-xs font-bold uppercase tracking-wider`):** `12px / 16px` — Card category chips (`TOTAL REVENUE`).
+
+---
+
+## 4. Bento Component Geometry & Surface Rules
+
+### 4.1 Standard Bento Card (`.card-bento`)
+- **Border Radius:** `1rem` (16px) continuous curves.
+- **Surface:** `#FFFFFF` background with `1px solid #E2E7E2`.
+- **Shadow:** `0 2px 10px rgba(12, 26, 18, 0.03)` (subtle tactile elevation).
+- **Hover State:** Border transitions to `#D1D9D2` with shadow `0 6px 18px rgba(12, 26, 18, 0.06)`.
+
+### 4.2 Inverted Hero Card (`.card-bento-hero`)
+- **Surface:** Deep hero green (`#0B2416`) with a 1px border `rgba(255, 255, 255, 0.12)`.
+- **Contrast:** High-contrast white typography with `#34A864` electric accents and glowing status indicators.
+
+### 4.3 Capsule Buttons & Badges
+- **Primary Pill (`.btn-pill-primary`):** Full capsule radius (`9999px`), `#144D2F` background, white text, 600 semi-bold weight.
+- **Outline Pill (`.btn-pill-outline`):** Full capsule radius, white surface, `#E2E7E2` border, dark text.
+- **Status Pill (`.badge-pill`):** Compact capsule with `0.25rem 0.625rem` padding, pairing container tints with high-contrast foreground text.
+
+### 4.4 Tactile Architectural Textures
+- **Diagonal Architectural Hatch (`.bg-hatch-diagonal`):** Repeating 45-degree semi-transparent hatch pattern used for upcoming terms and reserved bed spaces.
+- **Topographic Wave Lines (`.bg-topo-dark`):** Subtle radial contour rings integrated into the Lenco terminal card background.
+
+---
+
+## 5. Motion, Physics & Micro-Animations
+
+### 5.1 Bento Cascade Entrance (`.animate-bento-in`)
+- **Keyframe:** `@keyframes bentoFadeUp`
+- **Translation:** `translateY(16px)` with scale transition from `0.985` to `1.0`.
+- **Timing Function:** Executive cubic deceleration `cubic-bezier(0.16, 1, 0.3, 1)`.
+- **Stagger Delays:** Cascading delays (`.animate-delay-1` to `.animate-delay-7` in 60ms intervals) so cards slide smoothly into place on landing.
+
+### 5.2 Animated Number Engine (`<AnimatedNumber>`)
+- **Framerate:** 60fps / 120fps hardware-synchronized via `requestAnimationFrame`.
+- **Deceleration:** Ease-out cubic curve:
+  $$f(t) = 1 - (1 - t)^3$$
+- **Layout Shift Prevention:** Employs CSS `tabular-nums` so numbers expand without jittering adjacent elements.
+- **Lifecycle Safety:** Instant cancellation via `cancelAnimationFrame` in `onUnmounted` lifecycle hooks.
+
+### 5.3 Radial Gauge Sweep (`.gauge-progress-arc`)
+- Smooth `stroke-dashoffset` transitions over `1.4s` using `cubic-bezier(0.16, 1, 0.3, 1)` for academic term progress visualization.
