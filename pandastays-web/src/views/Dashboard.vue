@@ -212,8 +212,9 @@ const activeRosterTenants = computed(() => {
         <div class="mt-4 pt-3 border-t border-border-card flex items-center justify-between text-xs text-on-surface-variant">
           <span class="text-error font-medium">WhatsApp escalations queued</span>
           <button 
-            @click="sendReminder({ name: 'All Overdue Tenants', phone: '+260 97 0000000', bed_label: 'Multiple', balanceDue: 3700 })"
-            class="text-error hover:underline text-xs font-bold"
+            disabled
+            class="text-on-surface-variant/40 cursor-not-allowed text-xs font-bold"
+            title="Automated dispatch requires background reminder service"
           >
             Dispatch &rarr;
           </button>

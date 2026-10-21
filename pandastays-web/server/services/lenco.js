@@ -3,40 +3,54 @@ import dotenv from 'dotenv'
 
 dotenv.config()
 
-const LENCO_SECRET_KEY = process.env.LENCO_SECRET_KEY || (process.env.NODE_ENV === 'production' ? '' : 'lenco_secret_placeholder')
+// Fail closed by default; dev behavior is strictly opt-in
+const isDev = process.env.NODE_ENV === 'development'
+const LENCO_SECRET_KEY = process.env.LENCO_SECRET_KEY || ''
 // Documented base URL: https://lenco-api.readme.io/v2.0/reference
 const LENCO_API_BASE = process.env.LENCO_API_BASE || 'https://api.lenco.co/access/v2'
 
-// Explicit, opt-in mock mode for local development only. Never inferred from errors.
-export const LENCO_MOCK = process.env.LENCO_MOCK === 'true' || (!process.env.LENCO_SECRET_KEY && process.env.NODE_ENV !== 'production')
-
-if (!LENCO_SECRET_KEY && process.env.NODE_ENV === 'production') {
-  console.warn('LENCO_SECRET_KEY is not set: MoMo collections and webhooks are disabled (fail closed).')
-}
+// Explicit, opt-in mock mode only in development when explicitly enabled
+export const LENCO_MOCK = isDev && process.env.LENCO_MOCK === 'true'
 
 export class LencoError extends Error {}
 
 /**
  * Verify incoming webhook signature from Lenco.
- * X-Lenco-Signature = HMAC-SHA512(rawBody, SHA256(apiToken)).
+ * X-Lenco-Signature = HMAC-SHA512(payload, SHA256(apiToken)).
+ * Checks against both rawBody buffer and canonical JSON string to tolerate formatting differences.
  * @param {import('express').Request} req
  * @returns {boolean}
  */
 export function verifyLencoSignature(req) {
-  if (!LENCO_SECRET_KEY) return false // never verify against a guessable placeholder
+  if (!LENCO_SECRET_KEY) return false // never verify against a placeholder in any environment
   const signature = req.headers['x-lenco-signature']
-  if (typeof signature !== 'string' || !req.rawBody) return false
+  if (typeof signature !== 'string') return false
 
   const webhookHashKey = crypto.createHash('sha256').update(LENCO_SECRET_KEY).digest('hex')
-  const expectedSignature = crypto
-    .createHmac('sha512', webhookHashKey)
-    .update(req.rawBody)
-    .digest('hex')
-
   const sigBuf = Buffer.from(signature, 'utf8')
-  const expectedBuf = Buffer.from(expectedSignature, 'utf8')
-  if (sigBuf.length !== expectedBuf.length) return false
-  return crypto.timingSafeEqual(sigBuf, expectedBuf)
+
+  // Collect candidate payload buffers to test against signature
+  const candidates = []
+  if (req.rawBody && req.rawBody.length > 0) {
+    candidates.push(req.rawBody)
+  }
+  if (req.body && typeof req.body === 'object' && Object.keys(req.body).length > 0) {
+    candidates.push(Buffer.from(JSON.stringify(req.body), 'utf8'))
+  }
+
+  for (const candidate of candidates) {
+    const expectedSignature = crypto
+      .createHmac('sha512', webhookHashKey)
+      .update(candidate)
+      .digest('hex')
+
+    const expectedBuf = Buffer.from(expectedSignature, 'utf8')
+    if (sigBuf.length === expectedBuf.length && crypto.timingSafeEqual(sigBuf, expectedBuf)) {
+      return true
+    }
+  }
+
+  return false
 }
 
 async function lencoFetch(path, init = {}) {
@@ -87,7 +101,7 @@ export async function triggerMoMoCollection({ amount, phone, operator, reference
     phone: normaliseZambianPhone(phone),
     operator: operator.toLowerCase(),
     country: 'zm',
-    bearer: 'merchant',
+    bearer: process.env.LENCO_FEE_BEARER || 'merchant',
     reference
   }
 

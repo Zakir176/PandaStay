@@ -12,6 +12,8 @@ const methodMap = {
   zamtel: 'momo_zamtel'
 }
 
+const ALLOWED_PAYMENT_METHODS = ['momo_mtn', 'momo_airtel', 'momo_zamtel', 'card', 'bank_transfer', 'cash']
+
 /**
  * POST /api/payments/momo
  * Triggers a Mobile Money STK Push collection request via Lenco API
@@ -62,9 +64,26 @@ router.post('/momo', requireUser, async (req, res) => {
       return res.status(400).json({ success: false, error: 'Invalid amount' })
     }
 
+    // Prevent duplicate STK pushes: reject if a pending payment exists in last 5 minutes
+    const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString()
+    const { data: recentPending, error: pendingCheckErr } = await supabase
+      .from('payments')
+      .select('id, created_at')
+      .eq('tenancy_id', tenancy_id)
+      .eq('status', 'pending')
+      .gte('created_at', fiveMinutesAgo)
+      .limit(1)
+
+    if (recentPending && recentPending.length > 0) {
+      return res.status(429).json({
+        success: false,
+        error: 'A payment is already pending for this tenancy. Please complete the prompt on your phone or wait a few minutes before retrying.'
+      })
+    }
+
     const reference = `PS-${crypto.randomBytes(8).toString('hex')}`
 
-    // Insert FIRST; fail closed.
+    // Insert pending payment FIRST (fail closed)
     const { data: payment, error: dbError } = await supabase
       .from('payments')
       .insert({
@@ -99,12 +118,13 @@ router.post('/momo', requireUser, async (req, res) => {
         lenco
       })
     } catch (e) {
+      console.error('Payment provider initiation failed:', e)
       await supabase.from('payments').update({ status: 'failed' }).eq('id', payment.id)
       return res.status(502).json({ success: false, error: 'Payment provider error' })
     }
   } catch (error) {
     console.error('Unhandled momo payment error:', error)
-    return res.status(500).json({ success: false, error: error.message })
+    return res.status(500).json({ success: false, error: 'Internal server error' })
   }
 })
 
@@ -125,6 +145,10 @@ router.post('/record', requireLandlord, async (req, res) => {
 
     if (!tenancy_id || !amount) {
       return res.status(400).json({ error: 'tenancy_id and amount are required' })
+    }
+
+    if (!ALLOWED_PAYMENT_METHODS.includes(method)) {
+      return res.status(400).json({ error: 'Invalid payment method' })
     }
 
     const value = Number(amount)
@@ -151,7 +175,15 @@ router.post('/record', requireLandlord, async (req, res) => {
       return res.status(403).json({ error: 'You do not have access to this tenancy' })
     }
 
-    const refNum = gateway_reference || `MANUAL-${crypto.randomBytes(6).toString('hex')}`
+    // Prefix and sanitize client-provided reference to avoid collision with real Lenco references
+    const cleanClientRef = (gateway_reference || '')
+      .replace(/^MANUAL-/i, '')
+      .replace(/[^a-zA-Z0-9-_]/g, '')
+      .slice(0, 32)
+
+    const refNum = cleanClientRef
+      ? `MANUAL-${cleanClientRef}-${crypto.randomBytes(4).toString('hex')}`
+      : `MANUAL-${crypto.randomBytes(8).toString('hex')}`
 
     const { data: dbPayment, error: insertError } = await supabase
       .from('payments')
@@ -167,12 +199,14 @@ router.post('/record', requireLandlord, async (req, res) => {
       .single()
 
     if (insertError) {
-      return res.status(500).json({ error: insertError.message })
+      console.error('Error inserting manual payment:', insertError)
+      return res.status(500).json({ error: 'Failed to record payment' })
     }
 
     return res.status(200).json({ success: true, payment: dbPayment })
   } catch (error) {
-    return res.status(500).json({ error: error.message })
+    console.error('Record payment error:', error)
+    return res.status(500).json({ error: 'Internal server error' })
   }
 })
 

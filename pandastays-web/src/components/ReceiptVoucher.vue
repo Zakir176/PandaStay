@@ -43,6 +43,14 @@ const verificationToken = computed(() => {
   return props.receipt?.verification_token || ''
 })
 
+const isPaid = computed(() => (props.receipt?.status || '').toLowerCase() === 'success')
+const statusLabel = computed(() => {
+  const s = (props.receipt?.status || '').toLowerCase()
+  if (s === 'success') return 'VERIFIED PAID'
+  if (s) return s.toUpperCase().replace('_', ' ')
+  return 'UNVERIFIED'
+})
+
 const verificationCode = computed(() => {
   const token = verificationToken.value
   if (token) return `TOKEN: ${token.slice(0, 8).toUpperCase()}-${token.slice(-4).toUpperCase()}`
@@ -134,10 +142,13 @@ const handleDownloadPdf = async () => {
             </div>
           </div>
 
-          <!-- Pulsing Status Pill -->
-          <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/20 border border-emerald-400/40 text-emerald-200 uppercase tracking-wide shrink-0">
-            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-            <span>VERIFIED PAID</span>
+          <!-- Dynamic Status Pill -->
+          <span 
+            class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide shrink-0"
+            :class="isPaid ? 'bg-emerald-500/20 border border-emerald-400/40 text-emerald-200' : 'bg-amber-500/20 border border-amber-400/40 text-amber-200'"
+          >
+            <span class="w-1.5 h-1.5 rounded-full" :class="isPaid ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'"></span>
+            <span>{{ statusLabel }}</span>
           </span>
         </div>
 

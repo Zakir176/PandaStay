@@ -7,11 +7,28 @@ import dotenv from 'dotenv'
 import paymentsRouter from './routes/payments.js'
 import webhooksRouter from './routes/webhooks.js'
 import receiptsRouter from './routes/receipts.js'
+import { startReconciliationJob } from './services/reconciliation.js'
 
 dotenv.config()
 
+// Fail closed by default outside explicit development mode
+const isDev = process.env.NODE_ENV === 'development'
+if (!isDev) {
+  const missing = []
+  if (!process.env.LENCO_SECRET_KEY) missing.push('LENCO_SECRET_KEY')
+  if (!process.env.SUPABASE_SERVICE_ROLE_KEY) missing.push('SUPABASE_SERVICE_ROLE_KEY')
+  if (missing.length > 0) {
+    console.error(`FATAL: Missing required environment variables in non-development mode: ${missing.join(', ')}`)
+    process.exit(1)
+  }
+}
+
 const app = express()
 const PORT = process.env.PORT || 3001
+
+// Trust upstream proxy (e.g. Railway, Render, Vercel, AWS ALB)
+// Ensures express-rate-limit identifies client IP instead of sharing one proxy IP
+app.set('trust proxy', 1)
 
 // Security headers
 app.use(helmet())
@@ -92,14 +109,16 @@ app.use((req, res) => {
   res.status(404).json({ error: 'Endpoint not found' })
 })
 
-// Global Error Handler
+// Global Error Handler (never leaks err.message to client)
 app.use((err, req, res, next) => {
   console.error('Unhandled server error:', err)
-  res.status(500).json({ error: 'Internal server error', message: err.message })
+  res.status(500).json({ error: 'Internal server error' })
 })
 
 app.listen(PORT, () => {
   console.log(`PandaStays Backend Service running on port ${PORT}`)
+  // Start background payment reconciliation job (every 30 minutes)
+  startReconciliationJob(30 * 60 * 1000)
 })
 
 export default app

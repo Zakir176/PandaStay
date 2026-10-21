@@ -7,7 +7,7 @@ dotenv.config()
 
 const supabaseUrl = process.env.VITE_SUPABASE_URL
 const supabaseAnonKey = process.env.VITE_SUPABASE_ANON_KEY
-const LENCO_SECRET_KEY = process.env.LENCO_SECRET_KEY || 'lenco_secret_placeholder'
+const LENCO_SECRET_KEY = process.env.LENCO_SECRET_KEY || 'test_lenco_secret_for_local_dev_key'
 const API_BASE = 'http://localhost:3001'
 
 if (!supabaseUrl || !supabaseAnonKey) {

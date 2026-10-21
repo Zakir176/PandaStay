@@ -42,7 +42,7 @@ DROP TYPE IF EXISTS reminder_delivery_status CASCADE;
 CREATE TYPE bed_status AS ENUM ('vacant', 'occupied', 'reserved');
 CREATE TYPE tenancy_status AS ENUM ('active', 'ended');
 CREATE TYPE payment_method_type AS ENUM ('momo_mtn', 'momo_airtel', 'momo_zamtel', 'card', 'bank_transfer', 'cash');
-CREATE TYPE payment_status AS ENUM ('pending', 'success', 'failed', 'reversed');
+CREATE TYPE payment_status AS ENUM ('pending', 'success', 'failed', 'reversed', 'needs_review');
 CREATE TYPE report_status AS ENUM ('open', 'in_progress', 'resolved');
 CREATE TYPE reminder_channel AS ENUM ('whatsapp', 'sms');
 CREATE TYPE reminder_type AS ENUM ('upcoming', 'overdue');
@@ -146,7 +146,7 @@ CREATE TABLE bed_spaces (
 -- ------------------------------------------------------------------------------
 CREATE TABLE tenants (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    auth_user_id UUID UNIQUE REFERENCES auth.users(id) ON DELETE SET NULL,
+    auth_user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
     name VARCHAR(255) NOT NULL,
     email VARCHAR(255),
     phone VARCHAR(50) NOT NULL,
@@ -335,7 +335,7 @@ CREATE POLICY "tenants_landlord_select" ON tenants FOR SELECT
   ));
 
 CREATE POLICY "tenants_landlord_insert" ON tenants FOR INSERT
-  WITH CHECK (auth.uid() IS NOT NULL);
+  WITH CHECK (EXISTS (SELECT 1 FROM landlords WHERE id = auth.uid()));
 
 -- 7. Tenancies: Landlord full access via property chain; tenant read-only for their own
 CREATE POLICY "tenancies_landlord_all" ON tenancies FOR ALL
@@ -388,5 +388,24 @@ CREATE POLICY "reminder_log_landlord_select" ON reminder_log FOR SELECT
     WHERE t.id = reminder_log.tenancy_id AND p.landlord_id = auth.uid()
   ));
 
--- 11. Security Hardening: Revoke direct client update of lenco_subaccount_id
-REVOKE UPDATE (lenco_subaccount_id) ON landlords FROM anon, authenticated;
+-- 11. Security Hardening: Table-level revokes and column-level update grants
+REVOKE UPDATE ON landlords FROM anon, authenticated;
+GRANT UPDATE (name, phone, whatsapp_reminder_days_before) ON landlords TO authenticated;
+
+REVOKE UPDATE ON tenants FROM anon, authenticated;
+GRANT UPDATE (name, phone, id_number, date_of_birth, emergency_contact_name, emergency_contact_phone) ON tenants TO authenticated;
+
+-- Helper callable by authenticated tenant on login to link any newly added tenant records
+CREATE OR REPLACE FUNCTION public.link_tenant_profile()
+RETURNS void AS $$
+BEGIN
+  IF auth.uid() IS NOT NULL AND auth.jwt()->>'email' IS NOT NULL THEN
+    UPDATE public.tenants
+    SET auth_user_id = auth.uid()
+    WHERE LOWER(email) = LOWER(auth.jwt()->>'email')
+      AND (auth_user_id IS NULL OR auth_user_id != auth.uid());
+  END IF;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
+
+GRANT EXECUTE ON FUNCTION public.link_tenant_profile() TO authenticated;

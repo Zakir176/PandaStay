@@ -35,16 +35,25 @@ const loadProfile = async (user) => {
       return
     }
 
-    // Next check if user is linked to a tenant record
-    const { data: tenant } = await supabase
+    // Next check if user is linked to one or more tenant records (supports multi-landlord tenancies)
+    try {
+      await supabase.rpc('link_tenant_profile')
+    } catch {
+      // link_tenant_profile RPC is optional / executed if migration is active
+    }
+
+    const { data: tenantRows } = await supabase
       .from('tenants')
       .select('*')
       .eq('auth_user_id', user.id)
-      .maybeSingle()
 
-    if (tenant) {
+    if (tenantRows && tenantRows.length > 0) {
       currentRole.value = 'tenant'
-      userProfile.value = { ...tenant, role: 'tenant' }
+      userProfile.value = { 
+        ...tenantRows[0], 
+        role: 'tenant',
+        tenantRecords: tenantRows
+      }
       return
     }
 

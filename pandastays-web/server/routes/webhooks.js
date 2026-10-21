@@ -51,14 +51,19 @@ router.post('/lenco', async (req, res) => {
 
       if (isNaN(payloadAmount) || payloadAmount !== expectedAmount) {
         console.error(
-          `Payment amount mismatch on reference ${reference}: expected ${expectedAmount}, received ${payloadAmount}`
+          `CRITICAL: Payment amount mismatch on reference ${reference}: expected ${expectedAmount}, received ${payloadAmount}. Flagging as needs_review.`
         )
-        // Mark as review_needed / failed instead of blindly crediting success
-        await supabase
+        const { error: flagErr } = await supabase
           .from('payments')
-          .update({ status: 'failed' })
+          .update({ status: 'needs_review' })
           .eq('id', payment.id)
-        return res.status(200).json({ received: true, note: 'Amount mismatch' })
+          .eq('status', 'pending')
+
+        if (flagErr) {
+          console.error('Failed to update payment to needs_review:', flagErr)
+          return res.status(500).json({ error: 'Database update failed' })
+        }
+        return res.status(200).json({ received: true, note: 'Amount mismatch flagged for review' })
       }
 
       // Defense-in-depth: verify authoritative status from Lenco API by reference
@@ -66,43 +71,48 @@ router.post('/lenco', async (req, res) => {
         const verifiedCollection = await getCollectionByReference(reference)
         if (verifiedCollection && verifiedCollection.status !== 'successful') {
           console.error(
-            `Lenco status re-query did not confirm success: status=${verifiedCollection.status}`
+            `Lenco status re-query did not confirm success for ref ${reference}: status=${verifiedCollection.status}`
           )
           return res.status(200).json({ received: true, note: 'Re-query failed to confirm' })
         }
       } catch (checkErr) {
-        console.warn(`Re-query check warning: ${checkErr.message}`)
-        // If re-query fails due to network, proceed with verified webhook signature
+        // If re-query fails due to network, log warning with reference and proceed with verified signature
+        console.warn(`Re-query check warning for reference ${reference}: ${checkErr.message}`)
       }
 
+      // Idempotent update: condition on status = 'pending' to prevent race condition
       const { error: updateError } = await supabase
         .from('payments')
         .update({ status: 'success' })
         .eq('id', payment.id)
+        .eq('status', 'pending')
 
       if (updateError) {
         console.error('Error updating payment in Supabase via webhook:', updateError)
-      } else {
-        console.log(`Payment reference ${reference} credited successfully in ledger.`)
+        return res.status(500).json({ error: 'Database update failed' })
       }
+
+      console.log(`Payment reference ${reference} credited successfully in ledger.`)
     } else if (eventType === 'collection.failed') {
-      await supabase
+      const { error: failErr } = await supabase
         .from('payments')
         .update({ status: 'failed' })
         .eq('id', payment.id)
+        .eq('status', 'pending')
+
+      if (failErr) {
+        console.error('Error updating failed payment in Supabase:', failErr)
+        return res.status(500).json({ error: 'Database update failed' })
+      }
       console.log(`Payment reference ${reference} marked failed via webhook.`)
-    } else if (eventType === 'collection.reversed' || eventType === 'transaction.reversed') {
-      await supabase
-        .from('payments')
-        .update({ status: 'reversed' })
-        .eq('id', payment.id)
-      console.log(`Payment reference ${reference} marked reversed via webhook.`)
+    } else if (eventType === 'collection.settled') {
+      console.log(`Payment reference ${reference} settled to landlord sub-account.`)
     }
 
     return res.status(200).json({ received: true })
   } catch (error) {
     console.error('Error processing Lenco webhook:', error)
-    return res.status(500).json({ error: error.message })
+    return res.status(500).json({ error: 'Internal server error' })
   }
 })
 

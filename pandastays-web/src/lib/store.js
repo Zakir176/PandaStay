@@ -167,7 +167,8 @@ export const syncWithSupabase = async () => {
           method_label: p.method === 'momo_mtn' ? 'MTN MoMo' : p.method === 'momo_airtel' ? 'Airtel Money' : 'Zamtel Kwacha',
           gateway_reference: p.gateway_reference,
           status: p.status,
-          receipt_number: p.receipt_number
+          receipt_number: p.receipt_number,
+          verification_token: p.verification_token
         }
       })
     }
