@@ -6,7 +6,8 @@ import {
   BedIcon, 
   AssignTenantModal, 
   AddRoomModal, 
-  EditRoomModal 
+  EditRoomModal,
+  AnimatedNumber 
 } from '../components'
 
 const { state, deleteRoom } = useStore()
@@ -148,7 +149,7 @@ const handleRoomDeleted = (deletedRoom) => {
 <template>
   <div class="space-y-6">
     <!-- Page Header -->
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 animate-bento-in">
       <div>
         <div class="flex items-center gap-2 text-xs text-on-surface-variant mb-1 font-medium">
           <span>{{ state.currentProperty.name }}</span>
@@ -164,7 +165,7 @@ const handleRoomDeleted = (deletedRoom) => {
       <div class="flex items-center gap-3">
         <button 
           @click="isAddRoomModalOpen = true"
-          class="btn-pill-primary"
+          class="btn-pill-primary transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
         >
           <span class="material-symbols-outlined text-[16px]">add</span>
           <span>Add New Room</span>
@@ -174,33 +175,43 @@ const handleRoomDeleted = (deletedRoom) => {
 
     <!-- Summary Metrics Cards (Bento 4-Column Row) -->
     <div class="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
-      <div class="card-bento p-4.5 bg-surface">
+      <div class="card-bento p-4.5 bg-surface animate-bento-in animate-delay-1">
         <p class="text-xs font-bold uppercase tracking-wider text-on-surface-muted">Total Bed-Spaces</p>
-        <p class="text-2xl font-bold font-data-mono text-on-surface mt-1.5">{{ occupancyStats.totalBeds }}</p>
+        <p class="text-2xl font-bold font-data-mono text-on-surface mt-1.5">
+          <AnimatedNumber :value="occupancyStats.totalBeds" :duration="1000" />
+        </p>
         <p class="text-xs text-on-surface-variant mt-0.5">Across {{ state.rooms.length }} rooms</p>
       </div>
 
-      <div class="card-bento p-4.5 bg-surface border-t-3 border-t-primary">
+      <div class="card-bento p-4.5 bg-surface border-t-3 border-t-primary animate-bento-in animate-delay-2">
         <p class="text-xs font-bold uppercase tracking-wider text-primary">Occupied Beds</p>
-        <p class="text-2xl font-bold font-data-mono text-primary mt-1.5">{{ occupancyStats.occupiedBeds }}</p>
-        <p class="text-xs text-primary font-medium mt-0.5">{{ occupancyStats.percentage }}% occupancy rate</p>
+        <p class="text-2xl font-bold font-data-mono text-primary mt-1.5">
+          <AnimatedNumber :value="occupancyStats.occupiedBeds" :duration="1100" />
+        </p>
+        <p class="text-xs text-primary font-medium mt-0.5">
+          <AnimatedNumber :value="occupancyStats.percentage" suffix="%" :duration="1200" /> occupancy rate
+        </p>
       </div>
 
-      <div class="card-bento p-4.5 bg-surface">
+      <div class="card-bento p-4.5 bg-surface animate-bento-in animate-delay-3">
         <p class="text-xs font-bold uppercase tracking-wider text-on-surface-muted">Vacant Beds</p>
-        <p class="text-2xl font-bold font-data-mono text-on-surface mt-1.5">{{ occupancyStats.vacantBeds }}</p>
+        <p class="text-2xl font-bold font-data-mono text-on-surface mt-1.5">
+          <AnimatedNumber :value="occupancyStats.vacantBeds" :duration="900" />
+        </p>
         <p class="text-xs text-on-surface-variant mt-0.5">Ready for immediate lease</p>
       </div>
 
-      <div class="card-bento p-4.5 bg-surface border-t-3 border-t-tertiary">
+      <div class="card-bento p-4.5 bg-surface border-t-3 border-t-tertiary animate-bento-in animate-delay-4">
         <p class="text-xs font-bold uppercase tracking-wider text-tertiary">Reserved Beds</p>
-        <p class="text-2xl font-bold font-data-mono text-tertiary mt-1.5">{{ occupancyStats.reservedBeds }}</p>
+        <p class="text-2xl font-bold font-data-mono text-tertiary mt-1.5">
+          <AnimatedNumber :value="occupancyStats.reservedBeds" :duration="900" />
+        </p>
         <p class="text-xs text-tertiary font-medium mt-0.5">Deposit pending</p>
       </div>
     </div>
 
     <!-- Centerpiece: Bed-Grid Architectural Floorplan in Bento Container -->
-    <div class="card-bento overflow-visible! p-5 bg-surface">
+    <div class="card-bento overflow-visible! p-5 bg-surface animate-bento-in animate-delay-5">
       <BedGrid 
         :rooms="roomsWithBeds" 
         title="Mukuba House — Architectural Bed-Space Layout" 
