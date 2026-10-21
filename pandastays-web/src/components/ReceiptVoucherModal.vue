@@ -29,7 +29,7 @@ const handleClose = () => {
     class="fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-4 bg-hero-dark/60 backdrop-blur-xs animate-in fade-in duration-200"
     @click.self="handleClose"
   >
-    <div class="relative w-full max-w-155 max-h-[92vh] overflow-y-auto custom-scrollbar">
+    <div class="relative w-full max-w-xl max-h-[92vh] overflow-y-auto custom-scrollbar">
       <!-- Close button on top right of modal -->
       <button 
         @click="handleClose" 
