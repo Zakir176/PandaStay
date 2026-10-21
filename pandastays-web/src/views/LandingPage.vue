@@ -1,10 +1,13 @@
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, onMounted, onUnmounted, watch } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import AuthModal from '../components/AuthModal.vue'
 import { applyTheme } from '../lib/theme'
+import { useAuth } from '../lib/auth'
 
 const router = useRouter()
+const route = useRoute()
+const { isAuthenticated } = useAuth()
 const isScrolled = ref(false)
 const isAuthModalOpen = ref(false)
 const authInitialRole = ref('landlord')
@@ -13,19 +16,36 @@ const handleScroll = () => {
   isScrolled.value = window.scrollY > 20
 }
 
-onMounted(() => {
-  applyTheme('Forest')
-  window.addEventListener('scroll', handleScroll)
-})
-
-onUnmounted(() => {
-  window.removeEventListener('scroll', handleScroll)
-})
-
 const openAuth = (role = 'landlord') => {
   authInitialRole.value = role
   isAuthModalOpen.value = true
 }
+
+const handlePortalClick = (role = 'landlord') => {
+  if (isAuthenticated.value) {
+    if (role === 'landlord') {
+      router.push('/app')
+    } else {
+      router.push('/tenant/portal')
+    }
+  } else {
+    openAuth(role)
+  }
+}
+
+onMounted(() => {
+  applyTheme('Forest')
+  window.addEventListener('scroll', handleScroll)
+  if (route.query.auth_required) {
+    openAuth(route.query.restricted === 'tenant_only' ? 'tenant' : 'landlord')
+  }
+})
+
+watch(() => route.query.auth_required, (val) => {
+  if (val) {
+    openAuth(route.query.restricted === 'tenant_only' ? 'tenant' : 'landlord')
+  }
+})
 
 // Early access interest submission
 const earlyAccessEmail = ref('')
@@ -198,22 +218,22 @@ const getBedPreviewClass = (status) => {
           >
             Sign In
           </button>
-          <router-link
-            to="/tenant/portal"
-            class="btn-pill-outline text-xs"
+          <button
+            @click="handlePortalClick('tenant')"
+            class="btn-pill-outline text-xs cursor-pointer"
             title="Resident Portal"
           >
             <span class="material-symbols-outlined text-[15px]">school</span>
             <span>Resident Portal</span>
-          </router-link>
-          <router-link
-            to="/app"
-            class="btn-pill-primary text-xs"
+          </button>
+          <button
+            @click="handlePortalClick('landlord')"
+            class="btn-pill-primary text-xs cursor-pointer"
             title="Landlord Operations Portal"
           >
             <span class="material-symbols-outlined text-[15px]">real_estate_agent</span>
             <span>Landlord Portal</span>
-          </router-link>
+          </button>
         </div>
       </div>
     </nav>
@@ -243,13 +263,13 @@ const getBedPreviewClass = (status) => {
 
             <!-- Action Pill Buttons -->
             <div class="flex flex-wrap items-center gap-3 pt-2">
-              <router-link
-                to="/app"
-                class="btn-pill-primary text-sm py-3 px-6 shadow-sm"
+              <button
+                @click="handlePortalClick('landlord')"
+                class="btn-pill-primary text-sm py-3 px-6 shadow-sm cursor-pointer"
               >
                 <span class="material-symbols-outlined text-[18px]">rocket_launch</span>
                 <span>Launch Landlord Portal</span>
-              </router-link>
+              </button>
 
               <a
                 href="#how-it-works"
@@ -606,8 +626,8 @@ const getBedPreviewClass = (status) => {
           <a href="#features" class="hover:text-primary transition-colors">Features</a>
           <a href="#how-it-works" class="hover:text-primary transition-colors">How It Works</a>
           <a href="#why-pandastays" class="hover:text-primary transition-colors">Why PandaStays</a>
-          <router-link to="/tenant/portal" class="hover:text-primary transition-colors">Resident Portal</router-link>
-          <router-link to="/app" class="hover:text-primary transition-colors">Landlord Portal</router-link>
+          <button @click="handlePortalClick('tenant')" class="hover:text-primary transition-colors cursor-pointer">Resident Portal</button>
+          <button @click="handlePortalClick('landlord')" class="hover:text-primary transition-colors cursor-pointer">Landlord Portal</button>
         </div>
 
         <p class="text-on-surface-muted text-xs font-data-mono">
