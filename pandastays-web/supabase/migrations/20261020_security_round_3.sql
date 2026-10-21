@@ -46,7 +46,18 @@ CREATE TRIGGER on_auth_user_confirmed
 ALTER TABLE payments
   ADD COLUMN IF NOT EXISTS verification_token UUID NOT NULL DEFAULT gen_random_uuid() UNIQUE;
 
--- 3. H1: Add unique constraint on gateway_reference and receipt sequence
+-- 3. H1: Deduplicate existing legacy references and add unique constraint
+WITH duplicates AS (
+  SELECT id, gateway_reference,
+         ROW_NUMBER() OVER (PARTITION BY gateway_reference ORDER BY paid_at DESC, created_at DESC) as rn
+  FROM payments
+  WHERE gateway_reference IS NOT NULL
+)
+UPDATE payments p
+SET gateway_reference = p.gateway_reference || '-DUP-' || substring(p.id::text from 1 for 8)
+FROM duplicates d
+WHERE p.id = d.id AND d.rn > 1;
+
 ALTER TABLE payments
   DROP CONSTRAINT IF EXISTS payments_gateway_reference_key;
 ALTER TABLE payments
