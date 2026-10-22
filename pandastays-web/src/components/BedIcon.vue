@@ -38,6 +38,9 @@ const statusColorClass = computed(() => {
   if (payStatus === 'partial') {
     return 'border-tertiary bg-tertiary-container/60 text-tertiary hover:ring-2 hover:ring-tertiary/20'
   }
+  if (payStatus === 'under_review') {
+    return 'border-primary/60 bg-hatch-diagonal text-primary hover:ring-2 hover:ring-primary/20'
+  }
   return 'border-primary bg-primary-container text-primary hover:ring-2 hover:ring-primary/20 shadow-xs'
 })
 
@@ -174,7 +177,7 @@ const sizeDimensions = computed(() => {
             'text-primary-accent font-semibold': bed.paymentStatus === 'paid',
             'text-tertiary-accent font-semibold': bed.paymentStatus === 'partial',
             'text-error-container font-bold': bed.paymentStatus === 'overdue'
-          }" class="capitalize">{{ bed.paymentStatus }}</span>
+          }" class="capitalize">{{ bed.paymentStatus === 'under_review' ? 'Under review' : bed.paymentStatus }}</span>
         </p>
       </div>
       <div v-else-if="bed.status === 'reserved'" class="space-y-1">
