@@ -121,7 +121,7 @@ const refundDeposit = (tenant) => {
                 {{ t.bed_label }} (Room {{ t.room_number }})
               </td>
               <td class="py-3 px-3 text-on-surface-variant">
-                {{ t.id_number || '392819/11/1' }}
+                {{ t.id_number || '—' }}
               </td>
               <td class="py-3 px-3 font-bold text-right text-on-surface">
                 ZMW {{ (t.deposit_amount || 1250).toLocaleString() }}
