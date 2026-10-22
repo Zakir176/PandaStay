@@ -117,7 +117,7 @@ const sendReminder = () => {
 
           <div>
             <span class="block text-xs uppercase font-bold text-on-surface-variant mb-0.5">NRC / Student Identification</span>
-            <span class="font-data-mono text-on-surface">{{ tenant?.id_number || '392819/11/1' }}</span>
+            <span class="font-data-mono text-on-surface">{{ tenant?.id_number || '—' }}</span>
           </div>
 
           <div>

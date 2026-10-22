@@ -1,6 +1,7 @@
 import express from 'express'
 import { supabase } from '../config/supabase.js'
 import { verifyLencoSignature, getCollectionByReference } from '../services/lenco.js'
+import { alertNeedsReview } from '../services/alerts.js'
 
 const router = express.Router()
 
@@ -53,15 +54,19 @@ router.post('/lenco', async (req, res) => {
         console.error(
           `CRITICAL: Payment amount mismatch on reference ${reference}: expected ${expectedAmount}, received ${payloadAmount}. Flagging as needs_review.`
         )
-        const { error: flagErr } = await supabase
+        const { data: flagged, error: flagErr } = await supabase
           .from('payments')
           .update({ status: 'needs_review' })
           .eq('id', payment.id)
           .eq('status', 'pending')
+          .select('id')
 
         if (flagErr) {
           console.error('Failed to update payment to needs_review:', flagErr)
           return res.status(500).json({ error: 'Database update failed' })
+        }
+        if (flagged && flagged.length > 0) {
+          await alertNeedsReview({ reference, expectedAmount, receivedAmount: payloadAmount, source: 'webhook' })
         }
         return res.status(200).json({ received: true, note: 'Amount mismatch flagged for review' })
       }

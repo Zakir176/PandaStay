@@ -188,9 +188,8 @@ const activeRosterTenants = computed(() => {
         <div class="mt-4 pt-3 border-t border-white/15 flex items-center justify-between text-xs text-white/80">
           <span class="flex items-center gap-1.5 text-xs font-medium">
             <span class="w-1.5 h-1.5 rounded-full bg-primary-accent animate-pulse"></span>
-            Lenco Verified &bull; {{ state.payments.length }} Collections
+            {{ state.payments.length }} Collections recorded
           </span>
-          <span class="text-xs font-bold text-primary-accent">100% Reconciled</span>
         </div>
       </div>
 
@@ -239,7 +238,7 @@ const activeRosterTenants = computed(() => {
           </div>
         </div>
         <div class="mt-4 pt-3 border-t border-border-card flex items-center justify-between text-xs text-on-surface-variant">
-          <span class="text-error font-medium">WhatsApp escalations queued</span>
+          <span class="text-on-surface-variant font-medium">Automated reminders not active yet</span>
           <button 
             disabled
             class="text-on-surface-variant/40 cursor-not-allowed text-xs font-bold"

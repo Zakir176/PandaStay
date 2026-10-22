@@ -12,7 +12,22 @@ const methodMap = {
   zamtel: 'momo_zamtel'
 }
 
-const ALLOWED_PAYMENT_METHODS = ['momo_mtn', 'momo_airtel', 'momo_zamtel', 'card', 'bank_transfer', 'cash']
+export const ALLOWED_PAYMENT_METHODS = ['momo_mtn', 'momo_airtel', 'momo_zamtel', 'card', 'bank_transfer', 'cash']
+
+/**
+ * Prefix and sanitize a client-provided reference so a manual payment can never
+ * collide with (or impersonate) a real Lenco reference. Always starts with MANUAL-.
+ */
+export function buildManualReference(clientRef) {
+  const cleanClientRef = (clientRef || '')
+    .replace(/^MANUAL-/i, '')
+    .replace(/[^a-zA-Z0-9-_]/g, '')
+    .slice(0, 32)
+
+  return cleanClientRef
+    ? `MANUAL-${cleanClientRef}-${crypto.randomBytes(4).toString('hex')}`
+    : `MANUAL-${crypto.randomBytes(8).toString('hex')}`
+}
 
 /**
  * POST /api/payments/momo
@@ -175,15 +190,7 @@ router.post('/record', requireLandlord, async (req, res) => {
       return res.status(403).json({ error: 'You do not have access to this tenancy' })
     }
 
-    // Prefix and sanitize client-provided reference to avoid collision with real Lenco references
-    const cleanClientRef = (gateway_reference || '')
-      .replace(/^MANUAL-/i, '')
-      .replace(/[^a-zA-Z0-9-_]/g, '')
-      .slice(0, 32)
-
-    const refNum = cleanClientRef
-      ? `MANUAL-${cleanClientRef}-${crypto.randomBytes(4).toString('hex')}`
-      : `MANUAL-${crypto.randomBytes(8).toString('hex')}`
+    const refNum = buildManualReference(gateway_reference)
 
     const { data: dbPayment, error: insertError } = await supabase
       .from('payments')

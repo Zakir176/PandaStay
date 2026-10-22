@@ -327,18 +327,20 @@ const saveSettings = () => {
           </label>
           <div class="relative">
             <input 
-              :value="settingsForm.lencoSubaccount || 'sub_default_mukuba_house'"
+              :value="settingsForm.lencoSubaccount || 'Not activated yet'"
               type="text" 
               readonly
               class="w-full px-3.5 py-2 border border-border-card rounded-xl bg-surface-dim/70 font-data-mono text-sm text-on-surface-variant cursor-not-allowed focus:outline-none"
             />
-            <span class="absolute right-3 top-2.5 flex items-center gap-1 text-[11px] font-semibold text-primary">
+            <span v-if="settingsForm.lencoSubaccount" class="absolute right-3 top-2.5 flex items-center gap-1 text-[11px] font-semibold text-primary">
               <span class="material-symbols-outlined text-[14px]">lock</span>
-              Verified Gateway Sub-Account
+              Gateway sub-account
             </span>
           </div>
           <p class="text-[11px] text-on-surface-variant mt-1.5">
-            Rent collected through Mobile Money is automatically settled into this Lenco wallet. Assigned by platform administrator.
+            {{ settingsForm.lencoSubaccount
+              ? 'Collected rent is settled into this Lenco account.'
+              : 'Payout account not activated yet. PandaStays will contact you to set up settlement.' }}
           </p>
         </div>
       </div>

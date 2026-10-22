@@ -19,7 +19,9 @@ import {
   TenantCheckout,
   PublicVerification
 } from '../views'
+import AccountPending from '../views/AccountPending.vue'
 import { useAuth, initAuth } from '../lib/auth'
+import { resolveGuardRedirect } from './guard'
 
 const routes = [
   // ─── Public Landing Site ───
@@ -34,6 +36,13 @@ const routes = [
     path: '/verify/:id',
     name: 'PublicVerification',
     component: PublicVerification
+  },
+
+  // ─── Signed-in users with no landlord row and no tenant rows ───
+  {
+    path: '/account-pending',
+    name: 'AccountPending',
+    component: AccountPending
   },
 
   // ─── Landlord Operations Portal (Dedicated to Property Owners & Managers) ───
@@ -172,17 +181,13 @@ router.beforeEach(async (to, from, next) => {
   const { currentRole, isAuthenticated } = useAuth()
   const requiresRole = to.matched.find(record => record.meta?.role)?.meta?.role
 
-  if (requiresRole && !isAuthenticated.value) {
-    return next({ path: '/', query: { auth_required: '1' } })
-  }
-
-  if (requiresRole === 'landlord' && currentRole.value === 'tenant') {
-    return next({ path: '/tenant/portal', query: { restricted: 'landlord_only' } })
-  }
-
-  if (requiresRole === 'tenant' && currentRole.value === 'landlord') {
-    return next({ path: '/app', query: { restricted: 'tenant_only' } })
-  }
+  const redirect = resolveGuardRedirect({
+    requiresRole,
+    isAuthenticated: isAuthenticated.value,
+    currentRole: currentRole.value,
+    to
+  })
+  if (redirect) return next(redirect)
 
   next()
 })

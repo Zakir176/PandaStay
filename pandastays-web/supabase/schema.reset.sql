@@ -1,3 +1,9 @@
+-- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+-- !!  DESTRUCTIVE — LOCAL / THROWAWAY DATABASES ONLY. NEVER RUN ON LIVE.     !!
+-- !!  This file DROPs every table and enum type with CASCADE, deleting ALL    !!
+-- !!  data. The live database only ever receives files from migrations/,      !!
+-- !!  applied in filename order. See supabase/README.md.                      !!
+-- !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 -- ==============================================================================
 -- PandaStays Database Schema — Clean Slate Rebuild (Hardened RLS)
 -- Spec: Docs/pandastays-full-rebuild-brief.md & RLS Security Fix Brief
@@ -403,7 +409,7 @@ BEGIN
     UPDATE public.tenants
     SET auth_user_id = auth.uid()
     WHERE LOWER(email) = LOWER(auth.jwt()->>'email')
-      AND (auth_user_id IS NULL OR auth_user_id != auth.uid());
+      AND auth_user_id IS NULL;
   END IF;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;

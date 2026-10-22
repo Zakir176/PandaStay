@@ -1,6 +1,7 @@
 import { reactive, computed } from 'vue'
 import { supabase } from './supabaseClient.js'
 import { paymentService } from '../services/paymentService.js'
+import { tenantService } from '../services/tenantService.js'
 
 // Clean-slate state initialized with property shell and empty inventory
 const state = reactive({
@@ -150,12 +151,16 @@ export const syncWithSupabase = async () => {
     // 5. Fetch Payments
     const { data: dbPayments } = await supabase.from('payments').select('*').order('paid_at', { ascending: false })
     if (dbPayments) {
+      // needs_review = customer paid but ledger disagrees: show "Under review",
+      // never unpaid/partial. Computed per sync so it clears once resolved.
+      const reviewBedIds = new Set()
       state.payments = dbPayments.map(p => {
         const tenancy = dbTenancies?.find(tc => tc.id === p.tenancy_id)
         const tenant = state.tenants.find(t => t.id === tenancy?.tenant_id)
         const bed = state.bedSpaces.find(b => b.id === tenancy?.bed_space_id)
         if (bed) {
           bed.paymentStatus = p.status === 'success' ? 'paid' : 'partial'
+          if (p.status === 'needs_review') reviewBedIds.add(bed.id)
         }
         return {
           id: p.id,
@@ -170,6 +175,9 @@ export const syncWithSupabase = async () => {
           receipt_number: p.receipt_number,
           verification_token: p.verification_token
         }
+      })
+      state.bedSpaces.forEach(b => {
+        if (reviewBedIds.has(b.id)) b.paymentStatus = 'under_review'
       })
     }
 
@@ -492,88 +500,43 @@ export const useStore = () => {
     return { success: true }
   }
 
-  // Onboard Tenant & assign to Bed-Space
+  // Onboard Tenant & assign to Bed-Space.
+  // All validation and DB writes live in tenantService; any error propagates to the caller
+  // (no local-only tenants are ever invented).
   const onboardTenant = async (tenantData) => {
-    const tenantEmail = tenantData.email || `${tenantData.name.toLowerCase().trim().replace(/\s+/g, '.')}@unza.zm`
-    const tenantPhone = tenantData.phone || '+260 97 1234567'
+    const result = await tenantService.onboardTenant({
+      name: tenantData.name,
+      email: tenantData.email,
+      phone: tenantData.phone,
+      idNumber: tenantData.idNumber,
+      emergencyName: tenantData.emergencyName,
+      emergencyPhone: tenantData.emergencyPhone,
+      bedSpaceId: tenantData.bedSpaceId,
+      rentAmount: tenantData.rentAmount
+    })
+    const { tenantId, tenancyId, tenancy, tenant } = result
 
-    // 1. Prevent duplicate tenant rows: check if tenant already exists by email or phone
-    let tenantId = null
-    try {
-      const { data: existingTenants } = await supabase
-        .from('tenants')
-        .select('*')
-        .or(`email.ilike.${tenantEmail},phone.eq.${tenantPhone}`)
-        .limit(1)
-
-      if (existingTenants && existingTenants.length > 0) {
-        tenantId = existingTenants[0].id
-        await supabase.from('tenants').update({
-          name: tenantData.name,
-          id_number: tenantData.idNumber || existingTenants[0].id_number,
-          emergency_contact_name: tenantData.emergencyName || existingTenants[0].emergency_contact_name,
-          emergency_contact_phone: tenantData.emergencyPhone || existingTenants[0].emergency_contact_phone
-        }).eq('id', tenantId)
-      } else {
-        const { data: dbTenant } = await supabase.from('tenants').insert({
-          name: tenantData.name,
-          email: tenantEmail,
-          phone: tenantPhone,
-          id_number: tenantData.idNumber || '392819/11/1',
-          emergency_contact_name: tenantData.emergencyName || 'Guardian',
-          emergency_contact_phone: tenantData.emergencyPhone || '+260 96 0000000'
-        }).select().single()
-
-        tenantId = dbTenant?.id || `ten-${Date.now()}`
-      }
-    } catch (dbErr) {
-      console.warn('Supabase tenant upsert note:', dbErr.message)
-      tenantId = `ten-${Date.now()}`
-    }
-
-    // 2. Create Tenancy
-    let tenancyId = null
-    try {
-      const { data: dbTenancy } = await supabase.from('tenancies').insert({
-        bed_space_id: tenantData.bedSpaceId,
-        tenant_id: tenantId,
-        start_date: new Date().toISOString().substring(0, 10),
-        rent_amount: Number(tenantData.rentAmount || 2500),
-        billing_cycle: 'monthly',
-        status: 'active'
-      }).select().single()
-      tenancyId = dbTenancy?.id
-      if (dbTenancy) {
-        state.tenancies.push(dbTenancy)
-      }
-    } catch (tErr) {
-      console.warn('Supabase tenancy insert note:', tErr.message)
-    }
-
-    // 3. Mark Bed Space occupied
-    try {
-      await supabase.from('bed_spaces').update({ status: 'occupied' }).eq('id', tenantData.bedSpaceId)
-    } catch (bErr) {
-      console.warn('Supabase bed status update note:', bErr.message)
+    if (tenancy) {
+      state.tenancies.push(tenancy)
     }
 
     const targetBed = state.bedSpaces.find(b => b.id === tenantData.bedSpaceId)
     if (targetBed) {
       targetBed.status = 'occupied'
       targetBed.tenantId = tenantId
-      targetBed.tenantName = tenantData.name
-      targetBed.tenantInitials = tenantData.name.split(' ').map(n=>n[0]).join('').substring(0, 2).toUpperCase()
+      targetBed.tenantName = tenant.name
+      targetBed.tenantInitials = tenant.name.split(' ').map(n=>n[0]).join('').substring(0, 2).toUpperCase()
       targetBed.paymentStatus = 'paid'
     }
 
     const newOrUpdatedTenant = {
       id: tenantId,
-      name: tenantData.name,
-      email: tenantEmail,
-      phone: tenantPhone,
-      id_number: tenantData.idNumber || 'NRC-Verified',
-      emergency_contact_name: tenantData.emergencyName,
-      emergency_contact_phone: tenantData.emergencyPhone,
+      name: tenant.name,
+      email: tenant.email,
+      phone: tenant.phone,
+      id_number: tenant.id_number,
+      emergency_contact_name: tenant.emergency_contact_name,
+      emergency_contact_phone: tenant.emergency_contact_phone,
       bed_label: targetBed?.label || 'Bed Space',
       bed_id: tenantData.bedSpaceId,
       room_number: targetBed?.label?.match(/\d+/)?.[0] || '101',
@@ -583,7 +546,7 @@ export const useStore = () => {
       tenancy_id: tenancyId
     }
 
-    const existingIdx = state.tenants.findIndex(t => t.id === tenantId || (t.email && t.email.toLowerCase() === tenantEmail.toLowerCase()))
+    const existingIdx = state.tenants.findIndex(t => t.id === tenantId)
     if (existingIdx !== -1) {
       state.tenants[existingIdx] = newOrUpdatedTenant
     } else {
