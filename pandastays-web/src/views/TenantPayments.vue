@@ -3,6 +3,7 @@ import { ref, computed } from 'vue'
 import { useStore } from '../lib/store'
 import { useAuth } from '../lib/auth'
 import ReceiptVoucherModal from '../components/ReceiptVoucherModal.vue'
+import { paymentStatusLabel } from '../utils/formatters'
 
 const { state } = useStore()
 const { userProfile, currentRole } = useAuth()
@@ -141,8 +142,11 @@ const totalPaid = computed(() => {
                 {{ p.gateway_reference }}
               </td>
               <td class="py-3 px-3 align-middle text-center">
-                <span class="badge-pill bg-primary/10 text-primary border border-primary/20 text-xs">
-                  Verified
+                <span
+                  class="badge-pill border text-xs"
+                  :class="p.status === 'success' ? 'bg-primary/10 text-primary border-primary/20' : p.status === 'needs_review' ? 'bg-tertiary/15 text-tertiary border-tertiary/30' : 'bg-surface-dim text-on-surface-variant border-border-card'"
+                >
+                  {{ paymentStatusLabel(p.status) }}
                 </span>
               </td>
               <td class="py-3 px-3 align-middle text-right">
@@ -169,8 +173,11 @@ const totalPaid = computed(() => {
         >
           <div class="flex items-center justify-between gap-2">
             <span class="font-data-mono font-bold text-sm text-primary">#{{ p.receipt_number }}</span>
-            <span class="badge-pill bg-primary/10 text-primary border border-primary/20 text-xs">
-              Verified
+            <span
+              class="badge-pill border text-xs"
+              :class="p.status === 'success' ? 'bg-primary/10 text-primary border-primary/20' : p.status === 'needs_review' ? 'bg-tertiary/15 text-tertiary border-tertiary/30' : 'bg-surface-dim text-on-surface-variant border-border-card'"
+            >
+              {{ paymentStatusLabel(p.status) }}
             </span>
           </div>
 
