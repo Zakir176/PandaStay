@@ -135,7 +135,7 @@ const goToProfile = (tenantId) => {
 
             <div class="flex items-center justify-between">
               <span class="text-on-surface-variant">NRC / Student ID:</span>
-              <span class="font-data-mono text-on-surface-variant">{{ tenant.id_number || '392819/11/1' }}</span>
+              <span class="font-data-mono text-on-surface-variant">{{ tenant.id_number || '—' }}</span>
             </div>
 
             <div class="flex items-center justify-between">
