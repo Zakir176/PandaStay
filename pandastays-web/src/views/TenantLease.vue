@@ -14,16 +14,7 @@ const tenant = computed(() => {
     const match = state.tenants.find(t => t.id === userProfile.value.id || t.email === userProfile.value.email || t.name === userProfile.value.name)
     if (match) return match
   }
-  return state.tenants[0] || {
-    id: 'demo-tenant',
-    name: 'John Phiri',
-    email: 'john.phiri@unza.zm',
-    phone: '+260 97 1122334',
-    id_number: '392819/11/1',
-    emergency_contact_name: 'Patrick Phiri (Father)',
-    emergency_contact_phone: '+260 97 7889900',
-    room_number: '101'
-  }
+  return state.tenants[0] || {}
 })
 
 const bed = computed(() => {
@@ -96,7 +87,7 @@ const handlePrintLease = async () => {
         <div class="p-3.5 rounded-xl bg-surface-dim/50 border border-border-card space-y-1">
           <p class="text-[10px] uppercase font-bold text-on-surface-muted">Resident Name</p>
           <p class="font-bold text-xs text-on-surface truncate">{{ tenant?.name }}</p>
-          <p class="font-data-mono text-[10px] text-on-surface-variant">ID: {{ tenant?.id_number || '392819/11/1' }}</p>
+          <p class="font-data-mono text-[10px] text-on-surface-variant">ID: {{ tenant?.id_number || '—' }}</p>
         </div>
 
         <div class="p-3.5 rounded-xl bg-surface-dim/50 border border-border-card space-y-1">
