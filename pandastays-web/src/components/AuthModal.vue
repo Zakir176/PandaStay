@@ -38,7 +38,7 @@ watch(() => props.isOpen, (open) => {
 const form = ref({
   name: '',
   email: '',
-  phone: '+260 97 1234567',
+  phone: '',
   password: '',
   inviteCode: ''
 })
