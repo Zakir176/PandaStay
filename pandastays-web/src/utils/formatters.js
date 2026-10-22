@@ -93,3 +93,19 @@ export function formatNRC(nrc) {
   if (!nrc) return 'NRC-Verified'
   return nrc.trim()
 }
+
+/**
+ * Human label for a payments.status value. 
+eeds_review means the customer paid
+ * but the amount disagrees with the ledger: always "Under review", never unpaid/partial.
+ */
+export function paymentStatusLabel(status) {
+  switch (status) {
+    case 'success': return 'Verified'
+    case 'needs_review': return 'Under review'
+    case 'pending': return 'Pending'
+    case 'failed': return 'Failed'
+    case 'reversed': return 'Reversed'
+    default: return status || 'Unknown'
+  }
+}
