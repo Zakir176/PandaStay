@@ -59,15 +59,9 @@ const loadProfile = async (user) => {
         return
       }
 
-      // Settle fallback tenant profile from metadata
-      currentRole.value = 'tenant'
-      userProfile.value = {
-        id: user.id,
-        name: user.user_metadata?.name || user.email?.split('@')[0] || 'Student Tenant',
-        email: user.email,
-        phone: user.user_metadata?.phone || '+260 97 0000000',
-        role: 'tenant'
-      }
+      // No tenant rows linked yet: account pending (metadata never grants access)
+      currentRole.value = null
+      userProfile.value = { id: user.id, email: user.email, role: null, pendingHint: 'tenant' }
       return
     }
 
@@ -120,15 +114,14 @@ const loadProfile = async (user) => {
       return
     }
 
-    // Fallback: derive role from user metadata or landlord default
-    const resolvedRole = metaRole || 'landlord'
-    currentRole.value = resolvedRole
+    // No landlord row, no tenant rows: role comes only from the database.
+    // user_metadata.role is user-editable and may only choose which pending message to show.
+    currentRole.value = null
     userProfile.value = {
       id: user.id,
-      name: user.user_metadata?.name || user.email?.split('@')[0] || 'User',
       email: user.email,
-      phone: user.user_metadata?.phone || '+260 97 0000000',
-      role: resolvedRole
+      role: null,
+      pendingHint: metaRole === 'tenant' ? 'tenant' : 'landlord'
     }
   } catch (err) {
     console.warn('Error loading profile from DB:', err)
