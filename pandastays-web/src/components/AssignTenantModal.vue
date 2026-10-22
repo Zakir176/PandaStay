@@ -33,11 +33,14 @@ const reserveForm = ref({
 
 const newTenantForm = ref({
   name: '',
+  email: '',
   phone: '',
   idNumber: '',
   emergencyName: '',
   emergencyPhone: ''
 })
+
+const submitError = ref('')
 
 const isSubmitting = ref(false)
 
@@ -63,12 +66,14 @@ watch([() => props.isOpen, () => props.bed], ([open, bed]) => {
       }
       newTenantForm.value = {
         name: '',
+        email: '',
         phone: '',
         idNumber: '',
         emergencyName: '',
         emergencyPhone: ''
       }
     }
+    submitError.value = ''
   }
 })
 
@@ -77,13 +82,18 @@ const handleClose = () => {
 }
 
 // 1. Handle Immediate Move-In (Onboard + Initial Payment)
+const canSubmitMoveIn = () =>
+  Boolean(newTenantForm.value.name.trim() && newTenantForm.value.email.trim() && newTenantForm.value.phone.trim())
+
 const assignTenant = async () => {
-  if (!newTenantForm.value.name || !props.bed) return
+  if (!canSubmitMoveIn() || !props.bed) return
 
   isSubmitting.value = true
+  submitError.value = ''
   try {
     const onboardResult = await onboardTenant({
       name: newTenantForm.value.name,
+      email: newTenantForm.value.email,
       phone: newTenantForm.value.phone,
       idNumber: newTenantForm.value.idNumber,
       emergencyName: newTenantForm.value.emergencyName,
@@ -112,6 +122,7 @@ const assignTenant = async () => {
     handleClose()
   } catch (err) {
     console.error('Failed to assign tenant:', err)
+    submitError.value = err?.message || 'Could not save the tenant. Nothing was created.'
   } finally {
     isSubmitting.value = false
   }
@@ -324,9 +335,23 @@ const proceedToMoveIn = () => {
           />
         </div>
 
+        <div>
+          <label class="block text-[11px] font-bold text-on-surface-variant uppercase mb-1">
+            Email <span class="text-error">*</span>
+          </label>
+          <input 
+            v-model="newTenantForm.email"
+            type="email" 
+            placeholder="student@example.com"
+            class="w-full px-3.5 py-2 text-sm rounded-xl border border-outline-variant bg-surface-container-low text-on-surface focus:border-primary focus:outline-none transition-all"
+            required
+          />
+          <p class="text-[10px] text-on-surface-variant mt-1">The tenant signs in with this email to see their portal.</p>
+        </div>
+
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="block text-[11px] font-bold text-on-surface-variant uppercase mb-1">Phone (WhatsApp)</label>
+            <label class="block text-[11px] font-bold text-on-surface-variant uppercase mb-1">Phone (WhatsApp) <span class="text-error">*</span></label>
             <input 
               v-model="newTenantForm.phone"
               type="text" 
@@ -335,7 +360,7 @@ const proceedToMoveIn = () => {
             />
           </div>
           <div>
-            <label class="block text-[11px] font-bold text-on-surface-variant uppercase mb-1">NRC / Student ID</label>
+            <label class="block text-[11px] font-bold text-on-surface-variant uppercase mb-1">NRC / Student ID (optional)</label>
             <input 
               v-model="newTenantForm.idNumber"
               type="text" 
@@ -377,6 +402,10 @@ const proceedToMoveIn = () => {
           </p>
         </div>
 
+        <p v-if="submitError" id="assign-tenant-error" class="p-3 rounded-xl bg-error-container text-error text-xs font-semibold">
+          {{ submitError }}
+        </p>
+
         <div class="flex items-center justify-end gap-3 pt-3 border-t border-outline-variant/60">
           <button 
             type="button"
@@ -388,7 +417,7 @@ const proceedToMoveIn = () => {
           <button 
             type="button"
             @click="assignTenant"
-            :disabled="!newTenantForm.name || isSubmitting"
+            :disabled="!canSubmitMoveIn() || isSubmitting"
             class="btn-pill-primary text-xs disabled:opacity-50 flex items-center gap-1.5"
           >
             <span v-if="isSubmitting" class="material-symbols-outlined animate-spin text-[16px]">sync</span>
