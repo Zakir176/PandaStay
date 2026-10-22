@@ -164,7 +164,7 @@ PandaStay/
 │   │   └── style.css                # Bento design tokens & Tailwind v4 styling
 │   ├── supabase/                    # Database definitions & migrations
 │   │   ├── migrations/              # Incremental SQL migration scripts
-│   │   ├── schema.sql               # Authoritative PostgreSQL schema & RLS policies
+│   │   ├── schema.reset.sql         # DESTRUCTIVE local reset (drops all tables). Never run on live
 │   │   └── seed.sql                 # Seed fixtures for Mukuba House demo data
 │   ├── package.json                 # Dependency manifests & NPM scripts
 │   └── vite.config.js               # Vite bundler configuration
@@ -220,8 +220,10 @@ CORS_ORIGIN=http://localhost:5173
 ```
 
 ### 3. Database Migration & Seed Data
-Execute the schema and seed scripts in your Supabase SQL Editor:
-1. Run [`pandastays-web/supabase/schema.sql`](pandastays-web/supabase/schema.sql) (Initializes tables, RLS policies, and functions).
+> ⚠️ **Live database:** only apply files from `pandastays-web/supabase/migrations/`, in filename order. See [`supabase/README.md`](pandastays-web/supabase/README.md).
+
+For a **local/throwaway** database only:
+1. Run [`pandastays-web/supabase/schema.reset.sql`](pandastays-web/supabase/schema.reset.sql) (**drops all data**, then initializes tables, RLS policies, and functions).
 2. Run [`pandastays-web/supabase/seed.sql`](pandastays-web/supabase/seed.sql) (Loads demo data for *Mukuba House*).
 
 ### 4. Install Dependencies
