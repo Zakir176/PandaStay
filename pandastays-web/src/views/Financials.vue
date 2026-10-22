@@ -4,6 +4,7 @@ import { useStore, occupancyStats } from '../lib/store'
 import RecordPaymentModal from '../components/RecordPaymentModal.vue'
 import ReceiptVoucherModal from '../components/ReceiptVoucherModal.vue'
 import AnimatedNumber from '../components/AnimatedNumber.vue'
+import { paymentStatusLabel } from '../utils/formatters'
 
 const { state } = useStore()
 
@@ -184,6 +185,11 @@ const viewReceipt = (payment) => {
                 <span class="badge-pill bg-surface-dim text-on-surface-variant text-xs border border-border-card">
                   {{ p.method_label || 'Mobile Money' }}
                 </span>
+                <span
+                  v-if="p.status && p.status !== 'success'"
+                  class="badge-pill ml-1.5 text-xs border"
+                  :class="p.status === 'needs_review' ? 'bg-tertiary/15 text-tertiary border-tertiary/30' : 'bg-surface-dim text-on-surface-variant border-border-card'"
+                >{{ paymentStatusLabel(p.status) }}</span>
               </td>
               <td class="py-3.5 px-3.5 font-bold text-right text-on-surface text-base">
                 K{{ Number(p.amount).toLocaleString() }}
@@ -214,6 +220,11 @@ const viewReceipt = (payment) => {
             <span class="badge-pill bg-surface-dim text-on-surface-variant text-xs border border-border-card">
               {{ p.method_label || 'Mobile Money' }}
             </span>
+            <span
+              v-if="p.status && p.status !== 'success'"
+              class="badge-pill text-xs border"
+              :class="p.status === 'needs_review' ? 'bg-tertiary/15 text-tertiary border-tertiary/30' : 'bg-surface-dim text-on-surface-variant border-border-card'"
+            >{{ paymentStatusLabel(p.status) }}</span>
           </div>
 
           <div class="flex items-baseline justify-between gap-2">
