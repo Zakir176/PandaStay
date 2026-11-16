@@ -1,0 +1,311 @@
+<!DOCTYPE html><html class="light" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>ZambiaProp Admin - Deposits &amp; Escrow</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container-low": "#eff4ff",
+                        "on-surface-variant": "#3c4a42",
+                        "surface-variant": "#d3e4fe",
+                        "surface-bright": "#f8f9ff",
+                        "secondary-fixed": "#d8e3fb",
+                        "on-primary-container": "#00422b",
+                        "surface": "#f8f9ff",
+                        "secondary-fixed-dim": "#bcc7de",
+                        "on-secondary": "#ffffff",
+                        "primary": "#006c49",
+                        "outline-variant": "#bbcabf",
+                        "on-primary": "#ffffff",
+                        "secondary": "#545f73",
+                        "inverse-on-surface": "#eaf1ff",
+                        "outline": "#6c7a71",
+                        "on-error-container": "#93000a",
+                        "error-container": "#ffdad6",
+                        "tertiary-fixed-dim": "#ffb95f",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container-highest": "#d3e4fe",
+                        "primary-fixed": "#6ffbbe",
+                        "on-secondary-fixed": "#111c2d",
+                        "on-secondary-fixed-variant": "#3c475a",
+                        "on-primary-fixed": "#002113",
+                        "on-background": "#0b1c30",
+                        "on-tertiary-container": "#523200",
+                        "inverse-primary": "#4edea3",
+                        "secondary-container": "#d5e0f8",
+                        "error": "#ba1a1a",
+                        "tertiary-fixed": "#ffddb8",
+                        "surface-tint": "#006c49",
+                        "surface-container-high": "#dce9ff",
+                        "on-primary-fixed-variant": "#005236",
+                        "tertiary": "#855300",
+                        "on-error": "#ffffff",
+                        "on-tertiary": "#ffffff",
+                        "background": "#f8f9ff",
+                        "on-tertiary-fixed": "#2a1700",
+                        "on-secondary-container": "#586377",
+                        "primary-fixed-dim": "#4edea3",
+                        "primary-container": "#10b981",
+                        "inverse-surface": "#213145",
+                        "surface-dim": "#cbdbf5",
+                        "surface-container": "#e5eeff",
+                        "tertiary-container": "#e29100",
+                        "on-surface": "#0b1c30",
+                        "on-tertiary-fixed-variant": "#653e00"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "stack-compact": "0.5rem",
+                        "page-margin-dt": "2rem",
+                        "container-max": "1440px",
+                        "page-margin-mb": "1rem",
+                        "gutter": "1rem",
+                        "stack-default": "1.5rem",
+                        "sidebar-width": "260px"
+                    },
+                    "fontFamily": {
+                        "headline-md": ["Inter"],
+                        "title-sm": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "body-md": ["Inter"],
+                        "data-mono": ["JetBrains Mono"],
+                        "body-sm": ["Inter"],
+                        "label-caps": ["Inter"]
+                    },
+                    "fontSize": {
+                        "headline-md": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "title-sm": ["18px", { "lineHeight": "24px", "fontWeight": "600" }],
+                        "display-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "data-mono": ["13px", { "lineHeight": "16px", "fontWeight": "500" }],
+                        "body-sm": ["13px", { "lineHeight": "18px", "fontWeight": "400" }],
+                        "label-caps": ["11px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md min-h-screen flex">
+<!-- SideNavBar -->
+<nav class="hidden md:flex flex-col bg-surface-container-lowest border-r border-outline-variant w-sidebar-width h-screen fixed left-0 top-0 p-4 space-y-stack-compact z-20">
+<!-- Header -->
+<div class="mb-6 px-2 flex items-center gap-3">
+<div class="w-10 h-10 rounded-full overflow-hidden bg-surface-variant flex-shrink-0">
+<img alt="Property Manager" class="w-full h-full object-cover" data-alt="A close up professional headshot of an African property manager in a well lit modern office environment, soft corporate lighting, wearing a smart casual blazer, confident and approachable expression, high resolution photography, subtle blurred background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAxBiptw1QA7sI6JuOyANN8R9u_fO8kwG3VNMX9_lkSokHMq72K9KpTkn2haMw3lASpxeBbfyrvOJfnxWCNS7GFSscAcdx5NEN-lTCxCYq3L2Gas_B3MO-RTRNoQpTJtW5H4l58I7mUI0WFFlFoR4iBxYfCSIsJAPwJhOJ-UPghGBOcvfxN4w_tO_0w4RsDcnLgS0uXglLieMYUuA9Ipp8CG_frESqV5SGCZtdUuO6P2SVaC4xdo4PG">
+</div>
+<div>
+<div class="font-headline-md text-headline-md font-bold text-primary">Admin Portal</div>
+<div class="text-on-surface-variant text-body-sm font-body-sm">Operational Control</div>
+</div>
+</div>
+<!-- CTA -->
+<button class="w-full bg-primary hover:bg-surface-tint text-on-primary font-title-sm text-title-sm py-2 px-4 rounded-lg flex items-center justify-center gap-2 transition-colors mb-6 shadow-sm active:scale-95 duration-75">
+<span class="material-symbols-outlined text-lg">add</span>
+            Add New Property
+        </button>
+<!-- Tabs -->
+<div class="flex-1 space-y-1">
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-container-low rounded-lg transition-all active:scale-95 duration-75" href="{{DATA:SCREEN:SCREEN_17}}">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-body-md text-body-md">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-container-low rounded-lg transition-all active:scale-95 duration-75" href="#">
+<span class="material-symbols-outlined">domain</span>
+<span class="font-body-md text-body-md">Properties</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-container-low rounded-lg transition-all active:scale-95 duration-75" href="#">
+<span class="material-symbols-outlined">groups</span>
+<span class="font-body-md text-body-md">Tenants</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 bg-primary-container text-on-primary-container font-semibold rounded-lg transition-all active:scale-95 duration-75" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">account_balance_wallet</span>
+<span class="font-body-md text-body-md">Deposits &amp; Escrow</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-container-low rounded-lg transition-all active:scale-95 duration-75" href="#">
+<span class="material-symbols-outlined">payments</span>
+<span class="font-body-md text-body-md">Payments</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-container-low rounded-lg transition-all active:scale-95 duration-75" href="#">
+<span class="material-symbols-outlined">assessment</span>
+<span class="font-body-md text-body-md">Reports</span>
+</a>
+</div>
+<!-- Footer Tabs -->
+<div class="mt-auto space-y-1 border-t border-outline-variant pt-4">
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-container-low rounded-lg transition-all active:scale-95 duration-75" href="#">
+<span class="material-symbols-outlined">help</span>
+<span class="font-body-md text-body-md">Support</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-error hover:bg-error-container rounded-lg transition-all active:scale-95 duration-75" href="#">
+<span class="material-symbols-outlined">logout</span>
+<span class="font-body-md text-body-md">Logout</span>
+</a>
+</div>
+</nav>
+<!-- Main Content Area -->
+<div class="flex-1 md:ml-sidebar-width flex flex-col min-h-screen">
+<!-- TopNavBar -->
+<header class="bg-surface-bright border-b border-outline-variant w-full h-16 flex items-center justify-between px-page-margin-dt z-10 sticky top-0">
+<!-- Left: Brand (Mobile) or Search (Desktop) -->
+<div class="flex items-center gap-4">
+<button class="md:hidden text-on-surface-variant p-2 hover:bg-surface-container-low rounded-lg transition-colors">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<div class="md:hidden font-headline-md text-headline-md text-primary font-bold">ZambiaProp Admin</div>
+<div class="hidden md:flex items-center bg-surface-container-low rounded-full px-4 py-2 border border-outline-variant focus-within:border-primary focus-within:ring-1 focus-within:ring-primary transition-all max-w-md w-full">
+<span class="material-symbols-outlined text-on-surface-variant mr-2">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-body-md font-body-md w-64 text-on-surface placeholder:text-on-surface-variant/70" placeholder="Search tenants, rooms, or transactions..." type="text">
+</div>
+</div>
+<!-- Right: Actions -->
+<div class="flex items-center gap-3">
+<button class="p-2 text-on-surface-variant hover:bg-surface-container-low rounded-full transition-colors active:opacity-80">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="p-2 text-on-surface-variant hover:bg-surface-container-low rounded-full transition-colors active:opacity-80">
+<span class="material-symbols-outlined">settings</span>
+</button>
+<div class="w-8 h-8 rounded-full overflow-hidden ml-2 border border-outline-variant cursor-pointer">
+<img alt="Administrator profile" class="w-full h-full object-cover" data-alt="A small circular avatar placeholder image showing a generic user silhouette or abstract pattern in a clean, modern style with a subtle white background, appropriate for a professional dashboard top navigation bar." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB-I6H0wgVmC6yEzSJJCDLf_Z37BA1c36ViGvi9as8RbdcnJSDZp5e_SeZqGLX_38zl8cVz65PZEw93gQ7GuhwNSdhPfzqFMTFizqNM4siadmUITq36D5VHT7xAxEltFLFAovWrL9TVBrkOTqI32gUfbJdF0c6Vt1EXQ3W-CY-4VHPzs9Z7ElPTIF0XTJxoX4YC4vaafN7iERtTVlNmZSg3GJJ27bY8FelOjSBo-Cwjpr2n9nFunBvM">
+</div>
+</div>
+</header>
+<!-- Canvas -->
+<main class="flex-1 p-page-margin-mb md:p-page-margin-dt">
+<!-- Page Header -->
+<div class="mb-8">
+<h1 class="font-display-lg text-display-lg text-on-background">Deposits &amp; Escrow</h1>
+<p class="font-body-md text-body-md text-on-surface-variant mt-2">Manage tenant security deposits, damages, and refunds.</p>
+</div>
+<!-- Bento Layout -->
+<div class="grid grid-cols-1 md:grid-cols-12 gap-gutter">
+<!-- Summary Card -->
+<div class="md:col-span-4 bg-surface-container-lowest border border-outline-variant rounded-xl p-6 flex flex-col justify-center">
+<div class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider mb-2 flex justify-between items-center">
+                        Total Deposits Held
+                        <span class="material-symbols-outlined text-primary text-xl">account_balance</span>
+</div>
+<div class="font-display-lg text-display-lg text-on-background mt-1">ZMW 4,500</div>
+<div class="flex items-center gap-1 mt-4 text-primary bg-primary/10 w-max px-2 py-1 rounded-md">
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">trending_up</span>
+<span class="font-body-sm text-body-sm font-medium">+ZMW 1,200 this month</span>
+</div>
+</div>
+<!-- Deposits Table Container -->
+<div class="md:col-span-12 bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden mt-6">
+<div class="px-6 py-4 border-b border-outline-variant flex justify-between items-center bg-surface-bright">
+<h2 class="font-title-sm text-title-sm text-on-background">Active Deposits</h2>
+<button class="text-primary hover:bg-primary/10 px-3 py-1.5 rounded-lg font-body-sm text-body-sm font-medium transition-colors flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">filter_list</span> Filter
+                        </button>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="border-b border-outline-variant bg-surface-container-low/50">
+<th class="px-6 py-3 font-label-caps text-label-caps text-on-surface-variant font-medium">Tenant Name</th>
+<th class="px-6 py-3 font-label-caps text-label-caps text-on-surface-variant font-medium">Room #</th>
+<th class="px-6 py-3 font-label-caps text-label-caps text-on-surface-variant font-medium">Initial Deposit (ZMW)</th>
+<th class="px-6 py-3 font-label-caps text-label-caps text-on-surface-variant font-medium">Move-in Date</th>
+<th class="px-6 py-3 font-label-caps text-label-caps text-on-surface-variant font-medium">Condition Status</th>
+<th class="px-6 py-3 font-label-caps text-label-caps text-on-surface-variant font-medium text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant font-body-md text-body-md">
+<!-- Row 1 -->
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="px-6 py-4">
+<div class="font-medium text-on-background">Chileshe Mubanga</div>
+</td>
+<td class="px-6 py-4 text-on-surface-variant">Room 4</td>
+<td class="px-6 py-4 font-data-mono text-data-mono">ZMW 1,200</td>
+<td class="px-6 py-4 text-on-surface-variant text-body-sm">15 Jan 2026</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-primary/10 text-primary font-body-sm text-body-sm font-medium">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+                                            Good
+                                        </span>
+</td>
+<td class="px-6 py-4 text-right space-x-2">
+<button class="inline-flex items-center justify-center w-8 h-8 rounded-full border border-tertiary-container text-tertiary-container hover:bg-tertiary-container/10 transition-colors" title="Deduct Damage Fee">
+<span class="material-symbols-outlined text-[18px]">edit_notifications</span>
+</button>
+<button class="inline-flex items-center justify-center w-8 h-8 rounded-full border border-primary text-primary hover:bg-primary/10 transition-colors" title="Refund Full Deposit via MoMo">
+<span class="material-symbols-outlined text-[18px]">account_balance_wallet</span>
+</button>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="px-6 py-4">
+<div class="font-medium text-on-background">John Banda</div>
+</td>
+<td class="px-6 py-4 text-on-surface-variant">Room 1</td>
+<td class="px-6 py-4 font-data-mono text-data-mono">ZMW 1,200</td>
+<td class="px-6 py-4 text-on-surface-variant text-body-sm">20 Jan 2026</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-tertiary-container/15 text-tertiary font-body-sm text-body-sm font-medium">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary-container"></span>
+                                            Pending Inspection
+                                        </span>
+</td>
+<td class="px-6 py-4 text-right space-x-2">
+<button class="inline-flex items-center justify-center w-8 h-8 rounded-full border border-tertiary-container text-tertiary-container hover:bg-tertiary-container/10 transition-colors" title="Deduct Damage Fee">
+<span class="material-symbols-outlined text-[18px]">edit_notifications</span>
+</button>
+<button class="inline-flex items-center justify-center w-8 h-8 rounded-full border border-primary text-primary hover:bg-primary/10 transition-colors" title="Refund Full Deposit via MoMo">
+<span class="material-symbols-outlined text-[18px]">account_balance_wallet</span>
+</button>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="px-6 py-4">
+<div class="font-medium text-on-background">Sarah Musonda</div>
+</td>
+<td class="px-6 py-4 text-on-surface-variant">Room 7</td>
+<td class="px-6 py-4 font-data-mono text-data-mono">ZMW 1,100</td>
+<td class="px-6 py-4 text-on-surface-variant text-body-sm">02 Feb 2026</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-primary/10 text-primary font-body-sm text-body-sm font-medium">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+                                            Good
+                                        </span>
+</td>
+<td class="px-6 py-4 text-right space-x-2">
+<button class="inline-flex items-center justify-center w-8 h-8 rounded-full border border-tertiary-container text-tertiary-container hover:bg-tertiary-container/10 transition-colors" title="Deduct Damage Fee">
+<span class="material-symbols-outlined text-[18px]">edit_notifications</span>
+</button>
+<button class="inline-flex items-center justify-center w-8 h-8 rounded-full border border-primary text-primary hover:bg-primary/10 transition-colors" title="Refund Full Deposit via MoMo">
+<span class="material-symbols-outlined text-[18px]">account_balance_wallet</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</main>
+</div>
+
+
+</body></html>
