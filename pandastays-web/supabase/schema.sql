@@ -1,123 +1,214 @@
--- PandaStays Supabase Database Migration Schema
--- Version: 1.0.0
--- Created for PandaStays Mobile-First Student Accommodation Web App
+-- ==============================================================================
+-- PandaStays Database Schema — Clean Slate Rebuild
+-- Spec: Docs/pandastays-full-rebuild-brief.md (Section 3)
+-- Architecture: Multi-Landlord SaaS for Zambian Student Boarding Houses
+-- Core Unit: Bed-Space (Fundamental Rentable Unit)
+-- ==============================================================================
 
 -- Enable UUID extension
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
--- Enum Types
-CREATE TYPE bed_status AS ENUM ('vacant', 'occupied');
-CREATE TYPE payment_method_type AS ENUM ('momo_mtn', 'momo_airtel', 'cash');
-CREATE TYPE payment_status AS ENUM ('successful', 'pending', 'failed');
-CREATE TYPE ticket_priority AS ENUM ('urgent', 'normal');
-CREATE TYPE ticket_status AS ENUM ('open', 'in_progress', 'fixed');
-CREATE TYPE deposit_status AS ENUM ('held', 'partially_deducted', 'refunded');
+-- ------------------------------------------------------------------------------
+-- CLEAN SLATE RESET (Drops legacy & existing tables/types cleanly)
+-- ------------------------------------------------------------------------------
+DROP TABLE IF EXISTS reminder_log CASCADE;
+DROP TABLE IF EXISTS reports CASCADE;
+DROP TABLE IF EXISTS payments CASCADE;
+DROP TABLE IF EXISTS tenancies CASCADE;
+DROP TABLE IF EXISTS bed_spaces CASCADE;
+DROP TABLE IF EXISTS tenants CASCADE;
+DROP TABLE IF EXISTS rooms CASCADE;
+DROP TABLE IF EXISTS properties CASCADE;
+DROP TABLE IF EXISTS landlords CASCADE;
 
--- 1. Properties Table
-CREATE TABLE IF NOT EXISTS properties (
+-- Legacy tables cleanup
+DROP TABLE IF EXISTS maintenance_tickets CASCADE;
+DROP TABLE IF EXISTS security_deposits CASCADE;
+DROP TABLE IF EXISTS beds CASCADE;
+
+-- Drop Enum types cleanly
+DROP TYPE IF EXISTS bed_status CASCADE;
+DROP TYPE IF EXISTS tenancy_status CASCADE;
+DROP TYPE IF EXISTS payment_method_type CASCADE;
+DROP TYPE IF EXISTS payment_status CASCADE;
+DROP TYPE IF EXISTS report_status CASCADE;
+DROP TYPE IF EXISTS reminder_channel CASCADE;
+DROP TYPE IF EXISTS reminder_type CASCADE;
+DROP TYPE IF EXISTS reminder_delivery_status CASCADE;
+DROP TYPE IF EXISTS ticket_priority CASCADE;
+DROP TYPE IF EXISTS ticket_status CASCADE;
+DROP TYPE IF EXISTS deposit_status CASCADE;
+
+-- ------------------------------------------------------------------------------
+-- ENUM TYPES
+-- ------------------------------------------------------------------------------
+CREATE TYPE bed_status AS ENUM ('vacant', 'occupied', 'reserved');
+CREATE TYPE tenancy_status AS ENUM ('active', 'ended');
+CREATE TYPE payment_method_type AS ENUM ('momo_mtn', 'momo_airtel', 'momo_zamtel', 'card', 'bank_transfer', 'cash');
+CREATE TYPE payment_status AS ENUM ('pending', 'success', 'failed', 'reversed');
+CREATE TYPE report_status AS ENUM ('open', 'in_progress', 'resolved');
+CREATE TYPE reminder_channel AS ENUM ('whatsapp', 'sms');
+CREATE TYPE reminder_type AS ENUM ('upcoming', 'overdue');
+CREATE TYPE reminder_delivery_status AS ENUM ('queued', 'sent', 'delivered', 'failed');
+
+-- ------------------------------------------------------------------------------
+-- 1. Landlords Table (Profile data keyed to auth.users.id)
+-- ------------------------------------------------------------------------------
+CREATE TABLE landlords (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     name VARCHAR(255) NOT NULL,
-    address TEXT,
-    landlord_id UUID,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL
+    email VARCHAR(255) UNIQUE NOT NULL,
+    phone VARCHAR(50),
+    lenco_subaccount_id VARCHAR(100),
+    whatsapp_reminder_days_before INT NOT NULL DEFAULT 3,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL
 );
 
--- 2. Rooms Table
-CREATE TABLE IF NOT EXISTS rooms (
+-- ------------------------------------------------------------------------------
+-- 2. Properties Table
+-- ------------------------------------------------------------------------------
+CREATE TABLE properties (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    landlord_id UUID NOT NULL REFERENCES landlords(id) ON DELETE CASCADE,
+    name VARCHAR(255) NOT NULL,
+    address TEXT NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL
+);
+
+-- ------------------------------------------------------------------------------
+-- 3. Rooms Table
+-- ------------------------------------------------------------------------------
+CREATE TABLE rooms (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     property_id UUID NOT NULL REFERENCES properties(id) ON DELETE CASCADE,
     room_number VARCHAR(50) NOT NULL,
     capacity INT NOT NULL DEFAULT 2,
-    price_per_term NUMERIC(12, 2) NOT NULL DEFAULT 0.00,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL,
     CONSTRAINT unique_room_per_property UNIQUE (property_id, room_number)
 );
 
--- 3. Beds Table
-CREATE TABLE IF NOT EXISTS beds (
+-- ------------------------------------------------------------------------------
+-- 4. Bed Spaces Table (The Fundamental Rentable Unit)
+-- ------------------------------------------------------------------------------
+CREATE TABLE bed_spaces (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     room_id UUID NOT NULL REFERENCES rooms(id) ON DELETE CASCADE,
-    bed_label VARCHAR(50) NOT NULL, -- e.g., 'Bed A', 'Bed B'
+    label VARCHAR(50) NOT NULL, -- e.g. "Bed A", "Bed B", "Bunk Top"
+    rent_amount NUMERIC(12, 2) NOT NULL DEFAULT 2500.00,
     status bed_status NOT NULL DEFAULT 'vacant',
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL,
-    CONSTRAINT unique_bed_per_room UNIQUE (room_id, bed_label)
+    CONSTRAINT unique_bed_per_room UNIQUE (room_id, label)
 );
 
--- 4. Tenants Table
-CREATE TABLE IF NOT EXISTS tenants (
+-- ------------------------------------------------------------------------------
+-- 5. Tenants Table (Auth profile data or invited tenants)
+-- ------------------------------------------------------------------------------
+CREATE TABLE tenants (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    full_name VARCHAR(255) NOT NULL,
-    phone_number VARCHAR(50),
-    student_id VARCHAR(100),
-    emergency_contact VARCHAR(255),
-    current_bed_id UUID REFERENCES beds(id) ON DELETE SET NULL,
-    lease_start DATE,
-    lease_end DATE,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL
-);
-
--- 5. Payments Table
-CREATE TABLE IF NOT EXISTS payments (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
-    amount NUMERIC(12, 2) NOT NULL,
-    payment_method payment_method_type NOT NULL DEFAULT 'momo_mtn',
-    status payment_status NOT NULL DEFAULT 'successful',
-    transaction_ref VARCHAR(255),
+    name VARCHAR(255) NOT NULL,
+    email VARCHAR(255),
+    phone VARCHAR(50) NOT NULL,
+    id_number VARCHAR(100), -- NRC or Student ID
+    date_of_birth DATE,
+    emergency_contact_name VARCHAR(255),
+    emergency_contact_phone VARCHAR(50),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL
 );
 
--- 6. Maintenance Tickets Table
-CREATE TABLE IF NOT EXISTS maintenance_tickets (
+-- ------------------------------------------------------------------------------
+-- 6. Tenancies Table (Links a Tenant to a specific Bed-Space)
+-- ------------------------------------------------------------------------------
+CREATE TABLE tenancies (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    bed_space_id UUID NOT NULL REFERENCES bed_spaces(id) ON DELETE RESTRICT,
+    tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
+    start_date DATE NOT NULL DEFAULT CURRENT_DATE,
+    end_date DATE,
+    rent_amount NUMERIC(12, 2) NOT NULL,
+    billing_cycle VARCHAR(50) NOT NULL DEFAULT 'monthly', -- 'monthly' or 'semester'
+    status tenancy_status NOT NULL DEFAULT 'active',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL
+);
+
+-- ------------------------------------------------------------------------------
+-- 7. Payments Table (Recorded against Tenancy with automatic receipt number)
+-- ------------------------------------------------------------------------------
+CREATE TABLE payments (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    tenancy_id UUID NOT NULL REFERENCES tenancies(id) ON DELETE CASCADE,
+    amount NUMERIC(12, 2) NOT NULL,
+    paid_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL,
+    method payment_method_type NOT NULL DEFAULT 'momo_mtn',
+    gateway_reference VARCHAR(255),
+    status payment_status NOT NULL DEFAULT 'success',
+    receipt_number VARCHAR(100) UNIQUE NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL
+);
+
+-- ------------------------------------------------------------------------------
+-- 8. Reports Table (Maintenance issues with manual priority rank)
+-- ------------------------------------------------------------------------------
+CREATE TABLE reports (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     property_id UUID NOT NULL REFERENCES properties(id) ON DELETE CASCADE,
-    room_id UUID REFERENCES rooms(id) ON DELETE SET NULL,
-    issue_title VARCHAR(255) NOT NULL,
-    description TEXT,
-    priority ticket_priority NOT NULL DEFAULT 'normal',
-    status ticket_status NOT NULL DEFAULT 'open',
-    cost_spent NUMERIC(12, 2) NOT NULL DEFAULT 0.00,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL
-);
-
--- 7. Security Deposits Table
-CREATE TABLE IF NOT EXISTS security_deposits (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
-    amount_held NUMERIC(12, 2) NOT NULL DEFAULT 0.00,
-    status deposit_status NOT NULL DEFAULT 'held',
+    description TEXT NOT NULL,
+    category VARCHAR(100) NOT NULL DEFAULT 'General', -- Plumbing, Electrical, Furniture, Locks, Wi-Fi
+    photo_url TEXT,
+    status report_status NOT NULL DEFAULT 'open',
+    priority_rank INT, -- Manual order set by landlord (1, 2, 3...)
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL
 );
 
--- Indexes for performance
-CREATE INDEX IF NOT EXISTS idx_rooms_property_id ON rooms(property_id);
-CREATE INDEX IF NOT EXISTS idx_beds_room_id ON beds(room_id);
-CREATE INDEX IF NOT EXISTS idx_tenants_current_bed_id ON tenants(current_bed_id);
-CREATE INDEX IF NOT EXISTS idx_payments_tenant_id ON payments(tenant_id);
-CREATE INDEX IF NOT EXISTS idx_maintenance_property_id ON maintenance_tickets(property_id);
-CREATE INDEX IF NOT EXISTS idx_maintenance_room_id ON maintenance_tickets(room_id);
-CREATE INDEX IF NOT EXISTS idx_security_deposits_tenant_id ON security_deposits(tenant_id);
+-- ------------------------------------------------------------------------------
+-- 9. Reminder Log Table (Rules-based WhatsApp/SMS rent notifications)
+-- ------------------------------------------------------------------------------
+CREATE TABLE reminder_log (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    tenancy_id UUID NOT NULL REFERENCES tenancies(id) ON DELETE CASCADE,
+    sent_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL,
+    channel reminder_channel NOT NULL DEFAULT 'whatsapp',
+    reminder_type reminder_type NOT NULL DEFAULT 'upcoming',
+    delivery_status reminder_delivery_status NOT NULL DEFAULT 'delivered'
+);
 
--- Enable Row Level Security (RLS) policies
+-- ------------------------------------------------------------------------------
+-- INDEXES
+-- ------------------------------------------------------------------------------
+CREATE INDEX idx_properties_landlord_id ON properties(landlord_id);
+CREATE INDEX idx_rooms_property_id ON rooms(property_id);
+CREATE INDEX idx_bed_spaces_room_id ON bed_spaces(room_id);
+CREATE INDEX idx_bed_spaces_status ON bed_spaces(status);
+CREATE INDEX idx_tenancies_bed_space_id ON tenancies(bed_space_id);
+CREATE INDEX idx_tenancies_tenant_id ON tenancies(tenant_id);
+CREATE INDEX idx_tenancies_status ON tenancies(status);
+CREATE INDEX idx_payments_tenancy_id ON payments(tenancy_id);
+CREATE INDEX idx_payments_status ON payments(status);
+CREATE INDEX idx_reports_property_id ON reports(property_id);
+CREATE INDEX idx_reports_status ON reports(status);
+CREATE INDEX idx_reports_priority_rank ON reports(priority_rank);
+CREATE INDEX idx_reminder_log_tenancy_id ON reminder_log(tenancy_id);
+
+-- ------------------------------------------------------------------------------
+-- ROW LEVEL SECURITY (RLS) POLICIES
+-- ------------------------------------------------------------------------------
+ALTER TABLE landlords ENABLE ROW LEVEL SECURITY;
 ALTER TABLE properties ENABLE ROW LEVEL SECURITY;
 ALTER TABLE rooms ENABLE ROW LEVEL SECURITY;
-ALTER TABLE beds ENABLE ROW LEVEL SECURITY;
+ALTER TABLE bed_spaces ENABLE ROW LEVEL SECURITY;
 ALTER TABLE tenants ENABLE ROW LEVEL SECURITY;
+ALTER TABLE tenancies ENABLE ROW LEVEL SECURITY;
 ALTER TABLE payments ENABLE ROW LEVEL SECURITY;
-ALTER TABLE maintenance_tickets ENABLE ROW LEVEL SECURITY;
-ALTER TABLE security_deposits ENABLE ROW LEVEL SECURITY;
+ALTER TABLE reports ENABLE ROW LEVEL SECURITY;
+ALTER TABLE reminder_log ENABLE ROW LEVEL SECURITY;
 
--- Default permissive read policies for authenticated users
-CREATE POLICY "Allow public read properties" ON properties FOR SELECT USING (true);
-CREATE POLICY "Allow public read rooms" ON rooms FOR SELECT USING (true);
-CREATE POLICY "Allow public read beds" ON beds FOR SELECT USING (true);
-CREATE POLICY "Allow public read tenants" ON tenants FOR SELECT USING (true);
-CREATE POLICY "Allow public read payments" ON payments FOR SELECT USING (true);
-CREATE POLICY "Allow public read maintenance_tickets" ON maintenance_tickets FOR SELECT USING (true);
-CREATE POLICY "Allow public read security_deposits" ON security_deposits FOR SELECT USING (true);
+CREATE POLICY "Allow public read landlords" ON landlords FOR ALL USING (true);
+CREATE POLICY "Allow public read properties" ON properties FOR ALL USING (true);
+CREATE POLICY "Allow public read rooms" ON rooms FOR ALL USING (true);
+CREATE POLICY "Allow public read bed_spaces" ON bed_spaces FOR ALL USING (true);
+CREATE POLICY "Allow public read tenants" ON tenants FOR ALL USING (true);
+CREATE POLICY "Allow public read tenancies" ON tenancies FOR ALL USING (true);
+CREATE POLICY "Allow public read payments" ON payments FOR ALL USING (true);
+CREATE POLICY "Allow public read reports" ON reports FOR ALL USING (true);
+CREATE POLICY "Allow public read reminder_log" ON reminder_log FOR ALL USING (true);
