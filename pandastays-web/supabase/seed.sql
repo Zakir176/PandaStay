@@ -1,75 +1,99 @@
--- PandaStays Seed Data Script
--- Populates database with dummy data matching Stitch property dashboard templates
--- Uses strictly valid hexadecimal standard UUID v4 strings
+-- ==============================================================================
+-- PandaStays Seed Data — Clean Slate Rebuild
+-- Spec: Docs/pandastays-full-rebuild-brief.md (Section 3)
+-- Seeds: Mukuba House (Lusaka) with Rooms, Bed-Spaces, Tenants, Tenancies,
+-- Payments, Maintenance Reports (with manual priority), and Reminder Logs
+-- ==============================================================================
 
--- 1. Insert Property
-INSERT INTO properties (id, name, address, landlord_id)
+-- 1. Landlord
+INSERT INTO landlords (id, name, email, phone, lenco_subaccount_id, whatsapp_reminder_days_before)
 VALUES (
-    'a1b2c3d4-0000-4000-8000-000000000001',
-    'Mukuba House',
-    'Plot 402, Great East Road, Lusaka, Zambia',
-    'b2c3d4e5-0000-4000-8000-000000000001'
+    '11111111-0000-4000-8000-000000000001',
+    'Mwamba Kaunda',
+    'landlord@mukubahouse.zm',
+    '+260 97 7123456',
+    'sub_lenco_mukuba_981',
+    3
 ) ON CONFLICT (id) DO NOTHING;
 
--- 2. Insert Rooms
-INSERT INTO rooms (id, property_id, room_number, capacity, price_per_term)
+-- 2. Property: Mukuba House
+INSERT INTO properties (id, landlord_id, name, address)
+VALUES (
+    '22222222-0000-4000-8000-000000000001',
+    '11111111-0000-4000-8000-000000000001',
+    'Mukuba House',
+    'Plot 402, Great East Road, Northmead, Lusaka, Zambia'
+) ON CONFLICT (id) DO NOTHING;
+
+-- 3. Rooms
+INSERT INTO rooms (id, property_id, room_number, capacity)
 VALUES 
-    ('10000001-0000-4000-8000-000000000101', 'a1b2c3d4-0000-4000-8000-000000000001', '101', 2, 2500.00),
-    ('10000001-0000-4000-8000-000000000102', 'a1b2c3d4-0000-4000-8000-000000000001', '102', 2, 2500.00),
-    ('10000001-0000-4000-8000-000000000103', 'a1b2c3d4-0000-4000-8000-000000000001', '103', 2, 2500.00),
-    ('10000001-0000-4000-8000-000000000104', 'a1b2c3d4-0000-4000-8000-000000000001', '104', 2, 2500.00)
+    ('33333333-0000-4000-8000-000000000101', '22222222-0000-4000-8000-000000000001', '101', 2),
+    ('33333333-0000-4000-8000-000000000102', '22222222-0000-4000-8000-000000000001', '102', 2),
+    ('33333333-0000-4000-8000-000000000103', '22222222-0000-4000-8000-000000000001', '103', 2),
+    ('33333333-0000-4000-8000-000000000104', '22222222-0000-4000-8000-000000000001', '104', 2)
 ON CONFLICT (id) DO NOTHING;
 
--- 3. Insert Beds for Rooms
-INSERT INTO beds (id, room_id, bed_label, status)
+-- 4. Bed-Spaces (The fundamental rentable unit)
+INSERT INTO bed_spaces (id, room_id, label, rent_amount, status)
 VALUES 
-    -- Room 101 Beds
-    ('b0000001-0000-4000-8000-000000000101', '10000001-0000-4000-8000-000000000101', 'Bed A', 'occupied'),
-    ('b0000001-0000-4000-8000-000000000102', '10000001-0000-4000-8000-000000000101', 'Bed B', 'occupied'),
-    -- Room 102 Beds
-    ('b0000001-0000-4000-8000-000000000103', '10000001-0000-4000-8000-000000000102', 'Bed A', 'occupied'),
-    ('b0000001-0000-4000-8000-000000000104', '10000001-0000-4000-8000-000000000102', 'Bed B', 'occupied'),
-    -- Room 103 Beds
-    ('b0000001-0000-4000-8000-000000000105', '10000001-0000-4000-8000-000000000103', 'Bed A', 'occupied'),
-    ('b0000001-0000-4000-8000-000000000106', '10000001-0000-4000-8000-000000000103', 'Bed B', 'vacant'),
-    -- Room 104 Beds
-    ('b0000001-0000-4000-8000-000000000107', '10000001-0000-4000-8000-000000000104', 'Bed A', 'occupied'),
-    ('b0000001-0000-4000-8000-000000000108', '10000001-0000-4000-8000-000000000104', 'Bed B', 'occupied')
+    -- Room 101
+    ('44444444-0000-4000-8000-000000000101', '33333333-0000-4000-8000-000000000101', 'Bed 101-A (Window)', 2600.00, 'occupied'),
+    ('44444444-0000-4000-8000-000000000102', '33333333-0000-4000-8000-000000000101', 'Bed 101-B', 2500.00, 'occupied'),
+    -- Room 102
+    ('44444444-0000-4000-8000-000000000103', '33333333-0000-4000-8000-000000000102', 'Bed 102-A', 2500.00, 'occupied'),
+    ('44444444-0000-4000-8000-000000000104', '33333333-0000-4000-8000-000000000102', 'Bed 102-B (Window)', 2600.00, 'occupied'),
+    -- Room 103
+    ('44444444-0000-4000-8000-000000000105', '33333333-0000-4000-8000-000000000103', 'Bed 103-A', 2500.00, 'occupied'),
+    ('44444444-0000-4000-8000-000000000106', '33333333-0000-4000-8000-000000000103', 'Bed 103-B', 2500.00, 'vacant'),
+    -- Room 104
+    ('44444444-0000-4000-8000-000000000107', '33333333-0000-4000-8000-000000000104', 'Bed 104-A', 2800.00, 'occupied'),
+    ('44444444-0000-4000-8000-000000000108', '33333333-0000-4000-8000-000000000104', 'Bed 104-B', 2800.00, 'reserved')
 ON CONFLICT (id) DO NOTHING;
 
--- 4. Insert Tenants
-INSERT INTO tenants (id, full_name, phone_number, student_id, emergency_contact, current_bed_id, lease_start, lease_end)
+-- 5. Tenants
+INSERT INTO tenants (id, name, email, phone, id_number, emergency_contact_name, emergency_contact_phone)
 VALUES 
-    ('e0000001-0000-4000-8000-000000000001', 'Chileshe Mubanga', '+260 97 1234567', '20240981', 'Parent (+260 97 1234567)', 'b0000001-0000-4000-8000-000000000107', '2024-01-01', '2026-11-30'),
-    ('e0000001-0000-4000-8000-000000000002', 'John Phiri', '+260 96 2345678', '20240982', 'Guardian (+260 96 2345678)', 'b0000001-0000-4000-8000-000000000101', '2024-01-01', '2026-11-30'),
-    ('e0000001-0000-4000-8000-000000000003', 'Mary Banda', '+260 95 3456789', '20240983', 'Parent (+260 95 3456789)', 'b0000001-0000-4000-8000-000000000102', '2024-01-01', '2026-11-30'),
-    ('e0000001-0000-4000-8000-000000000004', 'David Mulenga', '+260 97 4567890', '20240984', 'Parent (+260 97 4567890)', 'b0000001-0000-4000-8000-000000000103', '2024-01-01', '2026-11-30'),
-    ('e0000001-0000-4000-8000-000000000005', 'Sarah Chilufya', '+260 96 5678901', '20240985', 'Guardian (+260 96 5678901)', 'b0000001-0000-4000-8000-000000000104', '2024-01-01', '2026-11-30'),
-    ('e0000001-0000-4000-8000-000000000006', 'Emmanuel Ngoma', '+260 95 6789012', '20240986', 'Parent (+260 95 6789012)', 'b0000001-0000-4000-8000-000000000105', '2024-01-01', '2026-11-30'),
-    ('e0000001-0000-4000-8000-000000000007', 'Chanda Mwewa', '+260 97 7890123', '20240987', 'Parent (+260 97 7890123)', 'b0000001-0000-4000-8000-000000000108', '2024-01-01', '2026-11-30')
+    ('55555555-0000-4000-8000-000000000001', 'John Phiri', 'john.phiri@unza.zm', '+260 97 1122334', '392819/11/1', 'Mr. Patrick Phiri (Father)', '+260 97 7889900'),
+    ('55555555-0000-4000-8000-000000000002', 'Mary Banda', 'mary.banda@unza.zm', '+260 96 2233445', '410291/11/1', 'Mrs. Grace Banda (Mother)', '+260 96 6778899'),
+    ('55555555-0000-4000-8000-000000000003', 'David Mulenga', 'david.m@cbu.ac.zm', '+260 95 3344556', '502918/11/1', 'Peter Mulenga (Uncle)', '+260 95 5667788'),
+    ('55555555-0000-4000-8000-000000000004', 'Sarah Chilufya', 'sarah.c@unza.zm', '+260 97 4455667', '481920/11/1', 'Agnes Chilufya (Mother)', '+260 97 4455112'),
+    ('55555555-0000-4000-8000-000000000005', 'Emmanuel Ngoma', 'engoma@apex.zm', '+260 96 5566778', '610294/11/1', 'Kelvin Ngoma (Brother)', '+260 96 3322110'),
+    ('55555555-0000-4000-8000-000000000006', 'Chileshe Mubanga', 'chileshe.mubanga@unza.zm', '+260 97 6677889', '294810/11/1', 'Dr. J. Mubanga (Guardian)', '+260 97 9988776')
 ON CONFLICT (id) DO NOTHING;
 
--- 5. Insert Payments
-INSERT INTO payments (id, tenant_id, amount, payment_method, status, transaction_ref, created_at)
+-- 6. Tenancies
+INSERT INTO tenancies (id, bed_space_id, tenant_id, start_date, end_date, rent_amount, billing_cycle, status)
 VALUES 
-    ('c0000001-0000-4000-8000-000000000001', 'e0000001-0000-4000-8000-000000000001', 1200.00, 'momo_mtn', 'successful', 'TXN-10293', NOW() - INTERVAL '2 days'),
-    ('c0000001-0000-4000-8000-000000000002', 'e0000001-0000-4000-8000-000000000004', 1250.00, 'cash', 'successful', 'TXN-10292', NOW() - INTERVAL '3 days'),
-    ('c0000001-0000-4000-8000-000000000003', 'e0000001-0000-4000-8000-000000000006', 2500.00, 'momo_airtel', 'successful', 'TXN-10291', NOW() - INTERVAL '4 days')
+    ('66666666-0000-4000-8000-000000000001', '44444444-0000-4000-8000-000000000101', '55555555-0000-4000-8000-000000000001', '2026-01-05', '2026-12-15', 2600.00, 'monthly', 'active'),
+    ('66666666-0000-4000-8000-000000000002', '44444444-0000-4000-8000-000000000102', '55555555-0000-4000-8000-000000000002', '2026-01-05', '2026-12-15', 2500.00, 'monthly', 'active'),
+    ('66666666-0000-4000-8000-000000000003', '44444444-0000-4000-8000-000000000103', '55555555-0000-4000-8000-000000000003', '2026-01-05', '2026-12-15', 2500.00, 'monthly', 'active'),
+    ('66666666-0000-4000-8000-000000000004', '44444444-0000-4000-8000-000000000104', '55555555-0000-4000-8000-000000000004', '2026-01-05', '2026-12-15', 2600.00, 'monthly', 'active'),
+    ('66666666-0000-4000-8000-000000000005', '44444444-0000-4000-8000-000000000105', '55555555-0000-4000-8000-000000000005', '2026-02-01', '2026-12-15', 2500.00, 'monthly', 'active'),
+    ('66666666-0000-4000-8000-000000000006', '44444444-0000-4000-8000-000000000107', '55555555-0000-4000-8000-000000000006', '2026-01-10', '2026-12-15', 2800.00, 'monthly', 'active')
 ON CONFLICT (id) DO NOTHING;
 
--- 6. Insert Maintenance Tickets
-INSERT INTO maintenance_tickets (id, property_id, room_id, issue_title, description, priority, status, cost_spent)
+-- 7. Payments (Recorded against Tenancy, with auto receipts)
+INSERT INTO payments (id, tenancy_id, amount, paid_at, method, gateway_reference, status, receipt_number)
 VALUES 
-    ('d0000001-0000-4000-8000-000000000001', 'a1b2c3d4-0000-4000-8000-000000000001', '10000001-0000-4000-8000-000000000104', 'Leaking Bathroom Pipe', 'Water spreading to hallway carpet.', 'urgent', 'open', 0.00),
-    ('d0000001-0000-4000-8000-000000000002', 'a1b2c3d4-0000-4000-8000-000000000001', '10000001-0000-4000-8000-000000000101', 'Broken Bed Frame', 'Slats collapsed on one side.', 'normal', 'in_progress', 450.00),
-    ('d0000001-0000-4000-8000-000000000003', 'a1b2c3d4-0000-4000-8000-000000000001', '10000001-0000-4000-8000-000000000102', 'Flickering Lights', 'Main room light bulb needs replacing.', 'normal', 'open', 0.00),
-    ('d0000001-0000-4000-8000-000000000004', 'a1b2c3d4-0000-4000-8000-000000000001', '10000001-0000-4000-8000-000000000103', 'Broken Window Pane', 'Security risk, ground floor.', 'urgent', 'fixed', 850.00)
+    ('77777777-0000-4000-8000-000000000001', '66666666-0000-4000-8000-000000000001', 2600.00, NOW() - INTERVAL '3 days', 'momo_mtn', 'LNC-MTN-984021', 'success', 'REC-2026-001'),
+    ('77777777-0000-4000-8000-000000000002', '66666666-0000-4000-8000-000000000002', 2500.00, NOW() - INTERVAL '4 days', 'momo_airtel', 'LNC-AIR-882103', 'success', 'REC-2026-002'),
+    ('77777777-0000-4000-8000-000000000003', '66666666-0000-4000-8000-000000000003', 1300.00, NOW() - INTERVAL '5 days', 'momo_mtn', 'LNC-MTN-773910', 'success', 'REC-2026-003'),
+    ('77777777-0000-4000-8000-000000000004', '66666666-0000-4000-8000-000000000004', 2600.00, NOW() - INTERVAL '6 days', 'momo_zamtel', 'LNC-ZAM-661029', 'success', 'REC-2026-004'),
+    ('77777777-0000-4000-8000-000000000006', '66666666-0000-4000-8000-000000000006', 2800.00, NOW() - INTERVAL '2 days', 'momo_airtel', 'LNC-AIR-552910', 'success', 'REC-2026-005')
 ON CONFLICT (id) DO NOTHING;
 
--- 7. Insert Security Deposits
-INSERT INTO security_deposits (id, tenant_id, amount_held, status)
+-- 8. Reports (Maintenance issues with manual priority rank)
+INSERT INTO reports (id, property_id, tenant_id, description, category, photo_url, status, priority_rank)
 VALUES 
-    ('f0000001-0000-4000-8000-000000000001', 'e0000001-0000-4000-8000-000000000001', 1200.00, 'held'),
-    ('f0000001-0000-4000-8000-000000000002', 'e0000001-0000-4000-8000-000000000002', 1200.00, 'held'),
-    ('f0000001-0000-4000-8000-000000000003', 'e0000001-0000-4000-8000-000000000005', 1100.00, 'held')
+    ('88888888-0000-4000-8000-000000000001', '22222222-0000-4000-8000-000000000001', '55555555-0000-4000-8000-000000000005', 'Shower mixer tap leaking continuously in shared bathroom near Room 103', 'Plumbing', NULL, 'open', 1),
+    ('88888888-0000-4000-8000-000000000002', '22222222-0000-4000-8000-000000000001', '55555555-0000-4000-8000-000000000003', 'Ceiling light flicker and socket dead on north wall of Room 102', 'Electrical', NULL, 'in_progress', 2),
+    ('88888888-0000-4000-8000-000000000003', '22222222-0000-4000-8000-000000000001', '55555555-0000-4000-8000-000000000001', 'Study desk drawer runner jammed in Room 101 Bed A', 'Furniture', NULL, 'open', 3)
+ON CONFLICT (id) DO NOTHING;
+
+-- 9. Reminder Logs (Rules-based WhatsApp rent reminders)
+INSERT INTO reminder_log (id, tenancy_id, sent_at, channel, reminder_type, delivery_status)
+VALUES 
+    ('99999999-0000-4000-8000-000000000001', '66666666-0000-4000-8000-000000000005', NOW() - INTERVAL '2 days', 'whatsapp', 'upcoming', 'delivered'),
+    ('99999999-0000-4000-8000-000000000002', '66666666-0000-4000-8000-000000000003', NOW() - INTERVAL '1 day', 'whatsapp', 'upcoming', 'delivered')
 ON CONFLICT (id) DO NOTHING;
